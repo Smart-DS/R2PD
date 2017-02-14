@@ -17,4 +17,25 @@ Nice to have:
   all tied into the same node
 """
 
+class Node(object): 
+    def assign_resource(self, resource_data): pass
+
+class GeneratorNode(Node): 
+    
+    def get_power(self, timezone=None): pass
+
+    def get_forecast(self, forecast_params, timezone=None): pass
+
+    # not sure how to handle different formats. some might want to put 
+    # power and forecasts in the same file? this api doesn't seem abstract 
+    # enough yet.
+    def save_power(self, filename, formatter=None): pass
+
+    def save_forecast(self, filename, formatter=None): pass
+
+class WindGeneratorNode(GeneratorNode): pass
+
+class SolarPVGeneratorNode(GeneratorNode): pass
+
+class WeatherNode(Node): pass
 
