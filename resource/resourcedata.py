@@ -2,18 +2,14 @@
 This module provides an API to the raw resource data and meta-data.
 """
 
-class ResourceMetaData(object): 
+class ResourceLocation(object): 
     """
-    Wrapper for key, value pairs serialized to json that describe particular 
-    resource datasets.
+    Identifies available site data.
     """
+    DATASET=None # Redefine in derived class
 
     @property
     def file_id(self): pass
-
-    @property
-    def dataset(self): 
-        return self.DATASET
 
     @property
     def latitude(self): pass
@@ -21,21 +17,15 @@ class ResourceMetaData(object):
     @property
     def longitude(self): pass
 
-    @classmethod
-    def load_from_str(cls, value): pass
-
-    @classmethod
-    def load_from_file(cls, path): pass
-
-class WindMetaData(ResourceMetaData): pass
+class WindLocation(ResourceLocation):
     DATASET='Wind'
 
-class SolarPVMetaDAta(ResourceMetaData): pass
-    DATASET='SolarPV'
+class SolarLocation(ResourceLocation):
+    DATASET='Solar'
 
 class ResourceData(object): pass
 
 class WindData(ResourceData): pass
 
-class SolarPVData(ResourceData): pass
+class SolarData(ResourceData): pass
 

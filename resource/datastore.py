@@ -5,11 +5,11 @@ internal and external data stores.
 
 class DataStore(object): 
     @classmethod
-    def connect(cls, config): pass
+    def connect(cls, config=None): pass
 
     def nearest_neighbors(self, dataset, lat_long_tuples, num_neighbors=1): 
         """
-        Returns list or list of lists containing resourcedata.ResourceMetaData 
+        Returns list or list of lists containing resourcedata.ResourceLocation
         objects.
         """
 
@@ -26,7 +26,7 @@ class DRPower(ExternalDataStore): pass
 
 class InternalDataStore(DataStore): 
     @classmethod
-    def connect(cls, config):
+    def connect(cls, config=None):
         """
         Reads the configuration, if provided. From configuration and defaults, 
         determines location of internal data cache. If the cache is not yet 
@@ -34,8 +34,8 @@ class InternalDataStore(DataStore):
         for querying / adding data.
         """
 
-    def cache_data(self, metadata_data_tuples): 
+    def cache_data(self, location_data_tuples): 
         """
-        Saves each (ResourceMetaData, ResourceData) tuple to disk and logs it
+        Saves each (ResourceLocation, ResourceData) tuple to disk and logs it
         in the registry / database.
         """
