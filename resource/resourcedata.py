@@ -23,7 +23,14 @@ class WindLocation(ResourceLocation):
 class SolarLocation(ResourceLocation):
     DATASET='Solar'
 
-class ResourceData(object): pass
+class ResourceData(object): 
+    def __init__(self, path): pass
+
+    def power_data(self): pass
+
+    def meteorological_data(self): pass
+
+    def forecast_data(self): pass
 
 class WindData(ResourceData): pass
 

@@ -14,16 +14,27 @@ power system modelers. Functionalities needed include:
       all tied into the same node
 """
 
+import inspect
+
 class Node(object): 
-    def __init__(self, id, lat, long): pass
+    def __init__(self, node_id, latitude, longitude): 
+        self._resource_assigned = False
+        self.id = node_id
+        self.latitude = latitude
+        self.longitude = longitude
 
     def assign_resource(self, resource_data): pass
+
+    def _require_resource(self):
+        if not self._resource_assigned:
+            caller = inspect.getouterframes(inspect.currentframe(), 2)[1][3]
+            raise RuntimeError("Resource must be defined before calling " + caller + ".")
 
 
 class GeneratorNode(Node):
 
-    def __init__(self, id, lat, long, capacity):
-        super(GeneratorNode, self).__init__(id, lat, long)
+    def __init__(self, node_id, latitude, longitude, capacity):
+        super(GeneratorNode, self).__init__(node_id, latitude, longitude)
 
     def assign_resource(self, resource_data): 
         """
@@ -33,9 +44,21 @@ class GeneratorNode(Node):
                   ResourceData type must match the GeneratorNode type.
         """
     
-    def get_power(self, temporal_params): pass
+    def get_power(self, temporal_params, shaper=None): 
+        """
+        Parameters:
+            - temporal_params (TemporalParameters) - requirements for timeseries
+                 output
+            - shaper (function or callable conforming to the TimeseriesShaper.__call__ interface) - 
+                 method for converting between the resource_data time convenctions, 
+                 to those defined by temporal_params
 
-    def get_forecasts(self, temporal_params, forecast_params): pass
+        Returns actual power timeseries for this GeneratorNode based on the 
+        resource_data that has already been assigned.
+        """
+        self._require_resource()
+
+    def get_forecasts(self, temporal_params, forecast_params, shaper=None): pass
 
     def save_power(self, filename, formatter=None): pass
 
@@ -61,7 +84,7 @@ class WeatherNode(Node):
             - resource_data (2-tuple) - (WindData, SolarData)
         """
 
-    def get_weather(self, temporal_params): pass
+    def get_weather(self, temporal_params, shaper=None): pass
 
     def save_weather(self, filename, formatter=None): pass
 
@@ -72,20 +95,30 @@ class NodeCollection(object):
     class is provided to give a DataFrame, rather than a Series, interface for 
     processing timeseries data in bulk.
     """
-    def __init__(self, nodes): pass
+    def __init__(self, nodes): 
+        # todo: implement iterating over this class work to avoid 
+        #       for node in nodes.nodes:
+        self.nodes = nodes
 
     @classmethod
     def factory(self, nodes): 
         """
         Constructs the right type of NodeCollection based on the type of nodes.
         """
+        if isinstance(nodes[0],WeatherNode):
+            return WeatherNodeCollection(nodes)
+        return GeneratorNodeCollection(nodes)
+
+    @property
+    def locations(self):
+        return [(node.latitude, node.longitude) for node in self.nodes]
 
 
 class GeneratorNodeCollection(NodeCollection):
 
-    def get_power(self, temporal_params): pass
+    def get_power(self, temporal_params, shaper=None): pass
 
-    def get_forecasts(self, temporal_params, forecast_params): pass
+    def get_forecasts(self, temporal_params, forecast_params, shaper=None): pass
 
     def save_power(self, filename_or_dir, formatter=None): pass
 
@@ -94,6 +127,6 @@ class GeneratorNodeCollection(NodeCollection):
 
 class WeatherNodeCollection(NodeCollection): 
 
-    def get_weather(self, temporal_params): pass
+    def get_weather(self, temporal_params, shaper=None): pass
 
     def save_weather(self, filename_or_dir, formatter=None): pass

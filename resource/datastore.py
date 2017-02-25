@@ -4,8 +4,16 @@ internal and external data stores.
 """
 
 class DataStore(object): 
+    """
+    Abstract class to define interface for accessing stores of resource data.
+    """
+
     @classmethod
-    def connect(cls, config=None): pass
+    def connect(cls, config=None): 
+        """
+        Connects to the store (internal cache or external repository) and 
+        returns an instantiated DataStore object.
+        """
 
     def nearest_neighbors(self, dataset, lat_long_tuples, num_neighbors=1): 
         """
@@ -24,7 +32,19 @@ class ExternalDataStore(DataStore): pass
 
 class DRPower(ExternalDataStore): pass
 
-class InternalDataStore(DataStore): 
+class InternalDataStore(DataStore):
+    """
+    This class manages an internal cache of already downloaded resource data, 
+    and other Resource Data Tool information that should persist. 
+
+    The default location for the internal cache will be in a place like 
+    Users/$User/AppData, but the user can set a different location by passing 
+    in a configuration file.
+
+    A configuration file can also be used to set user library locations, for 
+    pointing to externally provided shapers and formatters.
+    """
+
     @classmethod
     def connect(cls, config=None):
         """
