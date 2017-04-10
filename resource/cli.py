@@ -76,7 +76,7 @@ def cli_parser():
                 modeled in each forecast/dispatch model run.''',type=dt.timedelta)
             dispatch_parser.add_argument('-l','--leadtime',help='''Amount of 
                 time before modeled time that forecast data would need to be 
-                supplied.''',type=dt.timedelta())
+                supplied.''',type=dt.timedelta)
         parser.add_argument('-s','--shaper',help='''Name of function or other 
                             callable to use in shaping the timeseries data to 
                             conform to the temporal {}parameters'''.format(and_forecast))
