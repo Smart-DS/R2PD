@@ -12,8 +12,10 @@ class TemporalParameters(object):
                                  ['instantaneous',
                                   'average_next',
                                   'average_prev',
+                                  'average_midpt',
                                   'integrated_next',
-                                  'integrated_prev'])
+                                  'integrated_prev',
+                                  'integrated_midpt'])
 
     # todo: is there a reasonable default to assign to point_interp, or does it
     #       have to be provided by the user?
