@@ -24,8 +24,19 @@ class Node(object):
         self.latitude = latitude
         self.longitude = longitude
 
-    def assign_resource(self, resource_data):
-        pass
+    def __repr__(self):
+        return '{n} {i}'.format(n=self.__class__.__name__, i=self.id)
+
+    def assign_resource(self, resource):
+        """
+        Parameters:
+            - resource_data, ResourceData or list of ResourceData
+                - nearby site(s) from which power actuals and/or forecast data
+                  will be constructed.
+                  ResourceData type must match the GeneratorNode type.
+        """
+        self._resource_assigned = True
+        self._resource = resource
 
     def _require_resource(self):
         if not self._resource_assigned:
@@ -35,19 +46,9 @@ class Node(object):
 
 
 class GeneratorNode(Node):
-
     def __init__(self, node_id, latitude, longitude, capacity):
         super(GeneratorNode, self).__init__(node_id, latitude, longitude)
         self.capacity = capacity
-
-    def assign_resource(self, resource_data):
-        """
-        Parameters:
-            - resource_data, ResourceData or list of ResourceData
-                - nearby site(s) from which power actuals and/or forecast data
-                  will be constructed.
-                  ResourceData type must match the GeneratorNode type.
-        """
 
     def get_power(self, temporal_params, shaper=None):
         """
@@ -115,6 +116,10 @@ class NodeCollection(object):
         #       for node in nodes.nodes:
         self.nodes = nodes
 
+    def __repr__(self):
+        return '{c} contains {n} nodes'.format(c=self.__class__.__name__,
+                                               n=len(self.nodes))
+
     @classmethod
     def factory(self, nodes):
         """
@@ -130,6 +135,10 @@ class NodeCollection(object):
 
 
 class GeneratorNodeCollection(NodeCollection):
+    @property
+    def node_data(self):
+        return [(node.id, node.latitude, node.longitude, node.capacity)
+                for node in self.nodes]
 
     def get_power(self, temporal_params, shaper=None):
         pass
@@ -145,6 +154,10 @@ class GeneratorNodeCollection(NodeCollection):
 
 
 class WeatherNodeCollection(NodeCollection):
+    @property
+    def node_data(self):
+        return [(node.id, node.latitude, node.longitude)
+                for node in self.nodes]
 
     def get_weather(self, temporal_params, shaper=None):
         pass

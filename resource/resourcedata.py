@@ -3,7 +3,7 @@ This module provides an API to the raw resource data and meta-data.
 """
 
 
-class ResourceLocation(object):
+class Resource(object):
     """
     Identifies available site data.
     """
@@ -23,12 +23,14 @@ class ResourceLocation(object):
         Returns
         ---------
         """
+        self._id = loc_meta.name
         self._meta = loc_meta
         self._frac = frac
+        self._root_path = None
 
     @property
     def site_id(self):
-        return self._meta.name
+        return self._id
 
     @property
     def latitude(self):
@@ -45,19 +47,6 @@ class ResourceLocation(object):
         else:
             return None
 
-
-class WindLocation(ResourceLocation):
-    DATASET = 'Wind'
-
-
-class SolarLocation(ResourceLocation):
-    DATASET = 'Solar'
-
-
-class ResourceData(object):
-    def __init__(self, root_path):
-        self.root_path = root_path
-
     def power_data(self):
         pass
 
@@ -66,6 +55,23 @@ class ResourceData(object):
 
     def forecast_data(self):
         pass
+
+
+class WindResource(Resource):
+    DATASET = 'Wind'
+    pass
+
+
+class SolarLocation(Resource):
+    DATASET = 'Solar'
+    pass
+
+
+class ResourceData(object):
+    def __init__(self, root_path):
+        self.root_path = root_path
+
+
 
 
 class WindData(ResourceData):
