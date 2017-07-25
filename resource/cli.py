@@ -143,7 +143,8 @@ def cli_main():
         generators = pds.DataFrame(args.generators,
                                    columns=['node_id', 'capacity'])
         nodes = pds.merge(nodes, generators, on='node_id', how='inner')
-    nodes = [NodeClass(*tuple(node_info)) for ind, node_info in nodes.iterrows()]
+    nodes = [NodeClass(*tuple(node_info))
+             for ind, node_info in nodes.iterrows()]
     nodes = NodeCollection.factory(nodes)
 
     def get_resource_data(dataset, locations, num_neighbors):
@@ -172,6 +173,7 @@ def cli_main():
             node.assign_resource(resource_data[i])
 
     # 5. Calculate the data
+
     # 6. Format and save to disk
     temporal_params = TemporalParameters(args.temporal_extent,
                                          args.point_interpretation,

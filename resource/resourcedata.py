@@ -72,8 +72,6 @@ class ResourceData(object):
         self.root_path = root_path
 
 
-
-
 class WindData(ResourceData):
     pass
 
