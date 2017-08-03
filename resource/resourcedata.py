@@ -1,6 +1,9 @@
 """
 This module provides an API to the raw resource data and meta-data.
 """
+import os
+import h5py
+import pandas as pds
 
 
 class Resource(object):
@@ -9,13 +12,15 @@ class Resource(object):
     """
     DATASET = None  # Redefine in derived class
 
-    def __init__(self, loc_meta, frac=None):
+    def __init__(self, loc_meta, root_path, frac=None):
         """
         Initialize ResourceLocation
         Parameters
         ----------
         loc_meta : 'pd.Series'
             meta data for resource location
+        root_path : 'string'
+            path to internal repository
         frac : 'float'
             fraction of site's capacity to be used
             Is None for weather nodes
@@ -23,10 +28,20 @@ class Resource(object):
         Returns
         ---------
         """
-        self._id = loc_meta.name
+        self._id = int(loc_meta.name)
         self._meta = loc_meta
         self._frac = frac
-        self._root_path = None
+        self._root_path = root_path
+        self._sub_dir = loc_meta['sub_directory']
+
+        if self.DATASET is not None:
+            self._file_name = '{d}_*_{s}.hdf5'.format(d=self.DATASET.lower(),
+                                                      s=self._id)
+            self._file_path = os.path.join(self._root_path, self.DATASET,
+                                           self._sub_dir, self._file_name)
+
+    def __repr__(self):
+        return '{n} for site {i}'.format(n=self.__class__.__name__, i=self._id)
 
     @property
     def site_id(self):
@@ -42,19 +57,51 @@ class Resource(object):
 
     @property
     def capacity(self):
+        cap = self._meta['capacity']
         if self._frac is not None:
-            return self._meta['capacity'] * self._frac
+            return cap * self._frac
         else:
-            return None
+            return cap
 
+    def extract_data(self, data_type):
+        file_path = self._file_path.replace('*', data_type.split('_')[0])
+        with h5py(file_path, 'r') as h5_file:
+            data = h5_file[data_type][...]
+
+        data['time'] = pds.to_datetime(data['time'])
+        data = data.set_index('time')
+
+        return data
+
+    @property
     def power_data(self):
-        pass
+        power_data = self.extract_data('power_data')
 
+        if self._frac is not None:
+            return power_data * self._frac
+        else:
+            return power_data
+
+    @property
     def meteorological_data(self):
-        pass
+        met_data = self.extract_data('met_data')
 
+        return met_data
+
+    @property
     def forecast_data(self):
-        pass
+        fcst_data = self.extract_data('fcst_data')
+
+        if self._frac is not None:
+            return fcst_data * self._frac
+        else:
+            return fcst_data
+
+    @property
+    def forecast_probabilities(self):
+        fcst_prob = self.extract_data('fcst-prob_data')
+
+        return fcst_prob
 
 
 class WindResource(Resource):
@@ -67,14 +114,28 @@ class SolarLocation(Resource):
     pass
 
 
-class ResourceData(object):
-    def __init__(self, root_path):
-        self.root_path = root_path
+class ResourceList(object):
+    """
+    Handles the aggregation of power and forecast data
+    """
+    def __init__(self, resources):
+        self._resources = resources
 
+    def __len__(self):
+        return len(self._resources)
 
-class WindData(ResourceData):
-    pass
+    def power_data(self):
+        power_data = self._resources[0].power_data
+        if len(self) > 1:
+            for resource in self._resource[1:]:
+                power_data.add(resource.power_data)
 
+        return power_data
 
-class SolarData(ResourceData):
-    pass
+    def fcst_data(self):
+        fcst_data = self._resources[0].forecast_data
+        if len(self) > 1:
+            for resource in self._resource[1:]:
+                fcst_data.add(resource.forecast_data)
+
+        return fcst_data
