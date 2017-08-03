@@ -5,6 +5,7 @@ the external and internal store as well as processing the data using a queue.
 import numpy as np
 import pandas as pds
 from scipy.spatial import cKDTree
+from powerdata import NodeCollection
 
 
 def nearest_power_nodes(node_collection, resource_meta):
@@ -22,15 +23,20 @@ def nearest_power_nodes(node_collection, resource_meta):
     nodes : 'pd.DataFrame'
         Requested nodes with site_ids and fractions of resource for each id
     """
+    if isinstance(node_collection, NodeCollection):
+        node_data = node_collection.node_data
+    else:
+        node_data = node_collection
+
     # Create and populate DataFrame from requested list of nodes
     nodes = pds.DataFrame(columns=['lat', 'lon', 'cap', 'site_ids',
                                    'site_fracs', 'r_cap'],
-                          index=node_collection[:, 0])
-    nodes['lat'] = node_collection[:, 1]
-    nodes['lon'] = node_collection[:, 2]
-    nodes['cap'] = node_collection[:, 3]
+                          index=node_data[:, 0].astype(int))
+    nodes['lat'] = node_data[:, 1]
+    nodes['lon'] = node_data[:, 2]
+    nodes['cap'] = node_data[:, 3]
     # Placeholder for remaining capacity to be filled
-    nodes['r_cap'] = node_collection[:, 3]
+    nodes['r_cap'] = node_data[:, 3]
 
     r_nodes = resource_meta[['longitude', 'latitude', 'capacity']].copy()
     # Add placeholder for remaining capacity available at resource node
@@ -108,11 +114,16 @@ def nearest_met_nodes(node_collection, resource_meta):
     nodes : 'pd.DataFrame'
         Requested nodes with resource site_ids
     """
+    if isinstance(node_collection, NodeCollection):
+        node_data = node_collection.node_data
+    else:
+        node_data = node_collection
+
     # Create and populate DataFrame from requested list of nodes
     nodes = pds.DataFrame(columns=['lat', 'lon', 'site_id'],
-                          index=node_collection[:, 0])
-    nodes['lat'] = node_collection[:, 1]
-    nodes['lon'] = node_collection[:, 2]
+                          index=node_data[:, 0].astype(int))
+    nodes['lat'] = node_data[:, 1]
+    nodes['lon'] = node_data[:, 2]
 
     # Extract resource nodes lat, lon
     lat_lon = resource_meta.as_matrix(['latitude', 'longitude'])
