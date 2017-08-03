@@ -3,25 +3,38 @@ This module provides classes for accessing site-level wind and solar data from
 internal and external data stores.
 """
 
+from resourcedata import WindResource, SolarResource
+
 
 class DataStore(object):
     """
     Abstract class to define interface for accessing stores of resource data.
     """
+    def __init__(self):
+        self._wind_meta = None
+        self._solar_meta = None
+        self._root_path = None
 
     @classmethod
-    def connect(cls, config=None):
+    def connect(cls):
         """
         Connects to the store (internal cache or external repository) and
         returns an instantiated DataStore object.
         """
 
-    def get_data(self, dataset, file_ids):
+    def get_resource(self, dataset, site_id, frac=None):
         """
-        Returns list of resourcedata.ResourceData objects, one entry per
-        file_ids element. If any file_id is not valid or not in the store,
-        None is returned in that spot.
+        Return resourcedata.Resource object
+        If any site_id is not valid or not in the store error is raised
         """
+        if dataset == 'Wind':
+            return WindResource(self._wind_meta.loc[site_id], self._root_path,
+                                frac=frac)
+        elif dataset == 'Solar':
+            return SolarResource(self._solar_meta.loc[site_id],
+                                 self._root_path, frac=frac)
+        else:
+            raise ValueError("Invalid dataset type, must be 'Wind' or 'Solar'")
 
 
 class ExternalDataStore(DataStore):
