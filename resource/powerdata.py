@@ -15,12 +15,13 @@ power system modelers. Functionalities needed include:
 """
 
 import inspect
+import numpy as np
 
 
 class Node(object):
     def __init__(self, node_id, latitude, longitude):
         self._resource_assigned = False
-        self.id = node_id
+        self.id = int(node_id)
         self.latitude = latitude
         self.longitude = longitude
 
@@ -120,8 +121,29 @@ class NodeCollection(object):
         return '{c} contains {n} nodes'.format(c=self.__class__.__name__,
                                                n=len(self.nodes))
 
+    def __getitem__(self, index):
+            """
+            Exract variable 'variable_name' from dataset.
+            Parameters
+            ----------
+            variable_name : 'sting'
+                Variable key
+
+            Returns
+            ---------
+            'nc.dataset.variable'
+                variable instance from dataset, to get values call [:]
+            """
+            if index >= len(self.nodes):
+                raise IndexError
+            return self.nodes[index]
+
+    def assign_resource(self, resource_list):
+        for node, resource in zip(self.nodes, resource_list):
+            node.assign_resource(resource)
+
     @classmethod
-    def factory(self, nodes):
+    def factory(cls, nodes):
         """
         Constructs the right type of NodeCollection based on the type of nodes.
         """
@@ -137,8 +159,9 @@ class NodeCollection(object):
 class GeneratorNodeCollection(NodeCollection):
     @property
     def node_data(self):
-        return [(node.id, node.latitude, node.longitude, node.capacity)
-                for node in self.nodes]
+        node_data = [(node.id, node.latitude, node.longitude, node.capacity)
+                     for node in self.nodes]
+        return np.array(node_data)
 
     def get_power(self, temporal_params, shaper=None):
         pass
