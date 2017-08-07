@@ -93,17 +93,19 @@ class SolarGeneratorNode(GeneratorNode):
 
 
 class WeatherNode(Node):
-    def assign_resource(self, resource_data):
-        """
-        Parameters:
-            - resource_data (2-tuple) - (WindData, SolarData)
-        """
-
     def get_weather(self, temporal_params, shaper=None):
         pass
 
     def save_weather(self, filename, formatter=None):
         pass
+
+
+class WindMetNode(WeatherNode):
+    pass
+
+
+class SolarMetNode(WeatherNode):
+    pass
 
 
 class NodeCollection(object):

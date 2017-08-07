@@ -3,6 +3,7 @@ This module provides classes for accessing site-level wind and solar data from
 internal and external data stores.
 """
 
+import os
 from resourcedata import WindResource, SolarResource
 
 
@@ -21,20 +22,6 @@ class DataStore(object):
         Connects to the store (internal cache or external repository) and
         returns an instantiated DataStore object.
         """
-
-    def get_resource(self, dataset, site_id, frac=None):
-        """
-        Return resourcedata.Resource object
-        If any site_id is not valid or not in the store error is raised
-        """
-        if dataset == 'Wind':
-            return WindResource(self._wind_meta.loc[site_id], self._root_path,
-                                frac=frac)
-        elif dataset == 'Solar':
-            return SolarResource(self._solar_meta.loc[site_id],
-                                 self._root_path, frac=frac)
-        else:
-            raise ValueError("Invalid dataset type, must be 'Wind' or 'Solar'")
 
 
 class ExternalDataStore(DataStore):
@@ -67,8 +54,35 @@ class InternalDataStore(DataStore):
         for querying / adding data.
         """
 
-    def cache_data(self, location_data_tuples):
+    @property
+    def cache_size(self):
+        """
+        Calculate size of local cache in GB
+        """
+        repo_size = []
+        for (path, dirs, files) in os.walk(self._cache_path):
+            for file in files:
+                file_name = os.path.join(path, file)
+                repo_size += os.path.getsize(file_name) * 10**-9
+
+        return repo_size
+
+    def cache_data(self, sites):
         """
         Saves each (ResourceLocation, ResourceData) tuple to disk and logs it
         in the registry / database.
         """
+
+    def get_resource(self, dataset, site_id, frac=None):
+        """
+        Return resourcedata.Resource object
+        If any site_id is not valid or not in the store error is raised
+        """
+        if dataset == 'wind':
+            return WindResource(self._wind_meta.loc[site_id], self._root_path,
+                                frac=frac)
+        elif dataset == 'solar':
+            return SolarResource(self._solar_meta.loc[site_id],
+                                 self._root_path, frac=frac)
+        else:
+            raise ValueError("Invalid dataset type, must be 'Wind' or 'Solar'")

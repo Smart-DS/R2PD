@@ -4,7 +4,8 @@ import datetime as dt
 import pandas as pds
 
 from resource.datastore import DRPower, InternalDataStore
-from resource.powerdata import NodeCollection, WindGeneratorNode, SolarGeneratorNode, WeatherNode
+from resource.powerdata import (NodeCollection, WindGeneratorNode, WeatherNode,
+                                SolarGeneratorNode, WindMetNode, SolarMetNode)
 from resource.tshelpers import TemporalParameters, ForecastParameters
 
 
@@ -143,6 +144,7 @@ def cli_main():
         generators = pds.DataFrame(args.generators,
                                    columns=['node_id', 'capacity'])
         nodes = pds.merge(nodes, generators, on='node_id', how='inner')
+
     nodes = [NodeClass(*tuple(node_info))
              for ind, node_info in nodes.iterrows()]
     nodes = NodeCollection.factory(nodes)
@@ -168,6 +170,7 @@ def cli_main():
         resource_data = zip(wind_resource, solar_resource)
     else:
         resource_data = get_resource_data(args.type, nodes.locations, 3)
+
     # 4. Assign it to the nodes
     for i, node in enumerate(nodes.nodes):
             node.assign_resource(resource_data[i])

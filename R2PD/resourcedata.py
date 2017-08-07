@@ -35,7 +35,7 @@ class Resource(object):
         self._sub_dir = loc_meta['sub_directory']
 
         if self.DATASET is not None:
-            self._file_name = '{d}_*_{s}.hdf5'.format(d=self.DATASET.lower(),
+            self._file_name = '{d}_*_{s}.hdf5'.format(d=self.DATASET,
                                                       s=self._id)
             self._file_path = os.path.join(self._root_path, self.DATASET,
                                            self._sub_dir, self._file_name)
@@ -105,12 +105,12 @@ class Resource(object):
 
 
 class WindResource(Resource):
-    DATASET = 'Wind'
+    DATASET = 'wind'
     pass
 
 
-class SolarLocation(Resource):
-    DATASET = 'Solar'
+class SolarResource(Resource):
+    DATASET = 'solar'
     pass
 
 
