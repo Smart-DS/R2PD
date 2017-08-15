@@ -68,7 +68,7 @@ class Resource(object):
         with h5py(file_path, 'r') as h5_file:
             data = h5_file[data_type][...]
 
-        data['time'] = pds.to_datetime(data['time'])
+        data['time'] = pds.to_datetime(data['time'].str.decode('utf-8'))
         data = data.set_index('time')
 
         return data
@@ -101,7 +101,7 @@ class Resource(object):
     def forecast_probabilities(self):
         fcst_prob = self.extract_data('fcst-prob_data')
 
-        return fcst_prob
+        return fcst_prob * self._frac
 
 
 class WindResource(Resource):
@@ -111,7 +111,17 @@ class WindResource(Resource):
 
 class SolarResource(Resource):
     DATASET = 'solar'
-    pass
+
+    @property
+    def irradiance_data(self):
+        file_path = self._file_path.replace('*', 'met')
+        with h5py(file_path, 'r') as h5_file:
+            data = h5_file['irradiance_data'][...]
+
+        data['time'] = pds.to_datetime(data['time'].str.decode('utf-8'))
+        data = data.set_index('time')
+
+        return data
 
 
 class ResourceList(object):
@@ -124,6 +134,7 @@ class ResourceList(object):
     def __len__(self):
         return len(self._resources)
 
+    @property
     def power_data(self):
         power_data = self._resources[0].power_data
         if len(self) > 1:
@@ -132,10 +143,20 @@ class ResourceList(object):
 
         return power_data
 
-    def fcst_data(self):
+    @property
+    def forecast_data(self):
         fcst_data = self._resources[0].forecast_data
         if len(self) > 1:
             for resource in self._resource[1:]:
                 fcst_data.add(resource.forecast_data)
 
         return fcst_data
+
+    @property
+    def forecast_probabilities(self):
+        fcst_prob = self._resources[0].forecast_probabilities
+        if len(self) > 1:
+            for resource in self._resource[1:]:
+                fcst_prob.add(resource.forecast_probabilities)
+
+        return fcst_prob

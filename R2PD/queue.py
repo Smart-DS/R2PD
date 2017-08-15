@@ -5,7 +5,7 @@ the external and internal store as well as processing the data using a queue.
 import numpy as np
 import pandas as pds
 from scipy.spatial import cKDTree
-from powerdata import NodeCollection
+from .powerdata import NodeCollection
 
 
 def nearest_power_nodes(node_collection, resource_meta):

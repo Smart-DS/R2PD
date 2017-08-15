@@ -6,6 +6,7 @@ as well as abstract function calls for converting between them.
 import abc
 import datetime as dt
 from enum import Enum
+import numpy as np
 
 
 class TemporalParameters(object):
@@ -21,16 +22,29 @@ class TemporalParameters(object):
     # todo: is there a reasonable default to assign to point_interp, or does it
     #       have to be provided by the user?
     def __init__(self, extent, point_interp, timezone='UTC', resolution=None):
-        pass
+        self.extent = extent
+        self.point_interp = get_enum_instance(point_interp,
+                                              self.POINT_INTERPRETATIONS)
+        self.timezone = timezone
+        self.resolution = resolution
 
     @classmethod
-    def infer_params(cls, timeseries, point_interp):
+    def infer_params(cls, ts, point_interp, timezone='UTC'):
         """
-        Returns a TemporalParameters object where the extent, timezone, and
+        Returns a TemporalParameters object where the extent, and
         resolution are inferred from timeseries.index.
         The user must provide the appropriate point_interp (element of
-        TemporalParameters.POINT_INTERPRETATIONS).
+        TemporalParameters.POINT_INTERPRETATIONS), and timezone.
         """
+        time_index = ts.index
+        extent = time_index[[0, -1]]
+
+        resolution = np.unique(time_index[1:] - time_index[:-1])
+        assert len(resolution) == 1, 'time resolution is not constant!'
+        resolution = resolution.astype('timedelta64[m]')[0]
+        resolution = resolution / np.timedelta64(1, 'm')
+
+        TemporalParameters(extent, point_interp, timezone, resolution)
 
 
 class TimeseriesShaper(object):
@@ -75,13 +89,13 @@ class ForecastParameters(object):
     lookahead time, and are computed a certain amount of time ahead of the
     modeled time.
     """
-    FORECAST_DATA_TYPES = Enum('FORECAST_DATA_TYPES',
-                               ['discrete_leadtimes',
-                                'dispatch_lookahead'])
+    FORECAST_TYPES = Enum('FORECAST_TYPES',
+                          ['discrete_leadtimes',
+                           'dispatch_lookahead'])
 
-    def __init__(self, forecast_data_type, temporal_params, **kwargs):
-        self._forecast_data_type = get_enum_instance(forecast_data_type,
-                                                     self.FORECAST_DATA_TYPES)
+    def __init__(self, forecast_type, temporal_params, **kwargs):
+        self._forecast_type = get_enum_instance(forecast_type,
+                                                self.FORECAST_TYPES)
         if not isinstance(temporal_params, TemporalParameters):
             raise RuntimeError("Expecting temporal_params to be instance of \
 TemporalParameters, but is {}.".format(type(temporal_params)))
@@ -91,17 +105,17 @@ TemporalParameters, but is {}.".format(type(temporal_params)))
         self._lookahead = None
         self._leadtime = None
         # store type-specific parameters
-        if self.forecast_data_type == self.FORECAST_DATA_TYPES.discrete_leadtimes:
+        if self.forecast_type == self.FORECAST_TYPES.discrete_leadtimes:
             self._leadtimes = kwargs['leadtimes']
         else:
-            assert self.forecast_data_type == self.FORECAST_DATA_TYPES.dispatch_lookahead
+            assert self.forecast_type == self.FORECAST_TYPES.dispatch_lookahead
             self._frequency = kwargs['frequency']
             self._lookahead = kwargs['lookahead']
             self._leadtime = kwargs['leadtime']
 
     @property
-    def forecast_data_type(self):
-        return self._forecast_data_type
+    def forecast_type(self):
+        return self._forecast_type
 
     @property
     def temporal_params(self):
@@ -166,4 +180,4 @@ class ForecastShaper(object):
 
 
 def get_enum_instance(value, enum_class):
-    return value if isinstance(value, enum_class) else enum[value] # enum unassigned...
+    return value if isinstance(value, enum_class) else enum[value] # enum not defined?

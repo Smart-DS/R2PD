@@ -3,10 +3,10 @@ import datetime as dt
 
 import pandas as pds
 
-from resource.datastore import DRPower, InternalDataStore
-from resource.powerdata import (NodeCollection, WindGeneratorNode, WeatherNode,
-                                SolarGeneratorNode, WindMetNode, SolarMetNode)
-from resource.tshelpers import TemporalParameters, ForecastParameters
+from .datastore import DRPower, InternalDataStore
+from .powerdata import (NodeCollection, WindGeneratorNode, WeatherNode,
+                        SolarGeneratorNode, WindMetNode, SolarMetNode)
+from .tshelpers import TemporalParameters, ForecastParameters
 
 
 def cli_parser():

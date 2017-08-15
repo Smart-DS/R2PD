@@ -4,18 +4,14 @@ internal and external data stores.
 """
 
 import os
-from resourcedata import WindResource, SolarResource
+import pandas as pds
+from .resourcedata import WindResource, SolarResource
 
 
 class DataStore(object):
     """
     Abstract class to define interface for accessing stores of resource data.
     """
-    def __init__(self):
-        self._wind_meta = None
-        self._solar_meta = None
-        self._root_path = None
-
     @classmethod
     def connect(cls):
         """
@@ -25,6 +21,27 @@ class DataStore(object):
 
 
 class ExternalDataStore(DataStore):
+    ROOT_PATH = None
+
+    def __init__(self):
+        if self.ROOT_PATH is not None:
+            self._wind_root = os.path.join(self.ROOT_PATH, 'wind')
+            wind_meta_path = os.path.join(self._wind_root,
+                                          'wind_site_meta.json')
+            self._wind_meta = pds.read_json(wind_meta_path)
+
+            self._solar_root = os.path.join(self.ROOT_PATH, 'solar')
+            solar_meta_path = os.path.join(self._solar_root,
+                                           'solar_site_meta.json')
+            self._solar_meta = pds.read_json(solar_meta_path)
+
+    def __repr__(self):
+        return '{n} for {i}'.format(n=self.__class__.__name__,
+                                    i=self.ROOT_PATH)
+
+
+class BetaStore(ExternalDataStore):
+    ROOT_PATH = '/scratch/mrossol/Resource_Repo'
     pass
 
 
@@ -85,4 +102,4 @@ class InternalDataStore(DataStore):
             return SolarResource(self._solar_meta.loc[site_id],
                                  self._root_path, frac=frac)
         else:
-            raise ValueError("Invalid dataset type, must be 'Wind' or 'Solar'")
+            raise ValueError("Invalid dataset type, must be 'wind' or 'Solar'")

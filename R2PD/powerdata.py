@@ -16,6 +16,7 @@ power system modelers. Functionalities needed include:
 
 import inspect
 import numpy as np
+from .tshelpers import TemporalParameters
 
 
 class Node(object):
@@ -65,6 +66,15 @@ class GeneratorNode(Node):
         resource_data that has already been assigned.
         """
         self._require_resource()
+        power_data = self._resource.power_data
+
+        if shaper is None:
+            return power_data
+        else:
+            p_interp = 'instantaneous'
+            ts_params = TemporalParameters.infer_params(power_data,
+                                                        point_interp=p_interp)
+            shaper(power_data, ts_params, temporal_params)
 
     def get_forecasts(self, temporal_params, forecast_params, shaper=None):
         pass
@@ -94,7 +104,16 @@ class SolarGeneratorNode(GeneratorNode):
 
 class WeatherNode(Node):
     def get_weather(self, temporal_params, shaper=None):
-        pass
+        self._require_resource()
+        met_data = self._resource.meteorological_data
+
+        if shaper is None:
+            return met_data
+        else:
+            p_interp = 'instantaneous'
+            ts_params = TemporalParameters.infer_params(met_data,
+                                                        point_interp=p_interp)
+            shaper(met_data, ts_params, temporal_params)
 
     def save_weather(self, filename, formatter=None):
         pass
@@ -105,7 +124,17 @@ class WindMetNode(WeatherNode):
 
 
 class SolarMetNode(WeatherNode):
-    pass
+    def get_irradiance(self, temporal_params, shaper=None):
+        self._require_resource()
+        met_data = self._resource.met_data
+
+        if shaper is None:
+            return met_data
+        else:
+            p_interp = 'instantaneous'
+            ts_params = TemporalParameters.infer_params(met_data,
+                                                        point_interp=p_interp)
+            shaper(met_data, ts_params, temporal_params)
 
 
 class NodeCollection(object):
