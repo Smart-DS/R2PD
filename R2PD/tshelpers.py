@@ -44,7 +44,7 @@ class TemporalParameters(object):
         resolution = resolution.astype('timedelta64[m]')[0]
         resolution = resolution / np.timedelta64(1, 'm')
 
-        TemporalParameters(extent, point_interp, timezone, resolution)
+        return TemporalParameters(extent, point_interp, timezone, resolution)
 
 
 class TimeseriesShaper(object):
