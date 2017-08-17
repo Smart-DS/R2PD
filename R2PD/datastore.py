@@ -3,6 +3,7 @@ This module provides classes for accessing site-level wind and solar data from
 internal and external data stores.
 """
 
+from configparser import ConfigParser
 import os
 import pandas as pds
 from .resourcedata import WindResource, SolarResource
@@ -51,11 +52,17 @@ class ExternalDataStore(DataStore):
     Abstract class to define interface for accessing stores of resource data.
     """
     @classmethod
-    def connect(cls):
+    def connect(cls, config=None):
         """
-        Connects to the store (internal cache or external repository) and
-        returns an instantiated DataStore object.
+        Reads the configuration, if provided. From configuration and defaults,
+        determines location of internal data cache. If the cache is not yet
+        there, creates it. Returns an InternalDataStore object open and ready
+        for querying / adding data.
         """
+        if config is None:
+            InternalDataStore.ROOT_PATH = os.getcwd()
+
+        return InternalDataStore()
 
 
 class BetaStore(ExternalDataStore):
@@ -79,6 +86,9 @@ class InternalDataStore(DataStore):
     A configuration file can also be used to set user library locations, for
     pointing to externally provided shapers and formatters.
     """
+    def __init__(self, max_size=None):
+        self._max_size = max_size
+        super(DataStore, self).__init__()
 
     @classmethod
     def connect(cls, config=None):
@@ -90,8 +100,16 @@ class InternalDataStore(DataStore):
         """
         if config is None:
             InternalDataStore.ROOT_PATH = os.getcwd()
+        else:
+            config_parser = ConfigParser()
+            config_parser.read(config)
+            InternalDataStore.ROOT_PATH = config_parser.get('cache_location',
+                                                            'root_path')
+            max_size = config_parser.get('cache_parameters', 'max_size')
+            if max_size == '' or 'None':
+                max_size = None
 
-        return InternalDataStore()
+        return InternalDataStore(max_size)
 
     @property
     def cache_size(self):
