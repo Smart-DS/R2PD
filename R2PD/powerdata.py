@@ -17,6 +17,7 @@ power system modelers. Functionalities needed include:
 import inspect
 import numpy as np
 from .tshelpers import TemporalParameters
+from .library import DefaultTimeseriesShaper
 
 
 class Node(object):
@@ -32,7 +33,7 @@ class Node(object):
     def assign_resource(self, resource):
         """
         Parameters:
-            - resource_data, ResourceData or list of ResourceData
+            - ResourceData or list of ResourceList
                 - nearby site(s) from which power actuals and/or forecast data
                   will be constructed.
                   ResourceData type must match the GeneratorNode type.
@@ -69,12 +70,10 @@ class GeneratorNode(Node):
         power_data = self._resource.power_data
 
         if shaper is None:
-            return power_data
-        else:
-            p_interp = 'instantaneous'
-            ts_params = TemporalParameters.infer_params(power_data,
-                                                        point_interp=p_interp)
-            shaper(power_data, ts_params, temporal_params)
+            shaper = DefaultTimeseriesShaper
+
+        ts_params = TemporalParameters.infer_params(power_data)
+        return shaper(power_data, ts_params, temporal_params)
 
     def get_forecasts(self, temporal_params, forecast_params, shaper=None):
         pass
@@ -170,6 +169,7 @@ class NodeCollection(object):
             return self.nodes[index]
 
     def assign_resource(self, resource_list):
+        assert len(self) == len(resource_list)
         for node, resource in zip(self.nodes, resource_list):
             node.assign_resource(resource)
 

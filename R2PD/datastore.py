@@ -122,4 +122,4 @@ class InternalDataStore(DataStore):
             return SolarResource(self._solar_meta.loc[site_id],
                                  self._solar_path, frac=frac)
         else:
-            raise ValueError("Invalid dataset type, must be 'wind' or 'Solar'")
+            raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")

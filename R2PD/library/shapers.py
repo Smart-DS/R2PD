@@ -1,4 +1,4 @@
-from resource.tshelpers import TimeseriesShaper, ForecastShaper
+from R2PD.tshelpers import TimeseriesShaper, ForecastShaper
 
 
 class DefaultTimeseriesShaper(TimeseriesShaper):

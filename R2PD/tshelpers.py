@@ -21,7 +21,8 @@ class TemporalParameters(object):
 
     # todo: is there a reasonable default to assign to point_interp, or does it
     #       have to be provided by the user?
-    def __init__(self, extent, point_interp, timezone='UTC', resolution=None):
+    def __init__(self, extent, point_interp='instantaneous', timezone='UTC',
+                 resolution=None):
         self.extent = extent
         self.point_interp = get_enum_instance(point_interp,
                                               self.POINT_INTERPRETATIONS)
@@ -29,7 +30,7 @@ class TemporalParameters(object):
         self.resolution = resolution
 
     @classmethod
-    def infer_params(cls, ts, point_interp, timezone='UTC'):
+    def infer_params(cls, ts, **kwargs):
         """
         Returns a TemporalParameters object where the extent, and
         resolution are inferred from timeseries.index.
@@ -44,7 +45,7 @@ class TemporalParameters(object):
         resolution = resolution.astype('timedelta64[m]')[0]
         resolution = resolution / np.timedelta64(1, 'm')
 
-        return TemporalParameters(extent, point_interp, timezone, resolution)
+        return TemporalParameters(extent, resolution=resolution, **kwargs)
 
 
 class TimeseriesShaper(object):
@@ -180,4 +181,4 @@ class ForecastShaper(object):
 
 
 def get_enum_instance(value, enum_class):
-    return value if isinstance(value, enum_class) else enum[value] # enum not defined?
+    return value if isinstance(value, enum_class) else enum_class[value]
