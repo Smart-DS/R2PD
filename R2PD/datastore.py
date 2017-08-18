@@ -46,23 +46,55 @@ class DataStore(object):
 
         return repo_size
 
+    @classmethod
+    def decode_config_entry(cls, entry):
+        if entry == 'None' or '':
+            return None
+        else:
+            return entry
+
 
 class ExternalDataStore(DataStore):
     """
     Abstract class to define interface for accessing stores of resource data.
     """
+    def __init__(self, username=None, password=None):
+        self._user = username
+        self._pass = password
+        super(DataStore, self).__init__()
+
     @classmethod
-    def connect(cls, config=None):
+    def connect(cls, config):
         """
         Reads the configuration, if provided. From configuration and defaults,
         determines location of internal data cache. If the cache is not yet
         there, creates it. Returns an InternalDataStore object open and ready
         for querying / adding data.
         """
-        if config is None:
-            InternalDataStore.ROOT_PATH = os.getcwd()
+        config_parser = ConfigParser()
+        config_parser.read(config)
+        root_path = cls.decode_config_entry(config_parser.get('repository',
+                                                              'root_path'))
 
-        return InternalDataStore()
+        if root_path is not None:
+            ExternalDataStore.ROOT_PATH = root_path
+        else:
+            raise ValueError('root path must be defined!')
+
+        wind_dir = cls.decode_config_entry(config_parser.get('repository',
+                                                             'wind_directory'))
+
+        solar_dir = config_parser.get('repository', 'solar_directory')
+        solar_dir = cls.decode_config(solar_dir)
+
+        username = cls.decode_config(config_parser.get('repository',
+                                                       'username'))
+
+        password = cls.decode_config(config_parser.get('repository',
+                                                       'password'))
+
+        return ExternalDataStore(wind_dir=wind_dir, solar_dir=solar_dir,
+                                 username=username, password=password)
 
 
 class BetaStore(ExternalDataStore):
@@ -103,10 +135,14 @@ class InternalDataStore(DataStore):
         else:
             config_parser = ConfigParser()
             config_parser.read(config)
-            InternalDataStore.ROOT_PATH = config_parser.get('cache_location',
-                                                            'root_path')
-            max_size = config_parser.get('cache_parameters', 'max_size')
-            if max_size == '' or 'None':
+            root_path = config_parser.get('local_cache', 'root_path')
+            root_path = cls.decode_config_entry(root_path)
+            if root_path is not None:
+                InternalDataStore.ROOT_PATH = root_path
+
+            max_size = cls.decode_config_entry(config_parser.get('local_cache',
+                                                                 'max_size'))
+            if max_size == 'None' or '':
                 max_size = None
 
         return InternalDataStore(max_size)
