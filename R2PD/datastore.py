@@ -7,8 +7,9 @@ from configparser import ConfigParser
 import os
 import pandas as pds
 import pexpect
-from .resourcedata import WindResource, SolarResource
 from .queue import nearest_power_nodes, nearest_met_nodes
+from .resourcedata import WindResource, SolarResource
+import time
 
 
 class DataStore(object):
@@ -66,13 +67,15 @@ InternalDataStore, but is {:}.".format(type(local_cache))
         self._local_cache = local_cache
         self._username = username
         self._password = password
-        super(DataStore, self).__init__(**kwargs)
+        super(ExternalDataStore, self).__init__(**kwargs)
 
         meta_path = os.path.join(self._wind_root, 'wind_site_meta.json')
+        print(meta_path)
         self.download(meta_path, self._local_cache._wind_root,
                       self._username, self._password)
         meta_path = os.path.join(self._local_cache._wind_root,
                                  'wind_site_meta.json')
+        print(meta_path)
         self.wind_meta = pds.read_json(meta_path)
 
         meta_path = os.path.join(self._solar_root, 'solar_site_meta.json')
@@ -127,8 +130,21 @@ class BetaTest(ExternalDataStore):
         command = 'rsync -avzP {u}@peregrine.nrel.gov:{src} \
 {dst}'.format(u=username, src=src, dst=dst)
         child = pexpect.spawn(command)
-        child.expect('password:')
-        child.sendline(password)
+        expect = "{:}@peregrine.nrel.gov's password:".format(username)
+        child.expect(expect)
+        code = child.sendline(password)
+
+        if code == 11:
+            while True:
+                file_path = os.path.join(dst, os.path.basename(src))
+                if os.path.isfile(file_path):
+                    child.close()
+                    break
+                else:
+                    time.sleep(1)
+        else:
+            child.close()
+            raise RuntimeError('Download failed, check inputs')
 
 
 class DRPower(ExternalDataStore):
@@ -151,7 +167,13 @@ class InternalDataStore(DataStore):
 
     def __init__(self, max_size=None):
         self._max_size = max_size
-        super(DataStore, self).__init__()
+        super(InternalDataStore, self).__init__()
+
+        if not os.path.exists(self._wind_root):
+            os.makedirs(self._wind_root)
+
+        if not os.path.exists(self._solar_root):
+            os.makedirs(self._solar_root)
 
     @classmethod
     def connect(cls, config=None):
@@ -161,7 +183,7 @@ class InternalDataStore(DataStore):
         there, creates it. Returns an InternalDataStore object open and ready
         for querying / adding data.
         """
-        if config is not None:
+        if config is None:
             max_size = None
         else:
             config_parser = ConfigParser()
@@ -175,9 +197,6 @@ class InternalDataStore(DataStore):
                                                                  'max_size'))
             if max_size == 'None' or '':
                 max_size = None
-
-        if not os.path.exists(root_path):
-            os.makedirs(root_path)
 
         return InternalDataStore(max_size=max_size)
 
