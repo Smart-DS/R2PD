@@ -6,7 +6,9 @@ internal and external data stores.
 from configparser import ConfigParser
 import os
 import pandas as pds
+import pexpect
 from .resourcedata import WindResource, SolarResource
+from .queue import nearest_power_nodes, nearest_met_nodes
 
 
 class DataStore(object):
@@ -19,18 +21,12 @@ class DataStore(object):
             else:
                 self._wind_root = os.path.join(self.ROOT_PATH, wind_dir)
 
-            wind_meta_path = os.path.join(self._wind_root,
-                                          'wind_site_meta.json')
-            self._wind_meta = pds.read_json(wind_meta_path)
-
             if solar_dir is None:
                 self._solar_root = os.path.join(self.ROOT_PATH, 'solar')
             else:
                 self._solar_root = os.path.join(self.ROOT_PATH, solar_dir)
-
-            solar_meta_path = os.path.join(self._solar_root,
-                                           'solar_site_meta.json')
-            self._solar_meta = pds.read_json(solar_meta_path)
+        else:
+            raise ValueError('ROOT_PATH must be defined')
 
     def __repr__(self):
         return '{n} at {i}'.format(n=self.__class__.__name__,
@@ -58,29 +54,42 @@ class ExternalDataStore(DataStore):
     """
     Abstract class to define interface for accessing stores of resource data.
     """
-    def __init__(self, username=None, password=None):
-        self._user = username
-        self._pass = password
-        super(DataStore, self).__init__()
+    def __init__(self, local_cache=None, username=None, password=None,
+                 **kwargs):
+        if local_cache is None:
+            local_cache = InternalDataStore.connect()
+        else:
+            error_message = "Expecting local_cache to be instance of \
+InternalDataStore, but is {:}.".format(type(local_cache))
+            assert isinstance(local_cache, InternalDataStore), error_message
+
+        self._local_cache = local_cache
+        self._username = username
+        self._password = password
+        super(DataStore, self).__init__(**kwargs)
+
+        meta_path = os.path.join(self._wind_root, 'wind_site_meta.json')
+        self.download(meta_path, self._local_cache._wind_root,
+                      self._username, self._password)
+        meta_path = os.path.join(self._local_cache._wind_root,
+                                 'wind_site_meta.json')
+        self.wind_meta = pds.read_json(meta_path)
+
+        meta_path = os.path.join(self._solar_root, 'solar_site_meta.json')
+        self.download(meta_path, self._local_cache._solar_root,
+                      self._username, self._password)
+        meta_path = os.path.join(self._local_cache._solar_root,
+                                 'solar_site_meta.json')
+        self.solar_meta = pds.read_json(meta_path)
 
     @classmethod
-    def connect(cls, config):
+    def connect(cls, config, repo):
         """
-        Reads the configuration, if provided. From configuration and defaults,
-        determines location of internal data cache. If the cache is not yet
-        there, creates it. Returns an InternalDataStore object open and ready
-        for querying / adding data.
+        Reads the configuration. From configuration and defaults,
+        determines location of external datastore.
         """
         config_parser = ConfigParser()
         config_parser.read(config)
-        root_path = cls.decode_config_entry(config_parser.get('repository',
-                                                              'root_path'))
-
-        if root_path is not None:
-            ExternalDataStore.ROOT_PATH = root_path
-        else:
-            raise ValueError('root path must be defined!')
-
         wind_dir = cls.decode_config_entry(config_parser.get('repository',
                                                              'wind_directory'))
 
@@ -93,13 +102,33 @@ class ExternalDataStore(DataStore):
         password = cls.decode_config(config_parser.get('repository',
                                                        'password'))
 
-        return ExternalDataStore(wind_dir=wind_dir, solar_dir=solar_dir,
-                                 username=username, password=password)
+        if config_parser.has_section('local_cache'):
+            local_cache = InternalDataStore.connect(config=config)
+        else:
+            local_cache = None
+
+        error_message = "Expecting repo to be instance of \
+ExternalDataStore, but is {:}.".format(type(repo))
+        assert isinstance(repo, ExternalDataStore), error_message
+
+        return repo(local_cache=local_cache, wind_dir=wind_dir,
+                    solar_dir=solar_dir, username=username, password=password)
+
+    @classmethod
+    def download(cls, src, dst, username, password):
+        pass
 
 
-class BetaStore(ExternalDataStore):
+class BetaTest(ExternalDataStore):
     ROOT_PATH = '/scratch/mrossol/Resource_Repo'
-    pass
+
+    @classmethod
+    def download(cls, src, dst, username, password):
+        command = 'rsync -avzP {u}@peregrine.nrel.gov:{src} \
+{dst}'.format(u=username, src=src, dst=dst)
+        child = pexpect.spawn(command)
+        child.expect('password:')
+        child.sendline(password)
 
 
 class DRPower(ExternalDataStore):
@@ -111,13 +140,15 @@ class InternalDataStore(DataStore):
     This class manages an internal cache of already downloaded resource data,
     and other Resource Data Tool information that should persist.
 
-    The default location for the internal cache will be in a place like
-    Users/$User/AppData, but the user can set a different location by passing
+    The default location for the internal cache will be in the current \
+    working diretory, but the user can set a different location by passing
     in a configuration file.
 
     A configuration file can also be used to set user library locations, for
     pointing to externally provided shapers and formatters.
     """
+    ROOT_PATH = os.path.join(os.getcwd(), 'R2PD_Cache')
+
     def __init__(self, max_size=None):
         self._max_size = max_size
         super(DataStore, self).__init__()
@@ -130,8 +161,8 @@ class InternalDataStore(DataStore):
         there, creates it. Returns an InternalDataStore object open and ready
         for querying / adding data.
         """
-        if config is None:
-            InternalDataStore.ROOT_PATH = os.getcwd()
+        if config is not None:
+            max_size = None
         else:
             config_parser = ConfigParser()
             config_parser.read(config)
@@ -145,7 +176,10 @@ class InternalDataStore(DataStore):
             if max_size == 'None' or '':
                 max_size = None
 
-        return InternalDataStore(max_size)
+        if not os.path.exists(root_path):
+            os.makedirs(root_path)
+
+        return InternalDataStore(max_size=max_size)
 
     @property
     def cache_size(self):
