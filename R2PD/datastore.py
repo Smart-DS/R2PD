@@ -5,11 +5,12 @@ internal and external data stores.
 
 from configparser import ConfigParser
 import os
+import numpy as np
 import pandas as pds
 import pexpect
+from .powerdata import GeneratorNodeCollection
 from .queue import nearest_power_nodes, nearest_met_nodes
 from .resourcedata import WindResource, SolarResource
-import time
 
 
 class DataStore(object):
@@ -70,13 +71,13 @@ InternalDataStore, but is {:}.".format(type(local_cache))
         super(ExternalDataStore, self).__init__(**kwargs)
 
         meta_path = os.path.join(self._wind_root, 'wind_site_meta.json')
-        print(meta_path)
         self.download(meta_path, self._local_cache._wind_root,
                       self._username, self._password)
         meta_path = os.path.join(self._local_cache._wind_root,
                                  'wind_site_meta.json')
-        print(meta_path)
         self.wind_meta = pds.read_json(meta_path)
+        self.wind_meta.index.name = 'site_id'
+        self.wind_meta = self.wind_meta.sort_index()
 
         meta_path = os.path.join(self._solar_root, 'solar_site_meta.json')
         self.download(meta_path, self._local_cache._solar_root,
@@ -84,6 +85,8 @@ InternalDataStore, but is {:}.".format(type(local_cache))
         meta_path = os.path.join(self._local_cache._solar_root,
                                  'solar_site_meta.json')
         self.solar_meta = pds.read_json(meta_path)
+        self.solar_meta.index.name = 'site_id'
+        self.solar_meta = self.solar_meta.sort_index()
 
     @classmethod
     def connect(cls, config, repo):
@@ -121,30 +124,59 @@ ExternalDataStore, but is {:}.".format(type(repo))
     def download(cls, src, dst, username, password):
         pass
 
+    def nearest_neighbors(self, node_collection, forecasts=True):
+        dataset = node_collection._dataset
+        if dataset == 'wind':
+            resource_meta = self._wind_meta
+        else:
+            resource_meta = self._solar_meta
 
-class BetaTest(ExternalDataStore):
+        if isinstance(node_collection, GeneratorNodeCollection):
+            resource_type = 'power'
+            nearest_nodes = nearest_power_nodes(node_collection,
+                                                resource_meta)
+            site_ids = np.concatenate(nearest_nodes['site_ids'].values)
+            site_ids = np.unique(site_ids)
+        else:
+            resource_type = 'met'
+            nearest_nodes = nearest_met_nodes(node_collection,
+                                              resource_meta)
+            site_ids = nearest_nodes['site_id'].values
+
+            if dataset == 'wind':
+                if resource_type == 'power':
+                    data_size = len(site_ids) * self.WIND_FILE_SIZES['power']
+                    if forecasts:
+                        data_size += len(site_ids) * self.WIND_FILE_SIZES['power']
+
+        return nearest_nodes,
+
+
+class Peregrine(ExternalDataStore):
     ROOT_PATH = '/scratch/mrossol/Resource_Repo'
+    # Average File size in MB
+    WIND_FILE_SIZES = {'met': 14, 'power': 4, 'fcst': 1}
+    SOLAR_FILE_SIZES = {'met': 10, 'irradiance': 50, 'power': 20, 'fcst': 1}}
 
     @classmethod
-    def download(cls, src, dst, username, password):
-        command = 'rsync -avzP {u}@peregrine.nrel.gov:{src} \
-{dst}'.format(u=username, src=src, dst=dst)
-        child = pexpect.spawn(command)
-        expect = "{:}@peregrine.nrel.gov's password:".format(username)
-        child.expect(expect)
-        code = child.sendline(password)
-
-        if code == 11:
-            while True:
-                file_path = os.path.join(dst, os.path.basename(src))
-                if os.path.isfile(file_path):
-                    child.close()
-                    break
-                else:
-                    time.sleep(1)
+    def download(cls, src, dst, username, password, timeout=30):
+        if os.path.basename(src) == os.path.basename(dst):
+            file_path = dst
         else:
-            child.close()
-            raise RuntimeError('Download failed, check inputs')
+            file_path = file_path = os.path.join(dst, os.path.basename(src))
+
+        if not os.path.isfile(file_path):
+            command = 'rsync -avzP {u}@peregrine.nrel.gov:{src} \
+{dst}'.format(u=username, src=src, dst=dst)
+            try:
+                with pexpect.spawn(command, timeout=timeout) as child:
+                    expect = "{:}@peregrine.nrel.gov's \
+password:".format(username)
+                    child.expect(expect)
+                    child.sendline(password)
+                    child.expect(pexpect.EOF)
+            except Exception:
+                raise
 
 
 class DRPower(ExternalDataStore):

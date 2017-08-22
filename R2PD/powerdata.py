@@ -76,7 +76,7 @@ class GeneratorNode(Node):
         return shaper(power_data, ts_params, temporal_params)
 
     def get_forecasts(self, temporal_params, forecast_params, shaper=None):
-        pass
+        assert self._fcst
 
     def save_power(self, filename, formatter=None):
         pass
@@ -188,6 +188,15 @@ class NodeCollection(object):
 
 
 class GeneratorNodeCollection(NodeCollection):
+    def __init__(self, nodes):
+        super(GeneratorNodeCollection, self).__init__(nodes)
+        if isinstance(self.nodes[0], WindGeneratorNode):
+            self._dataset = 'wind'
+        elif isinstance(self.nodes[0], SolarGeneratorNode):
+            self._dataset = 'solar'
+        else:
+            self._dataset = None
+
     @property
     def node_data(self):
         node_data = [(node.id, node.latitude, node.longitude, node.capacity)
@@ -208,10 +217,21 @@ class GeneratorNodeCollection(NodeCollection):
 
 
 class WeatherNodeCollection(NodeCollection):
+    def __init__(self, nodes):
+        super(WeatherNodeCollection, self).__init__(nodes)
+        if isinstance(self.nodes[0], WindMetNode):
+            self._dataset = 'wind'
+        elif isinstance(self.nodes[0], SolarMetNode):
+            self._dataset = 'solar'
+        else:
+            raise ValueError('Must be a collection of either \
+solar or wind nodes')
+
     @property
     def node_data(self):
-        return [(node.id, node.latitude, node.longitude)
-                for node in self.nodes]
+        node_data = [(node.id, node.latitude, node.longitude)
+                     for node in self.nodes]
+        return np.array(node_data)
 
     def get_weather(self, temporal_params, shaper=None):
         pass
