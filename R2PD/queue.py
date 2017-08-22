@@ -137,3 +137,12 @@ def nearest_met_nodes(node_collection, resource_meta):
     nodes['site_id'] = site_id
 
     return nodes[['lat', 'lon', 'site_id']]
+
+
+def get_resource_data(node_collection, repo, **kwargs):
+    """
+    Finds nearest nodes, caches files to local datastore and assigns resource
+    to node_collection
+    """
+    nearest_nodes, data_size = repo.nearest_neighbors(node_collection,
+                                                      **kwargs)

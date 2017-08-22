@@ -60,10 +60,9 @@ class ExternalDataStore(DataStore):
                  **kwargs):
         if local_cache is None:
             local_cache = InternalDataStore.connect()
-        else:
-            error_message = "Expecting local_cache to be instance of \
-InternalDataStore, but is {:}.".format(type(local_cache))
-            assert isinstance(local_cache, InternalDataStore), error_message
+        elif not isinstance(local_cache, InternalDataStore):
+            raise RuntimeError("Expecting local_cache to be instance of \
+InternalDataStore, but is {:}.".format(type(local_cache)))
 
         self._local_cache = local_cache
         self._username = username
@@ -113,9 +112,9 @@ InternalDataStore, but is {:}.".format(type(local_cache))
         else:
             local_cache = None
 
-        error_message = "Expecting repo to be instance of \
-ExternalDataStore, but is {:}.".format(type(repo))
-        assert isinstance(repo, ExternalDataStore), error_message
+        if not isinstance(repo, ExternalDataStore):
+            raise RuntimeError("Expecting repo to be instance of \
+ExternalDataStore, but is {:}.".format(type(repo)))
 
         return repo(local_cache=local_cache, wind_dir=wind_dir,
                     solar_dir=solar_dir, username=username, password=password)
@@ -136,27 +135,39 @@ ExternalDataStore, but is {:}.".format(type(repo))
             nearest_nodes = nearest_power_nodes(node_collection,
                                                 resource_meta)
             site_ids = np.concatenate(nearest_nodes['site_ids'].values)
-            site_ids = np.unique(site_ids)
+            sites = len(np.unique(site_ids))
         else:
             resource_type = 'met'
             nearest_nodes = nearest_met_nodes(node_collection,
                                               resource_meta)
-            site_ids = nearest_nodes['site_id'].values
+            sites = len(nearest_nodes)
 
             if dataset == 'wind':
                 if resource_type == 'power':
-                    data_size = len(site_ids) * self.WIND_FILE_SIZES['power']
+                    data_size = sites * self.WIND_FILE_SIZES['power']
                     if forecasts:
-                        data_size += len(site_ids) * self.WIND_FILE_SIZES['power']
+                        data_size += sites * self.WIND_FILE_SIZES['fcst']
+                else:
+                    data_size = sites * self.WIND_FILE_SIZES['met']
+            else:
+                if resource_type == 'power':
+                    data_size = sites * self.SOLAR_FILE_SIZES['power']
+                    if forecasts:
+                        data_size += sites * self.SOLAR_FILE_SIZES['fcst']
+                else:
+                    data_size = sites * self.SOLAR_FILE_SIZES['met']
+                    data_size += sites * self.SOLAR_FILE_SIZES['irradiance']
 
-        return nearest_nodes,
+            data_size = data_size / 1000
+
+        return nearest_nodes, data_size
 
 
 class Peregrine(ExternalDataStore):
     ROOT_PATH = '/scratch/mrossol/Resource_Repo'
     # Average File size in MB
     WIND_FILE_SIZES = {'met': 14, 'power': 4, 'fcst': 1}
-    SOLAR_FILE_SIZES = {'met': 10, 'irradiance': 50, 'power': 20, 'fcst': 1}}
+    SOLAR_FILE_SIZES = {'met': 10, 'irradiance': 50, 'power': 20, 'fcst': 1}
 
     @classmethod
     def download(cls, src, dst, username, password, timeout=30):
@@ -204,8 +215,16 @@ class InternalDataStore(DataStore):
         if not os.path.exists(self._wind_root):
             os.makedirs(self._wind_root)
 
+        cache, path = self.create_cache_meta(self._wind_root, 'wind')
+        self.wind_cache = cache
+        self._wind_cache_path = path
+
         if not os.path.exists(self._solar_root):
             os.makedirs(self._solar_root)
+
+        cache, path = self.create_cache_meta(self._solar_root, 'solar')
+        self.solar_cache = cache
+        self._solar_cache_path = path
 
     @classmethod
     def connect(cls, config=None):
@@ -231,6 +250,74 @@ class InternalDataStore(DataStore):
                 max_size = None
 
         return InternalDataStore(max_size=max_size)
+
+    @classmethod
+    def create_cache_meta(cls, root_path, dataset):
+        file_path = os.path.join(root_path, '{:}_cache.csv'.format(dataset))
+
+        if dataset == 'wind':
+            columns = ['met', 'power', 'fcst', 'sub_directory']
+        else:
+            columns = ['met', 'irradiance', 'power', 'fcst', 'sub_directory']
+
+        cache_meta = pds.DataFrame(columns=columns)
+        cache_meta.index.name = 'site_id'
+
+        cache_meta.to_csv(file_path)
+        cache_meta = cls.refresh_cache_meta(file_path)
+        return cache_meta, file_path
+
+    @classmethod
+    def refresh_cache_meta(cls, meta_path):
+        root_path = os.path.split(meta_path)[0]
+        cache_meta = pds.read_csv(meta_path, index_col=0)
+        cache_sites = cache_meta.index
+        fill = np.zeros(cache_meta.shape[1]).astype(bool)
+
+        file_paths = []
+        for path, subdirs, files in os.walk(root_path):
+            for name in files:
+                if name.endswith('.hdf5'):
+                    file_paths.append(os.path.join(path, name))
+
+        for file in file_paths:
+            sub_dir, name = os.path.split(file)
+            name = os.path.splitext(name)[0]
+            _, resource, site_id = name.split('_')
+            site_id = int(site_id)
+
+            sub_dir = int(os.path.basename(sub_dir))
+
+            if site_id not in cache_sites:
+                cache_meta.loc[site_id] = fill
+                cache_meta.loc[site_id, 'sub_directory'] = sub_dir
+
+            cache_meta.loc[site_id, resource] = True
+
+        cache_meta.to_csv(meta_path)
+        return cache_meta
+
+    @classmethod
+    def cache_site(cls, meta_path, file):
+        cache_meta = pds.read_csv(meta_path, index_col=0)
+        cache_sites = cache_meta.index
+        fill = np.zeros(cache_meta.shape[1]).astype(bool)
+
+        sub_dir, name = os.path.split(file)
+        name = os.path.splitext(name)[0]
+        _, resource, site_id = name.split('_')
+        site_id = int(site_id)
+
+        sub_dir = int(os.path.basename(sub_dir))
+
+        if site_id not in cache_sites:
+            cache_meta.loc[site_id] = fill
+            cache_meta.loc[site_id, 'sub_directory'] = sub_dir
+
+        cache_meta.loc[site_id, resource] = True
+
+        cache_meta.to_csv(meta_path)
+        return cache_meta
 
     @property
     def cache_size(self):
