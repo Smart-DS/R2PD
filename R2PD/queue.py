@@ -5,7 +5,7 @@ the external and internal store as well as processing the data using a queue.
 import numpy as np
 import pandas as pds
 from scipy.spatial import cKDTree
-from .powerdata import NodeCollection
+from .powerdata import NodeCollection, GeneratorNodeCollection
 
 
 def nearest_power_nodes(node_collection, resource_meta):
@@ -139,10 +139,52 @@ def nearest_met_nodes(node_collection, resource_meta):
     return nodes[['lat', 'lon', 'site_id']]
 
 
-def get_resource_data(node_collection, repo, **kwargs):
+def download_resource(site_ids, repo, dataset, resource_type, forecast=False,
+                      cores=None):
+    if dataset == 'wind':
+        if resource_type == 'power':
+            data_size = len(site_ids) * repo.WIND_FILE_SIZES['power']
+            if forecasts:
+                data_size += len(site_ids) * repo.WIND_FILE_SIZES['fcst']
+        else:
+            data_size = len(site_ids) * repo.WIND_FILE_SIZES['met']
+    else:
+        if resource_type == 'power':
+            data_size = len(site_ids) * repo.SOLAR_FILE_SIZES['power']
+            if forecasts:
+                data_size += len(site_ids) * repo.SOLAR_FILE_SIZES['fcst']
+        else:
+            data_size = len(site_ids) * repo.SOLAR_FILE_SIZES['met']
+            data_size += len(site_ids) * repo.SOLAR_FILE_SIZES['irradiance']
+
+    if repo._local_cache.size is not None:
+        cache_size, wind_size, solar_size = repo._local_cache.cache_size
+        open_cache = repo._local_cache.max_size - cache_size
+        if open_cache < data_size:
+            raise RuntimeError('Not enough space available in local cache: \
+\nDownload size = {d}GB \
+\nLocal cache = {c}GB of {m}GB in use \
+\n\tCached wind data = {w}GB \
+\n\tCached solar data = {s}GB'.format(d=data_size, c=cache_size,
+                                      m=repo._local_cache.size,
+                                      w=wind_size, s=solar_size))
+        else:
+            if dataset == 'wind':
+
+
+def get_resource_data(node_collection, repo,  **kwargs):
     """
     Finds nearest nodes, caches files to local datastore and assigns resource
     to node_collection
     """
-    nearest_nodes, data_size = repo.nearest_neighbors(node_collection,
-                                                      **kwargs)
+    nearest_nodes = repo.nearest_nodes(node_collection)
+
+    if isinstance(node_collection, GeneratorNodeCollection):
+        resource_type = 'power'
+        site_ids = np.concatenate(nearest_nodes['site_ids'].values)
+        site_ids = np.unique(site_ids)
+    else:
+        resource_type = 'met'
+        site_ids = nearest_nodes['site_ids'].values
+
+    dataset = node_collection._dataset

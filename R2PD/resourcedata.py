@@ -37,8 +37,11 @@ class Resource(object):
         if self.DATASET is not None:
             self._file_name = '{d}_*_{s}.hdf5'.format(d=self.DATASET,
                                                       s=self._id)
-            self._file_path = os.path.join(self._root_path, self._sub_dir,
-                                           self._file_name)
+        else:
+            self._file_name = '*_{:}.hdf5'.format(self._id)
+
+        self._file_path = os.path.join(self._root_path, self._sub_dir,
+                                       self._file_name)
 
     def __repr__(self):
         return '{n} for site {i}'.format(n=self.__class__.__name__, i=self._id)

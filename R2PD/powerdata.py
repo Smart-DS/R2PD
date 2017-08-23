@@ -195,7 +195,8 @@ class GeneratorNodeCollection(NodeCollection):
         elif isinstance(self.nodes[0], SolarGeneratorNode):
             self._dataset = 'solar'
         else:
-            self._dataset = None
+            raise RuntimeError('Must be a collection of either \
+solar or wind nodes')
 
     @property
     def node_data(self):
@@ -224,7 +225,7 @@ class WeatherNodeCollection(NodeCollection):
         elif isinstance(self.nodes[0], SolarMetNode):
             self._dataset = 'solar'
         else:
-            raise ValueError('Must be a collection of either \
+            raise RuntimeError('Must be a collection of either \
 solar or wind nodes')
 
     @property

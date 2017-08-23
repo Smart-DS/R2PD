@@ -56,6 +56,10 @@ class ExternalDataStore(DataStore):
     """
     Abstract class to define interface for accessing stores of resource data.
     """
+    # Average File size in MB currently estimates
+    WIND_FILE_SIZES = {'met': 14, 'power': 4, 'fcst': 1}
+    SOLAR_FILE_SIZES = {'met': 10, 'irradiance': 50, 'power': 20, 'fcst': 1}
+
     def __init__(self, local_cache=None, username=None, password=None,
                  **kwargs):
         if local_cache is None:
@@ -123,7 +127,7 @@ ExternalDataStore, but is {:}.".format(type(repo)))
     def download(cls, src, dst, username, password):
         pass
 
-    def nearest_neighbors(self, node_collection, forecasts=True):
+    def nearest_neighbors(self, node_collection):
         dataset = node_collection._dataset
         if dataset == 'wind':
             resource_meta = self._wind_meta
@@ -131,43 +135,31 @@ ExternalDataStore, but is {:}.".format(type(repo)))
             resource_meta = self._solar_meta
 
         if isinstance(node_collection, GeneratorNodeCollection):
-            resource_type = 'power'
             nearest_nodes = nearest_power_nodes(node_collection,
                                                 resource_meta)
-            site_ids = np.concatenate(nearest_nodes['site_ids'].values)
-            sites = len(np.unique(site_ids))
         else:
-            resource_type = 'met'
             nearest_nodes = nearest_met_nodes(node_collection,
                                               resource_meta)
-            sites = len(nearest_nodes)
 
-            if dataset == 'wind':
-                if resource_type == 'power':
-                    data_size = sites * self.WIND_FILE_SIZES['power']
-                    if forecasts:
-                        data_size += sites * self.WIND_FILE_SIZES['fcst']
-                else:
-                    data_size = sites * self.WIND_FILE_SIZES['met']
-            else:
-                if resource_type == 'power':
-                    data_size = sites * self.SOLAR_FILE_SIZES['power']
-                    if forecasts:
-                        data_size += sites * self.SOLAR_FILE_SIZES['fcst']
-                else:
-                    data_size = sites * self.SOLAR_FILE_SIZES['met']
-                    data_size += sites * self.SOLAR_FILE_SIZES['irradiance']
+        return nearest_nodes
 
-            data_size = data_size / 1000
-
-        return nearest_nodes, data_size
+    def get_resource(self, dataset, site_id, frac=None):
+        """
+        Return resourcedata.Resource object
+        If any site_id is not valid or not in the store error is raised
+        """
+        if dataset == 'wind':
+            return WindResource(self._wind_meta.loc[site_id], self._wind_path,
+                                frac=frac)
+        elif dataset == 'solar':
+            return SolarResource(self._solar_meta.loc[site_id],
+                                 self._solar_path, frac=frac)
+        else:
+            raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
 
 
 class Peregrine(ExternalDataStore):
     ROOT_PATH = '/scratch/mrossol/Resource_Repo'
-    # Average File size in MB
-    WIND_FILE_SIZES = {'met': 14, 'power': 4, 'fcst': 1}
-    SOLAR_FILE_SIZES = {'met': 10, 'irradiance': 50, 'power': 20, 'fcst': 1}
 
     @classmethod
     def download(cls, src, dst, username, password, timeout=30):
@@ -208,23 +200,19 @@ class InternalDataStore(DataStore):
     """
     ROOT_PATH = os.path.join(os.getcwd(), 'R2PD_Cache')
 
-    def __init__(self, max_size=None):
-        self._max_size = max_size
+    def __init__(self, size=None):
+        self._size = size
         super(InternalDataStore, self).__init__()
 
         if not os.path.exists(self._wind_root):
             os.makedirs(self._wind_root)
 
-        cache, path = self.create_cache_meta(self._wind_root, 'wind')
-        self.wind_cache = cache
-        self._wind_cache_path = path
+        self._wind_cache = self.create_cache_meta(self._wind_root, 'wind')
 
         if not os.path.exists(self._solar_root):
             os.makedirs(self._solar_root)
 
-        cache, path = self.create_cache_meta(self._solar_root, 'solar')
-        self.solar_cache = cache
-        self._solar_cache_path = path
+        self._solar_cache = self.create_cache_meta(self._solar_root, 'solar')
 
     @classmethod
     def connect(cls, config=None):
@@ -235,7 +223,7 @@ class InternalDataStore(DataStore):
         for querying / adding data.
         """
         if config is None:
-            max_size = None
+            size = None
         else:
             config_parser = ConfigParser()
             config_parser.read(config)
@@ -244,33 +232,35 @@ class InternalDataStore(DataStore):
             if root_path is not None:
                 InternalDataStore.ROOT_PATH = root_path
 
-            max_size = cls.decode_config_entry(config_parser.get('local_cache',
-                                                                 'max_size'))
-            if max_size == 'None' or '':
-                max_size = None
+            size = cls.decode_config_entry(config_parser.get('local_cache',
+                                                             'size'))
+            if size == 'None' or '':
+                size = None
 
-        return InternalDataStore(max_size=max_size)
+        return InternalDataStore(size=size)
 
     @classmethod
     def create_cache_meta(cls, root_path, dataset):
-        file_path = os.path.join(root_path, '{:}_cache.csv'.format(dataset))
+        cache_path = os.path.join(root_path, '{:}_cache.csv'.format(dataset))
 
         if dataset == 'wind':
             columns = ['met', 'power', 'fcst', 'sub_directory']
-        else:
+        elif dataset == 'solar':
             columns = ['met', 'irradiance', 'power', 'fcst', 'sub_directory']
+        else:
+            raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
 
         cache_meta = pds.DataFrame(columns=columns)
         cache_meta.index.name = 'site_id'
 
-        cache_meta.to_csv(file_path)
-        cache_meta = cls.refresh_cache_meta(file_path)
-        return cache_meta, file_path
+        cache_meta.to_csv(cache_path)
+        cls.refresh_cache_meta(cache_path)
+        return cache_path
 
     @classmethod
-    def refresh_cache_meta(cls, meta_path):
-        root_path = os.path.split(meta_path)[0]
-        cache_meta = pds.read_csv(meta_path, index_col=0)
+    def refresh_cache_meta(cls, cache_path):
+        root_path = os.path.split(cache_path)[0]
+        cache_meta = pds.read_csv(cache_path, index_col=0)
         cache_sites = cache_meta.index
         fill = np.zeros(cache_meta.shape[1]).astype(bool)
 
@@ -294,12 +284,11 @@ class InternalDataStore(DataStore):
 
             cache_meta.loc[site_id, resource] = True
 
-        cache_meta.to_csv(meta_path)
-        return cache_meta
+        cache_meta.to_csv(cache_path)
 
     @classmethod
-    def cache_site(cls, meta_path, file):
-        cache_meta = pds.read_csv(meta_path, index_col=0)
+    def cache_site(cls, cache_path, file):
+        cache_meta = pds.read_csv(cache_path, index_col=0)
         cache_sites = cache_meta.index
         fill = np.zeros(cache_meta.shape[1]).astype(bool)
 
@@ -316,8 +305,7 @@ class InternalDataStore(DataStore):
 
         cache_meta.loc[site_id, resource] = True
 
-        cache_meta.to_csv(meta_path)
-        return cache_meta
+        cache_meta.to_csv(cache_path)
 
     @property
     def cache_size(self):
@@ -330,22 +318,17 @@ class InternalDataStore(DataStore):
 
         return total_cache, wind_cache, solar_cache
 
-    def cache_data(self, sites):
+    def cache_data(self, sites, dataset):
         """
         Saves each (ResourceLocation, ResourceData) tuple to disk and logs it
         in the registry / database.
         """
-
-    def get_resource(self, dataset, site_id, frac=None):
-        """
-        Return resourcedata.Resource object
-        If any site_id is not valid or not in the store error is raised
-        """
         if dataset == 'wind':
-            return WindResource(self._wind_meta.loc[site_id], self._wind_path,
-                                frac=frac)
+            cache_path = self._wind_cache
         elif dataset == 'solar':
-            return SolarResource(self._solar_meta.loc[site_id],
-                                 self._solar_path, frac=frac)
+            cache_path = self._solar_cache
         else:
             raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
+
+        for file in sites:
+            self.cache_site(cache_path, file)
