@@ -3,6 +3,7 @@ This module provides classes for facilitating the transfer of data between
 the external and internal store as well as processing the data using a queue.
 """
 import numpy as np
+import os
 import pandas as pds
 from scipy.spatial import cKDTree
 from .powerdata import NodeCollection, GeneratorNodeCollection
@@ -139,7 +140,29 @@ def nearest_met_nodes(node_collection, resource_meta):
     return nodes[['lat', 'lon', 'site_id']]
 
 
-def download_resource(site_ids, repo, dataset, resource_type, forecast=False,
+def cache_resource(dataset, site, repo):
+    if dataset == 'wind':
+        src = repo._wind_path
+        dst = repo._local_cache._wind_path
+        cache_path = repo._local_cache._wind_cache
+    else:
+        src = repo._solar_path
+        dst = repo._local_cache._solar_path
+        cache_path = repo._local_cache._solar_cache
+
+    src = os.path.join(src, site)
+    dst = os.path.join(dst, site)
+
+    try:
+        repo.download(src, dst, repo.username, repo.password)
+    except Exception:
+        raise
+    finally:
+        # add file lock
+        repo._local_cache.cache_site(cache_path, dst)
+
+
+def download_resource(site_ids, repo, dataset, resource_type, forecasts=False,
                       cores=None):
     if dataset == 'wind':
         if resource_type == 'power':
@@ -169,7 +192,30 @@ def download_resource(site_ids, repo, dataset, resource_type, forecast=False,
                                       m=repo._local_cache.size,
                                       w=wind_size, s=solar_size))
         else:
-            if dataset == 'wind':
+            files = []
+            for site in site_ids:
+                if dataset == 'wind':
+                    meta = repo.wind_meta
+                else:
+                    meta = repo.solar_meta
+
+                sub_dir = meta.loc[site, 'sub_directory']
+                file_name = '{d}_{r}_{s}.hdf5'.format(d=dataset,
+                                                      r=resource_type,
+                                                      s=site)
+                files.append(os.path.join(sub_dir, file_name))
+
+                if resource_type == 'power' and forecasts:
+                    file_name = '{d}_fcst_{s}.hdf5'.format(d=dataset,
+                                                           s=site)
+                    files.append(os.path.join(sub_dir, file_name))
+
+                if dataset == 'solar' and resource_type == 'met':
+                    file_name = '{d}_irradiance_{s}.hdf5'.format(d=dataset,
+                                                                 s=site)
+                    files.append(os.path.join(sub_dir, file_name))
+
+
 
 
 def get_resource_data(node_collection, repo,  **kwargs):

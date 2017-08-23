@@ -92,7 +92,7 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
         self.solar_meta = self.solar_meta.sort_index()
 
     @classmethod
-    def connect(cls, config, repo):
+    def connect(cls, config):
         """
         Reads the configuration. From configuration and defaults,
         determines location of external datastore.
@@ -103,25 +103,21 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
                                                              'wind_directory'))
 
         solar_dir = config_parser.get('repository', 'solar_directory')
-        solar_dir = cls.decode_config(solar_dir)
+        solar_dir = cls.decode_config_entry(solar_dir)
 
-        username = cls.decode_config(config_parser.get('repository',
-                                                       'username'))
+        username = cls.decode_config_entry(config_parser.get('repository',
+                                                             'username'))
 
-        password = cls.decode_config(config_parser.get('repository',
-                                                       'password'))
+        password = cls.decode_config_entry(config_parser.get('repository',
+                                                             'password'))
 
         if config_parser.has_section('local_cache'):
             local_cache = InternalDataStore.connect(config=config)
         else:
             local_cache = None
 
-        if not isinstance(repo, ExternalDataStore):
-            raise RuntimeError("Expecting repo to be instance of \
-ExternalDataStore, but is {:}.".format(type(repo)))
-
-        return repo(local_cache=local_cache, wind_dir=wind_dir,
-                    solar_dir=solar_dir, username=username, password=password)
+        return cls(local_cache=local_cache, wind_dir=wind_dir,
+                   solar_dir=solar_dir, username=username, password=password)
 
     @classmethod
     def download(cls, src, dst, username, password):
@@ -149,10 +145,10 @@ ExternalDataStore, but is {:}.".format(type(repo)))
         If any site_id is not valid or not in the store error is raised
         """
         if dataset == 'wind':
-            return WindResource(self._wind_meta.loc[site_id], self._wind_path,
+            return WindResource(self.wind_meta.loc[site_id], self._wind_path,
                                 frac=frac)
         elif dataset == 'solar':
-            return SolarResource(self._solar_meta.loc[site_id],
+            return SolarResource(self.solar_meta.loc[site_id],
                                  self._solar_path, frac=frac)
         else:
             raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
@@ -234,6 +230,7 @@ class InternalDataStore(DataStore):
 
             size = cls.decode_config_entry(config_parser.get('local_cache',
                                                              'size'))
+            size = int(size)
             if size == 'None' or '':
                 size = None
 
@@ -242,18 +239,22 @@ class InternalDataStore(DataStore):
     @classmethod
     def create_cache_meta(cls, root_path, dataset):
         cache_path = os.path.join(root_path, '{:}_cache.csv'.format(dataset))
+        if not os.path.isfile(cache_path):
+            if dataset == 'wind':
+                columns = ['met', 'power', 'fcst', 'fcst-prob',
+                           'sub_directory']
+            elif dataset == 'solar':
+                columns = ['met', 'irradiance', 'power', 'fcst', 'fcst-prob',
+                           'sub_directory']
+            else:
+                raise ValueError("Invalid dataset type, must be 'wind' or \
+'solar'")
 
-        if dataset == 'wind':
-            columns = ['met', 'power', 'fcst', 'sub_directory']
-        elif dataset == 'solar':
-            columns = ['met', 'irradiance', 'power', 'fcst', 'sub_directory']
-        else:
-            raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
+            cache_meta = pds.DataFrame(columns=columns)
+            cache_meta.index.name = 'site_id'
 
-        cache_meta = pds.DataFrame(columns=columns)
-        cache_meta.index.name = 'site_id'
+            cache_meta.to_csv(cache_path)
 
-        cache_meta.to_csv(cache_path)
         cls.refresh_cache_meta(cache_path)
         return cache_path
 
@@ -262,7 +263,6 @@ class InternalDataStore(DataStore):
         root_path = os.path.split(cache_path)[0]
         cache_meta = pds.read_csv(cache_path, index_col=0)
         cache_sites = cache_meta.index
-        fill = np.zeros(cache_meta.shape[1]).astype(bool)
 
         file_paths = []
         for path, subdirs, files in os.walk(root_path):
@@ -279,10 +279,11 @@ class InternalDataStore(DataStore):
             sub_dir = int(os.path.basename(sub_dir))
 
             if site_id not in cache_sites:
-                cache_meta.loc[site_id] = fill
+                cache_meta.loc[site_id] = False
                 cache_meta.loc[site_id, 'sub_directory'] = sub_dir
 
             cache_meta.loc[site_id, resource] = True
+            cache_sites = cache_meta.index
 
         cache_meta.to_csv(cache_path)
 
@@ -290,7 +291,6 @@ class InternalDataStore(DataStore):
     def cache_site(cls, cache_path, file):
         cache_meta = pds.read_csv(cache_path, index_col=0)
         cache_sites = cache_meta.index
-        fill = np.zeros(cache_meta.shape[1]).astype(bool)
 
         sub_dir, name = os.path.split(file)
         name = os.path.splitext(name)[0]
@@ -300,7 +300,7 @@ class InternalDataStore(DataStore):
         sub_dir = int(os.path.basename(sub_dir))
 
         if site_id not in cache_sites:
-            cache_meta.loc[site_id] = fill
+            cache_meta.loc[site_id] = False
             cache_meta.loc[site_id, 'sub_directory'] = sub_dir
 
         cache_meta.loc[site_id, resource] = True
