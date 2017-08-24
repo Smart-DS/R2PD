@@ -10,7 +10,8 @@ import pexpect
 from .powerdata import GeneratorNodeCollection
 from .queue import nearest_power_nodes, nearest_met_nodes
 from .resourcedata import WindResource, SolarResource
-
+import shutil
+from .Timeout import Timeout
 
 class DataStore(object):
     ROOT_PATH = None
@@ -164,6 +165,23 @@ password:".format(self._username)
                 exit_code = child.exitstatus
                 if exit_code != 0:
                     raise RuntimeError('Download failed, check inputs!')
+            except Exception:
+                raise
+
+
+class Scratch(ExternalDataStore):
+    ROOT_PATH = '/scratch/mrossol/Resource_Repo'
+
+    def download(self, src, dst, timeout=30):
+        if os.path.basename(src) == os.path.basename(dst):
+            file_path = dst
+        else:
+            file_path = os.path.join(dst, os.path.basename(src))
+
+        if not os.path.isfile(file_path):
+            try:
+                with Timeout(timeout):
+                    shutil.copy(src, dst)
             except Exception:
                 raise
 
