@@ -168,9 +168,9 @@ class NodeCollection(object):
                 raise IndexError
             return self.nodes[index]
 
-    def assign_resource(self, resource_list):
-        assert len(self) == len(resource_list)
-        for node, resource in zip(self.nodes, resource_list):
+    def assign_resource(self, resources):
+        assert len(self) == len(resources)
+        for node, resource in zip(self.nodes, resources):
             node.assign_resource(resource)
 
     @classmethod

@@ -2,6 +2,7 @@
 This module provides classes for facilitating the transfer of data between
 the external and internal store as well as processing the data using a queue.
 """
+import concurrent.futures as cf
 import filelock
 import numpy as np
 import os
@@ -145,9 +146,11 @@ def cache_resource(site, dataset, repo):
     if dataset == 'wind':
         src = repo._wind_path
         dst = repo._local_cache._wind_path
-    else:
+    elif dataset == 'solar':
         src = repo._solar_path
         dst = repo._local_cache._solar_path
+    else:
+        raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
 
     lock_file = os.path.join(dst, '{:}_lock'.format(dataset))
     src = os.path.join(src, site)
@@ -162,8 +165,8 @@ def cache_resource(site, dataset, repo):
             repo._local_cache.cache_site(dataset, dst)
 
 
-def download_resource(site_ids, dataset, resource_type, repo, forecasts=False,
-                      cores=None):
+def download_resource_data(site_ids, dataset, resource_type, repo,
+                           forecasts=False, cores=None):
     if dataset == 'wind':
         meta = repo.wind_meta
         if resource_type == 'power':
@@ -220,7 +223,20 @@ def download_resource(site_ids, dataset, resource_type, repo, forecasts=False,
                                                                'irradiance')
                         if cached is None:
                             f_name = 'solar_irradiance_{:}.hdf5'.format(site)
-                            files.append(os.path.join(sub_dir, f_name))
+                            files.append(os.path.join(sub_dir, f_name))\
+
+            if cores is None:
+                for site in files:
+                    cache_resource(site, dataset, repo)
+            else:
+                if 'ix' not in os.name:
+                    EXECUTOR = cf.ThreadPoolExecutor
+                else:
+                    EXECUTOR = cf.ProcessPoolExecutor
+
+                with EXECUTOR(max_workers=cores) as executor:
+                    for site in files:
+                        executor.submit(cache_resource, site, dataset, repo)
 
 
 def get_resource_data(node_collection, repo, **kwargs):
@@ -239,3 +255,5 @@ def get_resource_data(node_collection, repo, **kwargs):
         site_ids = nearest_nodes['site_ids'].values
 
     dataset = node_collection._dataset
+
+    download_resource_data(site_ids, dataset, resource_type, repo, **kwargs)

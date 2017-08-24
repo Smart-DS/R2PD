@@ -5,7 +5,6 @@ internal and external data stores.
 
 from configparser import ConfigParser
 import os
-import numpy as np
 import pandas as pds
 import pexpect
 from .powerdata import GeneratorNodeCollection
@@ -132,11 +131,11 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
         If any site_id is not valid or not in the store error is raised
         """
         if dataset == 'wind':
-            return WindResource(self.wind_meta.loc[site_id], self._wind_path,
+            return WindResource(self.wind_meta.loc[site_id], self._wind_root,
                                 frac=frac)
         elif dataset == 'solar':
             return SolarResource(self.solar_meta.loc[site_id],
-                                 self._solar_path, frac=frac)
+                                 self._solar_root, frac=frac)
         else:
             raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
 
@@ -152,13 +151,13 @@ class Peregrine(ExternalDataStore):
 
         if not os.path.isfile(file_path):
             command = 'rsync -avzP {u}@peregrine.nrel.gov:{src} \
-{dst}'.format(u=self.username, src=src, dst=dst)
+{dst}'.format(u=self._username, src=src, dst=dst)
             try:
                 with pexpect.spawn(command, timeout=timeout) as child:
                     expect = "{:}@peregrine.nrel.gov's \
-password:".format(self.username)
+password:".format(self._username)
                     child.expect(expect)
-                    child.sendline(self.password)
+                    child.sendline(self._password)
                     child.expect(pexpect.EOF)
             except Exception:
                 raise
@@ -235,13 +234,13 @@ class InternalDataStore(DataStore):
     def initialize_cache_metas(self):
         for dataset in ['wind', 'solar']:
             if dataset == 'wind':
-                cache_path = os.path.join(self._wind_path,
+                cache_path = os.path.join(self._wind_root,
                                           '{:}_cache.csv'.format(dataset))
                 self._wind_cache = cache_path
                 columns = ['met', 'power', 'fcst', 'fcst-prob',
                            'sub_directory']
             elif dataset == 'solar':
-                cache_path = os.path.join(self._solar_path,
+                cache_path = os.path.join(self._solar_root,
                                           '{:}_cache.csv'.format(dataset))
                 self._solar_cache = cache_path
                 columns = ['met', 'irradiance', 'power', 'fcst', 'fcst-prob',
