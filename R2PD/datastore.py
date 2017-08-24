@@ -35,16 +35,6 @@ class DataStore(object):
                                    i=self.ROOT_PATH)
 
     @classmethod
-    def repo_size(cls, path):
-        repo_size = []
-        for (path, dirs, files) in os.walk(path):
-            for file in files:
-                file_name = os.path.join(path, file)
-                repo_size += os.path.getsize(file_name) * 10**-9
-
-        return repo_size
-
-    @classmethod
     def decode_config_entry(cls, entry):
         if entry == 'None' or '':
             return None
@@ -74,8 +64,7 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
         super(ExternalDataStore, self).__init__(**kwargs)
 
         meta_path = os.path.join(self._wind_root, 'wind_site_meta.json')
-        self.download(meta_path, self._local_cache._wind_root,
-                      self._username, self._password)
+        self.download(meta_path, self._local_cache._wind_root)
         meta_path = os.path.join(self._local_cache._wind_root,
                                  'wind_site_meta.json')
         self.wind_meta = pds.read_json(meta_path)
@@ -83,8 +72,7 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
         self.wind_meta = self.wind_meta.sort_index()
 
         meta_path = os.path.join(self._solar_root, 'solar_site_meta.json')
-        self.download(meta_path, self._local_cache._solar_root,
-                      self._username, self._password)
+        self.download(meta_path, self._local_cache._solar_root)
         meta_path = os.path.join(self._local_cache._solar_root,
                                  'solar_site_meta.json')
         self.solar_meta = pds.read_json(meta_path)
@@ -119,8 +107,7 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
         return cls(local_cache=local_cache, wind_dir=wind_dir,
                    solar_dir=solar_dir, username=username, password=password)
 
-    @classmethod
-    def download(cls, src, dst, username, password):
+    def download(self, src, dst):
         pass
 
     def nearest_neighbors(self, node_collection):
@@ -157,8 +144,7 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
 class Peregrine(ExternalDataStore):
     ROOT_PATH = '/scratch/mrossol/Resource_Repo'
 
-    @classmethod
-    def download(cls, src, dst, username, password, timeout=30):
+    def download(self, src, dst, timeout=30):
         if os.path.basename(src) == os.path.basename(dst):
             file_path = dst
         else:
@@ -166,13 +152,13 @@ class Peregrine(ExternalDataStore):
 
         if not os.path.isfile(file_path):
             command = 'rsync -avzP {u}@peregrine.nrel.gov:{src} \
-{dst}'.format(u=username, src=src, dst=dst)
+{dst}'.format(u=self.username, src=src, dst=dst)
             try:
                 with pexpect.spawn(command, timeout=timeout) as child:
                     expect = "{:}@peregrine.nrel.gov's \
-password:".format(username)
+password:".format(self.username)
                     child.expect(expect)
-                    child.sendline(password)
+                    child.sendline(self.password)
                     child.expect(pexpect.EOF)
             except Exception:
                 raise
@@ -203,12 +189,12 @@ class InternalDataStore(DataStore):
         if not os.path.exists(self._wind_root):
             os.makedirs(self._wind_root)
 
-        self._wind_cache = self.create_cache_meta(self._wind_root, 'wind')
-
         if not os.path.exists(self._solar_root):
             os.makedirs(self._solar_root)
 
-        self._solar_cache = self.create_cache_meta(self._solar_root, 'solar')
+        self.initialize_cache_metas()
+        self.refresh_cache_meta('wind')
+        self.refresh_cache_meta('solar')
 
     @classmethod
     def connect(cls, config=None):
@@ -237,29 +223,45 @@ class InternalDataStore(DataStore):
         return InternalDataStore(size=size)
 
     @classmethod
-    def create_cache_meta(cls, root_path, dataset):
-        cache_path = os.path.join(root_path, '{:}_cache.csv'.format(dataset))
-        if not os.path.isfile(cache_path):
+    def get_cache_size(cls, path):
+        repo_size = []
+        for (path, dirs, files) in os.walk(path):
+            for file in files:
+                file_name = os.path.join(path, file)
+                repo_size += os.path.getsize(file_name) * 10**-9
+
+        return repo_size
+
+    def initialize_cache_metas(self):
+        for dataset in ['wind', 'solar']:
             if dataset == 'wind':
+                cache_path = os.path.join(self._wind_path,
+                                          '{:}_cache.csv'.format(dataset))
+                self._wind_cache = cache_path
                 columns = ['met', 'power', 'fcst', 'fcst-prob',
                            'sub_directory']
             elif dataset == 'solar':
+                cache_path = os.path.join(self._solar_path,
+                                          '{:}_cache.csv'.format(dataset))
+                self._solar_cache = cache_path
                 columns = ['met', 'irradiance', 'power', 'fcst', 'fcst-prob',
                            'sub_directory']
-            else:
-                raise ValueError("Invalid dataset type, must be 'wind' or \
+
+            if not os.path.isfile(cache_path):
+                cache_meta = pds.DataFrame(columns=columns)
+                cache_meta.index.name = 'site_id'
+
+                cache_meta.to_csv(cache_path)
+
+    def refresh_cache_meta(self, dataset):
+        if dataset == 'wind':
+            cache_path = self._wind_cache
+        elif dataset == 'solar':
+            cache_path = self._solar_cache
+        else:
+            raise ValueError("Invalid dataset type, must be 'wind' or \
 'solar'")
 
-            cache_meta = pds.DataFrame(columns=columns)
-            cache_meta.index.name = 'site_id'
-
-            cache_meta.to_csv(cache_path)
-
-        cls.refresh_cache_meta(cache_path)
-        return cache_path
-
-    @classmethod
-    def refresh_cache_meta(cls, cache_path):
         root_path = os.path.split(cache_path)[0]
         cache_meta = pds.read_csv(cache_path, index_col=0)
         cache_sites = cache_meta.index
@@ -287,12 +289,19 @@ class InternalDataStore(DataStore):
 
         cache_meta.to_csv(cache_path)
 
-    @classmethod
-    def cache_site(cls, cache_path, file):
+    def cache_site(self, dataset, site):
+        if dataset == 'wind':
+            cache_path = self._wind_cache
+        elif dataset == 'solar':
+            cache_path = self._solar_cache
+        else:
+            raise ValueError("Invalid dataset type, must be 'wind' or \
+'solar'")
+
         cache_meta = pds.read_csv(cache_path, index_col=0)
         cache_sites = cache_meta.index
 
-        sub_dir, name = os.path.split(file)
+        sub_dir, name = os.path.split(site)
         name = os.path.splitext(name)[0]
         _, resource, site_id = name.split('_')
         site_id = int(site_id)
@@ -307,28 +316,41 @@ class InternalDataStore(DataStore):
 
         cache_meta.to_csv(cache_path)
 
-    @property
-    def cache_size(self):
-        """
-        Calculate size of local cache in GB
-        """
-        total_cache = self.repo_size(self.ROOT_PATH)
-        wind_cache = self.repo_size(self._wind_root)
-        solar_cache = self.repo_size(self._solar_root)
-
-        return total_cache, wind_cache, solar_cache
-
-    def cache_data(self, sites, dataset):
-        """
-        Saves each (ResourceLocation, ResourceData) tuple to disk and logs it
-        in the registry / database.
-        """
+    def check_cache(self, dataset, site_id, resource_type):
         if dataset == 'wind':
             cache_path = self._wind_cache
         elif dataset == 'solar':
             cache_path = self._solar_cache
         else:
-            raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
+            raise ValueError("Invalid dataset type, must be 'wind' or \
+'solar'")
 
-        for file in sites:
-            self.cache_site(cache_path, file)
+        cache_meta = pds.read_csv(cache_path, index_col=0)
+        cache_sites = cache_meta.index
+
+        if site_id in cache_sites:
+            if cache_meta.loc[site_id, resource_type]:
+                return cache_meta.loc[site_id, 'sub_directory']
+            else:
+                return None
+        else:
+            return None
+
+    def cache_data(self, dataset, sites):
+        """
+        Saves each (ResourceLocation, ResourceData) tuple to disk and logs it
+        in the registry / database.
+        """
+        for site in sites:
+            self.cache_site(dataset, site)
+
+    @property
+    def cache_size(self):
+        """
+        Calculate size of local cache in GB
+        """
+        total_cache = self.get_cache_size(self.ROOT_PATH)
+        wind_cache = self.get_cache_size(self._wind_root)
+        solar_cache = self.get_cache_size(self._solar_root)
+
+        return total_cache, wind_cache, solar_cache

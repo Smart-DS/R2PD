@@ -2,6 +2,7 @@
 This module provides classes for facilitating the transfer of data between
 the external and internal store as well as processing the data using a queue.
 """
+import filelock
 import numpy as np
 import os
 import pandas as pds
@@ -140,38 +141,39 @@ def nearest_met_nodes(node_collection, resource_meta):
     return nodes[['lat', 'lon', 'site_id']]
 
 
-def cache_resource(dataset, site, repo):
+def cache_resource(site, dataset, repo):
     if dataset == 'wind':
         src = repo._wind_path
         dst = repo._local_cache._wind_path
-        cache_path = repo._local_cache._wind_cache
     else:
         src = repo._solar_path
         dst = repo._local_cache._solar_path
-        cache_path = repo._local_cache._solar_cache
 
+    lock_file = os.path.join(dst, '{:}_lock'.format(dataset))
     src = os.path.join(src, site)
     dst = os.path.join(dst, site)
 
     try:
-        repo.download(src, dst, repo.username, repo.password)
+        repo.download(src, dst)
     except Exception:
         raise
     finally:
-        # add file lock
-        repo._local_cache.cache_site(cache_path, dst)
+        with filelock.FileLock(lock_file):
+            repo._local_cache.cache_site(dataset, dst)
 
 
-def download_resource(site_ids, repo, dataset, resource_type, forecasts=False,
+def download_resource(site_ids, dataset, resource_type, repo, forecasts=False,
                       cores=None):
     if dataset == 'wind':
+        meta = repo.wind_meta
         if resource_type == 'power':
             data_size = len(site_ids) * repo.WIND_FILE_SIZES['power']
             if forecasts:
                 data_size += len(site_ids) * repo.WIND_FILE_SIZES['fcst']
         else:
             data_size = len(site_ids) * repo.WIND_FILE_SIZES['met']
-    else:
+    elif dataset == 'solar':
+        meta = repo.solar_meta
         if resource_type == 'power':
             data_size = len(site_ids) * repo.SOLAR_FILE_SIZES['power']
             if forecasts:
@@ -179,6 +181,8 @@ def download_resource(site_ids, repo, dataset, resource_type, forecasts=False,
         else:
             data_size = len(site_ids) * repo.SOLAR_FILE_SIZES['met']
             data_size += len(site_ids) * repo.SOLAR_FILE_SIZES['irradiance']
+    else:
+        raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
 
     if repo._local_cache.size is not None:
         cache_size, wind_size, solar_size = repo._local_cache.cache_size
@@ -194,31 +198,32 @@ def download_resource(site_ids, repo, dataset, resource_type, forecasts=False,
         else:
             files = []
             for site in site_ids:
-                if dataset == 'wind':
-                    meta = repo.wind_meta
-                else:
-                    meta = repo.solar_meta
+                cached = repo._local_cache.check_cache(dataset, site,
+                                                       resource_type)
+                if cached is None:
+                    sub_dir = meta.loc[site, 'sub_directory']
+                    f_name = '{d}_{r}_{s}.hdf5'.format(d=dataset,
+                                                       r=resource_type,
+                                                       s=site)
+                    files.append(os.path.join(sub_dir, f_name))
 
-                sub_dir = meta.loc[site, 'sub_directory']
-                file_name = '{d}_{r}_{s}.hdf5'.format(d=dataset,
-                                                      r=resource_type,
-                                                      s=site)
-                files.append(os.path.join(sub_dir, file_name))
+                    if resource_type == 'power' and forecasts:
+                        cached = repo._local_cache.check_cache(dataset, site,
+                                                               'fcst')
+                        if cached is None:
+                            f_name = '{d}_fcst_{s}.hdf5'.format(d=dataset,
+                                                                s=site)
+                            files.append(os.path.join(sub_dir, f_name))
 
-                if resource_type == 'power' and forecasts:
-                    file_name = '{d}_fcst_{s}.hdf5'.format(d=dataset,
-                                                           s=site)
-                    files.append(os.path.join(sub_dir, file_name))
-
-                if dataset == 'solar' and resource_type == 'met':
-                    file_name = '{d}_irradiance_{s}.hdf5'.format(d=dataset,
-                                                                 s=site)
-                    files.append(os.path.join(sub_dir, file_name))
-
+                    if dataset == 'solar' and resource_type == 'met':
+                        cached = repo._local_cache.check_cache(dataset, site,
+                                                               'irradiance')
+                        if cached is None:
+                            f_name = 'solar_irradiance_{:}.hdf5'.format(site)
+                            files.append(os.path.join(sub_dir, f_name))
 
 
-
-def get_resource_data(node_collection, repo,  **kwargs):
+def get_resource_data(node_collection, repo, **kwargs):
     """
     Finds nearest nodes, caches files to local datastore and assigns resource
     to node_collection
