@@ -17,7 +17,7 @@ power system modelers. Functionalities needed include:
 import inspect
 import numpy as np
 from .tshelpers import TemporalParameters
-from .library import DefaultTimeseriesShaper
+# from .library import DefaultTimeseriesShaper
 
 
 class Node(object):
@@ -70,13 +70,19 @@ class GeneratorNode(Node):
         power_data = self._resource.power_data
 
         if shaper is None:
-            shaper = DefaultTimeseriesShaper
-
-        ts_params = TemporalParameters.infer_params(power_data)
-        return shaper(power_data, ts_params, temporal_params)
+            return power_data
+        else:
+            ts_params = TemporalParameters.infer_params(power_data)
+            return shaper(power_data, ts_params, temporal_params)
 
     def get_forecasts(self, temporal_params, forecast_params, shaper=None):
         assert self._fcst
+        self._require_resource()
+        fcst_data = self._resource.forecast_data
+        if shaper is None:
+            return fcst_data
+        else:
+            pass
 
     def save_power(self, filename, formatter=None):
         pass

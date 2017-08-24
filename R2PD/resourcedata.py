@@ -40,7 +40,7 @@ class Resource(object):
         else:
             self._file_name = '*_{:}.hdf5'.format(self._id)
 
-        self._file_path = os.path.join(self._root_path, self._sub_dir,
+        self._file_path = os.path.join(self._root_path, str(self._sub_dir),
                                        self._file_name)
 
     def __repr__(self):

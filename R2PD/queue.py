@@ -9,6 +9,7 @@ import os
 import pandas as pds
 from scipy.spatial import cKDTree
 from .powerdata import NodeCollection, GeneratorNodeCollection
+from .resourcedata import ResourceList
 
 
 def nearest_power_nodes(node_collection, resource_meta):
@@ -204,7 +205,7 @@ def download_resource_data(site_ids, dataset, resource_type, repo,
                 cached = repo._local_cache.check_cache(dataset, site,
                                                        resource_type)
                 if cached is None:
-                    sub_dir = meta.loc[site, 'sub_directory']
+                    sub_dir = str(meta.loc[site, 'sub_directory'])
                     f_name = '{d}_{r}_{s}.hdf5'.format(d=dataset,
                                                        r=resource_type,
                                                        s=site)
@@ -257,3 +258,16 @@ def get_resource_data(node_collection, repo, **kwargs):
     dataset = node_collection._dataset
 
     download_resource_data(site_ids, dataset, resource_type, repo, **kwargs)
+
+    for node, meta in nearest_nodes.iterrows():
+        site_id = meta['site_ids']
+        if isinstance(site_id, list):
+            fracs = meta['site_fracs']
+            resource = ResourceList([repo.get_resource(dataset, site, frac=f)
+                                     for site, f in zip(site_id, fracs)])
+        else:
+            resource = repo.get_resource(dataset, site_id)
+
+        node_collection[node].assign_resource(resource)
+
+    return node_collection

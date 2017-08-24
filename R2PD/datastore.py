@@ -131,11 +131,11 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
         If any site_id is not valid or not in the store error is raised
         """
         if dataset == 'wind':
-            return WindResource(self.wind_meta.loc[site_id], self._wind_root,
-                                frac=frac)
+            return WindResource(self.wind_meta.loc[site_id],
+                                self._local_cache._wind_root, frac=frac)
         elif dataset == 'solar':
             return SolarResource(self.solar_meta.loc[site_id],
-                                 self._solar_root, frac=frac)
+                                 self._local_cache._solar_root, frac=frac)
         else:
             raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
 
@@ -147,18 +147,23 @@ class Peregrine(ExternalDataStore):
         if os.path.basename(src) == os.path.basename(dst):
             file_path = dst
         else:
-            file_path = file_path = os.path.join(dst, os.path.basename(src))
+            file_path = os.path.join(dst, os.path.basename(src))
 
         if not os.path.isfile(file_path):
             command = 'rsync -avzP {u}@peregrine.nrel.gov:{src} \
 {dst}'.format(u=self._username, src=src, dst=dst)
+            expect = "{:}@peregrine.nrel.gov's \
+password:".format(self._username)
             try:
                 with pexpect.spawn(command, timeout=timeout) as child:
-                    expect = "{:}@peregrine.nrel.gov's \
-password:".format(self._username)
                     child.expect(expect)
-                    child.sendline(self._password)
-                    child.expect(pexpect.EOF)
+                    code = child.sendline(self._password)
+                    if code == 11:
+                        child.expect(pexpect.EOF)
+
+                exit_code = child.exitstatus
+                if exit_code != 0:
+                    raise RuntimeError('Download failed, check inputs!')
             except Exception:
                 raise
 
