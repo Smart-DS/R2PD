@@ -13,6 +13,7 @@ from .resourcedata import WindResource, SolarResource
 import shutil
 from .Timeout import Timeout
 
+
 class DataStore(object):
     ROOT_PATH = None
 
@@ -131,14 +132,20 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
         Return resourcedata.Resource object
         If any site_id is not valid or not in the store error is raised
         """
-        if dataset == 'wind':
-            return WindResource(self.wind_meta.loc[site_id],
-                                self._local_cache._wind_root, frac=frac)
-        elif dataset == 'solar':
-            return SolarResource(self.solar_meta.loc[site_id],
-                                 self._local_cache._solar_root, frac=frac)
+        cache = self._local_cache.check_cache(dataset, site_id)
+        if cache is not None:
+            if dataset == 'wind':
+                return WindResource(self.wind_meta.loc[site_id],
+                                    self._local_cache._wind_root, frac=frac)
+            elif dataset == 'solar':
+                return SolarResource(self.solar_meta.loc[site_id],
+                                     self._local_cache._solar_root, frac=frac)
+            else:
+                raise ValueError("Invalid dataset type, must be 'wind' or \
+'solar'")
         else:
-            raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
+            raise RuntimeError('{d} site {s} is not in local cache!'
+                               .format(d=dataset, s=site_id))
 
 
 class Peregrine(ExternalDataStore):
@@ -338,7 +345,7 @@ class InternalDataStore(DataStore):
 
         cache_meta.to_csv(cache_path)
 
-    def check_cache(self, dataset, site_id, resource_type):
+    def check_cache(self, dataset, site_id, resource_type=None):
         if dataset == 'wind':
             cache_path = self._wind_cache
         elif dataset == 'solar':
@@ -351,10 +358,13 @@ class InternalDataStore(DataStore):
         cache_sites = cache_meta.index
 
         if site_id in cache_sites:
-            if cache_meta.loc[site_id, resource_type]:
-                return cache_meta.loc[site_id, 'sub_directory']
+            if resource_type is not None:
+                if cache_meta.loc[site_id, resource_type]:
+                    return cache_meta.loc[site_id, 'sub_directory']
+                else:
+                    return None
             else:
-                return None
+                return cache_meta.loc[site_id, 'sub_directory']
         else:
             return None
 

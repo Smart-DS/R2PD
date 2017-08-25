@@ -202,29 +202,20 @@ def download_resource_data(site_ids, dataset, resource_type, repo,
         else:
             files = []
             for site in site_ids:
-                cached = repo._local_cache.check_cache(dataset, site,
-                                                       resource_type)
-                if cached is None:
-                    sub_dir = str(meta.loc[site, 'sub_directory'])
-                    f_name = '{d}_{r}_{s}.hdf5'.format(d=dataset,
-                                                       r=resource_type,
-                                                       s=site)
+                sub_dir = str(meta.loc[site, 'sub_directory'])
+                f_name = '{d}_{r}_{s}.hdf5'.format(d=dataset,
+                                                   r=resource_type,
+                                                   s=site)
+                files.append(os.path.join(sub_dir, f_name))
+
+                if resource_type == 'power' and forecasts:
+                    f_name = '{d}_fcst_{s}.hdf5'.format(d=dataset,
+                                                        s=site)
                     files.append(os.path.join(sub_dir, f_name))
 
-                    if resource_type == 'power' and forecasts:
-                        cached = repo._local_cache.check_cache(dataset, site,
-                                                               'fcst')
-                        if cached is None:
-                            f_name = '{d}_fcst_{s}.hdf5'.format(d=dataset,
-                                                                s=site)
-                            files.append(os.path.join(sub_dir, f_name))
-
-                    if dataset == 'solar' and resource_type == 'met':
-                        cached = repo._local_cache.check_cache(dataset, site,
-                                                               'irradiance')
-                        if cached is None:
-                            f_name = 'solar_irradiance_{:}.hdf5'.format(site)
-                            files.append(os.path.join(sub_dir, f_name))\
+                if dataset == 'solar' and resource_type == 'met':
+                    f_name = 'solar_irradiance_{:}.hdf5'.format(site)
+                    files.append(os.path.join(sub_dir, f_name))
 
             if cores is None:
                 for site in files:
