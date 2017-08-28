@@ -1,12 +1,13 @@
 import argparse
 import datetime as dt
-import dateutil 
+import dateutil
 
 import pandas as pds
 
-from .datastore import DRPower, InternalDataStore
-from .powerdata import (NodeCollection, WindGeneratorNode, WeatherNode,
-                        SolarGeneratorNode, WindMetNode, SolarMetNode)
+from .datastore import DRPower
+from .powerdata import (NodeCollection, WindGeneratorNode, SolarGeneratorNode,
+                        WindMetNode, SolarMetNode)
+from queue import get_resource_data
 from .tshelpers import TemporalParameters, ForecastParameters
 
 
@@ -43,7 +44,8 @@ def cli_parser():
                             output timeseries values. Can affect exactly which
                             raw data points are pulled, and any upscaling or
                             downscaling that is applied.''',
-                            choices=[interp.name for interp in TemporalParameters.POINT_INTERPRETATIONS])
+                            choices=[interp.name for interp
+                                     in TemporalParameters.POINT_INTERPRETATIONS])
         parser.add_argument('-tz', '--timezone',
                             help='''Timezone for all output data. Also used in
                             interpreting temporal-extent if no explicit
@@ -127,56 +129,47 @@ def cli_main():
     args = parser.parse_args()
 
     # 0. Set up logging, connect to data stores, and make output directory
-    assert args.external_datastore == 'DRPower'
+    # assert args.external_datastore == 'DRPower'
+    assert args.external_datastore == 'Peregrine'
     # todo: Implmement library mechanism for finding external datastore options
     #       and matching string description to class.
+    # 1 connect to external datastore
     ext_store = DRPower.connect(config=args.ext_ds_config)
-    int_store = InternalDataStore.connect(config=args.int_ds_config)
 
-    # 1. Load node data and identify nodes with generators connected
+    # 2. Load node data and initialize NodeCollections
     nodes = None
     NodeClass = None
     if args.mode == 'weather':
-        NodeClass = WeatherNode
-        nodes = pds.DataFrame(args.nodes, columns=['node_id', 'lat', 'long'])
+        NodeClass = WindMetNode if args.type == 'wind' else SolarMetNode
+        if isinstance(args.node, (list, tuple)):
+            nodes = pds.DataFrame(args.nodes,
+                                  columns=['node_id', 'lat', 'long'])
+        else:
+            nodes = pds.read_csv(args.nodes)
     else:
         NodeClass = WindGeneratorNode if args.type == 'wind' else SolarGeneratorNode
-        nodes = pds.DataFrame(args.nodes, columns=['node_id', 'lat', 'long'])
-        generators = pds.DataFrame(args.generators,
-                                   columns=['node_id', 'capacity'])
+        if isinstance(args.node, (list, tuple)):
+            nodes = pds.DataFrame(args.nodes,
+                                  columns=['node_id', 'lat', 'long'])
+        else:
+            nodes = pds.read_csv(args.nodes)
+
+        if isinstance(args.generators, (list, tuple)):
+            generators = pds.DataFrame(args.generators,
+                                       columns=['node_id', 'capacity'])
+        else:
+            generators = pds.read_csv(args.generators)
+
         nodes = pds.merge(nodes, generators, on='node_id', how='inner')
 
     nodes = [NodeClass(*tuple(node_info))
              for ind, node_info in nodes.iterrows()]
     nodes = NodeCollection.factory(nodes)
 
-    def get_resource_data(dataset, locations, num_neighbors):
-        locs = ext_store.nearest_neighbors(dataset, locations,
-                                           num_neighbors=num_neighbors)
-        file_ids = []
-        if isinstance(locs[0], list):
-            file_ids = [loc.file_id for neighbors in locs for loc in neighbors]
-        else:
-            file_ids = [loc.file_id for loc in locs]
-        data = int_store.get_data(dataset, file_ids)
-        # HERE
-        # for None entries, pull from external store, cache in internal store
-        # now reshape data to be same shape as locs and return
-        return data
+    # 3 Download, cache, and apply resource to nodes
+    nodes = get_resource_data(nodes, ext_store)
 
-    # 3. Pull the resource data
-    if args.mode == 'weather':
-        wind_resource = get_resource_data('wind', nodes.locations, 1)
-        solar_resource = get_resource_data('solar', nodes.locations, 1)
-        resource_data = zip(wind_resource, solar_resource)
-    else:
-        resource_data = get_resource_data(args.type, nodes.locations, 3)
-
-    # 4. Assign it to the nodes
-    for i, node in enumerate(nodes.nodes):
-            node.assign_resource(resource_data[i])
-
-    # 5. Calculate the data
+    # 4. Calculate the data
 
     # 6. Format and save to disk
     temporal_params = TemporalParameters(args.temporal_extent,
