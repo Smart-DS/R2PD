@@ -1,5 +1,6 @@
 import argparse
 import datetime as dt
+import dateutil 
 
 import pandas as pds
 
@@ -36,7 +37,7 @@ def cli_parser():
                             longitude).''')
         parser.add_argument('temporal-extent',
                             help='''Start and end datetimes for output
-                            data.''', nargs=2, type=dt.datetime)
+                            data.''', nargs=2, type=dateutil.parser.parse)
         parser.add_argument('point-interpretation',
                             help='''Interpretation that will be assumed for
                             output timeseries values. Can affect exactly which
