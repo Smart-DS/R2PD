@@ -48,8 +48,8 @@ class ExternalDataStore(DataStore):
     Abstract class to define interface for accessing stores of resource data.
     """
     # Average File size in MB currently estimates
-    WIND_FILE_SIZES = {'met': 14, 'power': 4, 'fcst': 1}
-    SOLAR_FILE_SIZES = {'met': 10, 'irradiance': 50, 'power': 20, 'fcst': 1}
+    WIND_FILE_SIZES = {'met': 14, 'power': 5, 'fcst': 2}
+    SOLAR_FILE_SIZES = {'met': 10, 'irradiance': 20, 'power': 1, 'fcst': 1}
 
     def __init__(self, local_cache=None, username=None, password=None,
                  **kwargs):
@@ -158,7 +158,7 @@ class Peregrine(ExternalDataStore):
             file_path = os.path.join(dst, os.path.basename(src))
 
         if not os.path.isfile(file_path):
-            command = 'rsync -avzP {u}@peregrine.nrel.gov:{src} \
+            command = 'rsync -avz {u}@peregrine.nrel.gov:{src} \
 {dst}'.format(u=self._username, src=src, dst=dst)
             expect = "{:}@peregrine.nrel.gov's \
 password:".format(self._username)
@@ -253,11 +253,12 @@ class InternalDataStore(DataStore):
 
     @classmethod
     def get_cache_size(cls, path):
-        repo_size = []
+        repo_size = 0
         for (path, dirs, files) in os.walk(path):
             for file in files:
-                file_name = os.path.join(path, file)
-                repo_size += os.path.getsize(file_name) * 10**-9
+                if file.endswith('.hdf5'):
+                    file_name = os.path.join(path, file)
+                    repo_size += os.path.getsize(file_name) * 10**-9
 
         return repo_size
 
@@ -316,6 +317,7 @@ class InternalDataStore(DataStore):
             cache_meta.loc[site_id, resource] = True
             cache_sites = cache_meta.index
 
+        cache_meta = cache_meta.sort_index()
         cache_meta.to_csv(cache_path)
 
     def cache_site(self, dataset, site):
@@ -343,6 +345,7 @@ class InternalDataStore(DataStore):
 
         cache_meta.loc[site_id, resource] = True
 
+        cache_meta = cache_meta.sort_index()
         cache_meta.to_csv(cache_path)
 
     def check_cache(self, dataset, site_id, resource_type=None):

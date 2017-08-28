@@ -149,11 +149,11 @@ def nearest_met_nodes(node_collection, resource_meta):
 
 def cache_resource(site, dataset, repo):
     if dataset == 'wind':
-        src = repo._wind_path
-        dst = repo._local_cache._wind_path
+        src = repo._wind_root
+        dst = repo._local_cache._wind_root
     elif dataset == 'solar':
-        src = repo._solar_path
-        dst = repo._local_cache._solar_path
+        src = repo._solar_root
+        dst = repo._local_cache._solar_root
     else:
         raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
 
@@ -192,47 +192,59 @@ def download_resource_data(site_ids, dataset, resource_type, repo,
     else:
         raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
 
+    data_size = data_size / 1000
+
     if repo._local_cache._size is not None:
         cache_size, wind_size, solar_size = repo._local_cache.cache_size
-        open_cache = repo._local_cache.max_size - cache_size
+        open_cache = repo._local_cache._size - cache_size
         if open_cache < data_size:
             raise RuntimeError('Not enough space available in local cache: \
 \nDownload size = {d}GB \
 \nLocal cache = {c}GB of {m}GB in use \
 \n\tCached wind data = {w}GB \
 \n\tCached solar data = {s}GB'.format(d=data_size, c=cache_size,
-                                      m=repo._local_cache.size,
+                                      m=repo._local_cache._size,
                                       w=wind_size, s=solar_size))
+
+    files = []
+    for site in site_ids:
+        sub_dir = str(meta.loc[site, 'sub_directory'])
+        if dataset == 'wind':
+            dir_path = os.path.join(repo._local_cache._wind_root, sub_dir)
+        elif dataset == 'solar':
+            dir_path = os.path.join(repo._local_cache._solar_root, sub_dir)
         else:
-            files = []
-            for site in site_ids:
-                sub_dir = str(meta.loc[site, 'sub_directory'])
-                f_name = '{d}_{r}_{s}.hdf5'.format(d=dataset,
-                                                   r=resource_type,
-                                                   s=site)
-                files.append(os.path.join(sub_dir, f_name))
+            raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
 
-                if resource_type == 'power' and forecasts:
-                    f_name = '{d}_fcst_{s}.hdf5'.format(d=dataset,
-                                                        s=site)
-                    files.append(os.path.join(sub_dir, f_name))
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
 
-                if dataset == 'solar' and resource_type == 'met':
-                    f_name = 'solar_irradiance_{:}.hdf5'.format(site)
-                    files.append(os.path.join(sub_dir, f_name))
+        f_name = '{d}_{r}_{s}.hdf5'.format(d=dataset,
+                                           r=resource_type,
+                                           s=site)
+        files.append(os.path.join(sub_dir, f_name))
 
-            if cores is None:
-                for site in files:
-                    cache_resource(site, dataset, repo)
-            else:
-                if 'ix' not in os.name:
-                    EXECUTOR = cf.ThreadPoolExecutor
-                else:
-                    EXECUTOR = cf.ProcessPoolExecutor
+        if resource_type == 'power' and forecasts:
+            f_name = '{d}_fcst_{s}.hdf5'.format(d=dataset,
+                                                s=site)
+            files.append(os.path.join(sub_dir, f_name))
 
-                with EXECUTOR(max_workers=cores) as executor:
-                    for site in files:
-                        executor.submit(cache_resource, site, dataset, repo)
+        if dataset == 'solar' and resource_type == 'met':
+            f_name = 'solar_irradiance_{:}.hdf5'.format(site)
+            files.append(os.path.join(sub_dir, f_name))
+
+    if cores is None:
+        for site in files:
+            cache_resource(site, dataset, repo)
+    else:
+        if 'ix' not in os.name:
+            EXECUTOR = cf.ThreadPoolExecutor
+        else:
+            EXECUTOR = cf.ProcessPoolExecutor
+
+        with EXECUTOR(max_workers=cores) as executor:
+            for site in files:
+                executor.submit(cache_resource, site, dataset, repo)
 
 
 def get_resource_data(node_collection, repo, **kwargs):

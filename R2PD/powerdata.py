@@ -152,6 +152,7 @@ class NodeCollection(object):
         # todo: implement iterating over this class work to avoid
         #       for node in nodes.nodes:
         self.nodes = nodes
+        self._ids = [node.id for node in self.nodes]
 
     def __repr__(self):
         return '{c} contains {n} nodes'.format(c=self.__class__.__name__,
@@ -170,9 +171,11 @@ class NodeCollection(object):
             'nc.dataset.variable'
                 variable instance from dataset, to get values call [:]
             """
-            if index >= len(self.nodes):
+            if index in self._ids:
+                pos = self._ids.index(index)
+                return self.nodes[pos]
+            else:
                 raise IndexError
-            return self.nodes[index]
 
     def assign_resource(self, resources):
         assert len(self) == len(resources)
