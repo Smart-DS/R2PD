@@ -114,9 +114,9 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
     def nearest_neighbors(self, node_collection):
         dataset = node_collection._dataset
         if dataset == 'wind':
-            resource_meta = self._wind_meta
+            resource_meta = self.wind_meta
         else:
-            resource_meta = self._solar_meta
+            resource_meta = self.solar_meta
 
         if isinstance(node_collection, GeneratorNodeCollection):
             nearest_nodes = nearest_power_nodes(node_collection,

@@ -33,9 +33,11 @@ def nearest_power_nodes(node_collection, resource_meta):
         node_data = node_collection
 
     # Create and populate DataFrame from requested list of nodes
-    nodes = pds.DataFrame(columns=['lat', 'lon', 'cap', 'site_ids',
+    nodes = pds.DataFrame(columns=['node_id', 'lat', 'lon', 'cap', 'site_ids',
                                    'site_fracs', 'r_cap'],
                           index=node_data[:, 0].astype(int))
+    nodes.index.name = 'node_id'
+
     nodes['lat'] = node_data[:, 1]
     nodes['lon'] = node_data[:, 2]
     nodes['cap'] = node_data[:, 3]
@@ -70,10 +72,10 @@ def nearest_power_nodes(node_collection, resource_meta):
         for i, n in node_pairs.iteritems():
             r_i = r_index[i]
             n_i = n_index[n]
-            resource = r_nodes.iloc[r_i].copy()
+            resource = r_nodes.loc[r_i].copy()
             file_id = resource.name
             cap = resource['r_cap']
-            node = nodes.iloc[n_i].copy()
+            node = nodes.loc[n_i].copy()
 
             # Determine fract of resource node to apply to requested node
             if node['r_cap'] > cap:
@@ -92,8 +94,8 @@ def nearest_power_nodes(node_collection, resource_meta):
                 node['site_ids'] += [file_id]
                 node['site_fracs'] += [frac]
 
-            r_nodes.iloc[r_i] = resource
-            nodes.iloc[n_i] = node
+            r_nodes.loc[r_i] = resource
+            nodes.loc[n_i] = node
 
         # Continue nearest neighbor search and resource distribution
         # until capacity is filled for all requested nodes
@@ -126,6 +128,8 @@ def nearest_met_nodes(node_collection, resource_meta):
     # Create and populate DataFrame from requested list of nodes
     nodes = pds.DataFrame(columns=['lat', 'lon', 'site_id'],
                           index=node_data[:, 0].astype(int))
+    nodes.index.name = 'node_id'
+
     nodes['lat'] = node_data[:, 1]
     nodes['lon'] = node_data[:, 2]
 
@@ -188,7 +192,7 @@ def download_resource_data(site_ids, dataset, resource_type, repo,
     else:
         raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
 
-    if repo._local_cache.size is not None:
+    if repo._local_cache._size is not None:
         cache_size, wind_size, solar_size = repo._local_cache.cache_size
         open_cache = repo._local_cache.max_size - cache_size
         if open_cache < data_size:
@@ -236,7 +240,7 @@ def get_resource_data(node_collection, repo, **kwargs):
     Finds nearest nodes, caches files to local datastore and assigns resource
     to node_collection
     """
-    nearest_nodes = repo.nearest_nodes(node_collection)
+    nearest_nodes = repo.nearest_neighbors(node_collection)
 
     if isinstance(node_collection, GeneratorNodeCollection):
         resource_type = 'power'
