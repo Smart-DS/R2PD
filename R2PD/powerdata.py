@@ -177,6 +177,9 @@ class NodeCollection(object):
             else:
                 raise IndexError
 
+    def __len__(self):
+        return(len(self.nodes))
+
     def assign_resource(self, resources):
         assert len(self) == len(resources)
         for node, resource in zip(self.nodes, resources):
@@ -193,7 +196,8 @@ class NodeCollection(object):
 
     @property
     def locations(self):
-        return [(node.latitude, node.longitude) for node in self.nodes]
+        return np.array([(node.latitude, node.longitude)
+                         for node in self.nodes])
 
 
 class GeneratorNodeCollection(NodeCollection):
