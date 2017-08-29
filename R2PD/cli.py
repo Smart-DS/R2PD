@@ -196,23 +196,27 @@ def cli_main():
     t_run = (time.time() - ts) / 60
     print('Resource sites downloaded in {:.4f} minutes'.format(t_run))
 
-    # 4. Calculate the data
-
-    # 6. Format and save to disk
+    # 4. Format and save to disk
     temporal_params = TemporalParameters(args.temporal_extent,
                                          args.point_interpretation,
                                          timezone=args.timezone,
                                          resolution=args.temporal_resolution)
     # todo: Set up library and match shaper and formatter arguments to objects
-    shaper = args.shaper
-    formatter = args.formatter
+    shaper = None
+    if args.shaper != 'None':
+        shaper = args.shaper
+
+    formatter = None
+    if args.formatter != 'None':
+        formatter = args.formatter
+
     if args.mode == 'weather':
         nodes.get_weather(temporal_params, shaper=shaper)
         nodes.save_weather(args.outdir, formatter=formatter)
     elif args.mode == 'actual-power':
         nodes.get_power(temporal_params, shaper=shaper)
         nodes.save_power(args.outdir, formatter=formatter)
-    else:
+    else:  # TODO how to handle getting power and forecast in one call?
         assert args.mode == 'forecast-power'
         forecast_params = None
         if args.forecast_type == 'discrete_leadtimes':
