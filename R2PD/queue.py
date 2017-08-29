@@ -33,7 +33,7 @@ def nearest_power_nodes(node_collection, resource_meta):
         node_data = node_collection
 
     # Create and populate DataFrame from requested list of nodes
-    nodes = pds.DataFrame(columns=['node_id', 'lat', 'lon', 'cap', 'site_ids',
+    nodes = pds.DataFrame(columns=['node_id', 'lat', 'lon', 'cap', 'site_id',
                                    'site_fracs', 'r_cap'],
                           index=node_data[:, 0].astype(int))
     nodes.index.name = 'node_id'
@@ -87,11 +87,11 @@ def nearest_power_nodes(node_collection, resource_meta):
                 resource['r_cap'] += -1 * node['r_cap']
                 node['r_cap'] = 0
 
-            if np.all(pds.isnull(node['site_ids'])):
-                node['site_ids'] = [file_id]
+            if np.all(pds.isnull(node['site_id'])):
+                node['site_id'] = [file_id]
                 node['site_fracs'] = [frac]
             else:
-                node['site_ids'] += [file_id]
+                node['site_id'] += [file_id]
                 node['site_fracs'] += [frac]
 
             r_nodes.loc[r_i] = resource
@@ -102,7 +102,7 @@ def nearest_power_nodes(node_collection, resource_meta):
         if np.sum(nodes['r_cap'] > 0) == 0:
             break
 
-    return nodes[['lat', 'lon', 'cap', 'site_ids', 'site_fracs']]
+    return nodes[['lat', 'lon', 'cap', 'site_id', 'site_fracs']]
 
 
 def nearest_met_nodes(node_collection, resource_meta):
@@ -256,18 +256,18 @@ def get_resource_data(node_collection, repo, **kwargs):
 
     if isinstance(node_collection, GeneratorNodeCollection):
         resource_type = 'power'
-        site_ids = np.concatenate(nearest_nodes['site_ids'].values)
+        site_ids = np.concatenate(nearest_nodes['site_id'].values)
         site_ids = np.unique(site_ids)
     else:
         resource_type = 'met'
-        site_ids = nearest_nodes['site_ids'].values
+        site_ids = nearest_nodes['site_id'].values
 
     dataset = node_collection._dataset
 
     download_resource_data(site_ids, dataset, resource_type, repo, **kwargs)
 
     for node, meta in nearest_nodes.iterrows():
-        site_id = meta['site_ids']
+        site_id = meta['site_id']
         if isinstance(site_id, list):
             fracs = meta['site_fracs']
             resource = ResourceList([repo.get_resource(dataset, site, frac=f)

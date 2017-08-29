@@ -4,7 +4,7 @@ import dateutil
 
 import pandas as pds
 
-from .datastore import DRPower
+from .datastore import DRPower, Peregrine
 from .powerdata import (NodeCollection, WindGeneratorNode, SolarGeneratorNode,
                         WindMetNode, SolarMetNode)
 from queue import get_resource_data
@@ -19,10 +19,8 @@ def cli_parser():
                         default='DRPower',
                         help='''Name of the external datastore to query for
                         resource data not yet cached locally.''')
-    parser.add_argument('-ec', '--ext-ds-config', help=''''Path to external
+    parser.add_argument('-ds', '--ds-config', help=''''Path to
         datastore configuration file.''')
-    parser.add_argument('-ic', '--int-ds-config', help='''Path to internal
-        datastore (cache) configuration file.''')
 
     subparsers = parser.add_subparsers(dest='mode')
     actual_parser = subparsers.add_parser('actual-power')
@@ -50,7 +48,7 @@ def cli_parser():
                             help='''Timezone for all output data. Also used in
                             interpreting temporal-extent if no explicit
                             timezone is provided for those inputs.''',
-                            choices=['UTC'], default='UTC')  # todo: Make actual list of choices
+                            choices=['UTC'], default='UTC') # todo: Make actual list of choices
         parser.add_argument('-r', '--temporal-resolution',
                             help='''Resolution for output timeseries data.
                             Default is to retain the native resolution.''')
@@ -134,7 +132,8 @@ def cli_main():
     # todo: Implmement library mechanism for finding external datastore options
     #       and matching string description to class.
     # 1 connect to external datastore
-    ext_store = DRPower.connect(config=args.ext_ds_config)
+    # ext_store = DRPower.connect(config=args.ext_ds_config)
+    ext_store = Peregrine.connect(config=args.ds_config)
 
     # 2. Load node data and initialize NodeCollections
     nodes = None

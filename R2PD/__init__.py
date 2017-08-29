@@ -1,4 +1,7 @@
-from .powerdata import Node, WindGeneratorNode, NodeCollection
-from .resourcedata import Resource
-from .queue import nearest_power_nodes
-from .datastore import InternalDataStore
+import os
+from .datastore import DRPower
+from .powerdata import NodeCollection
+from .queue import get_resource_data
+
+cli_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                        'bin', 'rdt.py')

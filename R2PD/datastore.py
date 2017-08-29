@@ -262,6 +262,17 @@ class InternalDataStore(DataStore):
 
         return repo_size
 
+    @classmethod
+    def get_cache_summary(cls, path):
+        cache_meta = pds.read_csv(path, index_col=0)
+        summary = pds.Series()
+        summary['sites'] = len(cache_meta)
+        for col in cache_meta.columns:
+            if col != 'sub_directory':
+                summary[col] = cache_meta[col].sum()
+
+        return summary
+
     def initialize_cache_metas(self):
         for dataset in ['wind', 'solar']:
             if dataset == 'wind':
@@ -389,3 +400,17 @@ class InternalDataStore(DataStore):
         solar_cache = self.get_cache_size(self._solar_root)
 
         return total_cache, wind_cache, solar_cache
+
+    @property
+    def cache_summary(self):
+        """
+        Summarize sites and resource types in cache
+        """
+
+        wind_summary = self.get_cache_summary(self._wind_cache)
+        wind_summary.name = 'wind'
+
+        solar_summary = self.get_cache_summary(self._solar_cache)
+        solar_summary.name = 'solar'
+
+        return pds.concat((wind_summary, solar_summary), axis=1).T
