@@ -69,9 +69,10 @@ class Resource(object):
 
     def extract_data(self, data_type):
         file_path = self._file_path.replace('*', data_type.split('_')[0])
-        with h5py(file_path, 'r') as h5_file:
+        with h5py.File(file_path, 'r') as h5_file:
             data = h5_file[data_type][...]
 
+        data = pds.DataFrame(data)
         data['time'] = pds.to_datetime(data['time'].str.decode('utf-8'))
         data = data.set_index('time')
 
@@ -119,9 +120,10 @@ class SolarResource(Resource):
     @property
     def irradiance_data(self):
         file_path = self._file_path.replace('*', 'met')
-        with h5py(file_path, 'r') as h5_file:
+        with h5py.File(file_path, 'r') as h5_file:
             data = h5_file['irradiance_data'][...]
 
+        data = pds.DataFrame(data)
         data['time'] = pds.to_datetime(data['time'].str.decode('utf-8'))
         data = data.set_index('time')
 
