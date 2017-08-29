@@ -1,14 +1,18 @@
 import argparse
 import datetime as dt
 import dateutil
-
+import logging
 import pandas as pds
+import time
 
 from .datastore import DRPower, Peregrine
 from .powerdata import (NodeCollection, WindGeneratorNode, SolarGeneratorNode,
                         WindMetNode, SolarMetNode)
-from queue import get_resource_data
+from .queue import get_resource_data
 from .tshelpers import TemporalParameters, ForecastParameters
+
+
+logger = logging.getLogger(__name__)
 
 
 def cli_parser():
@@ -114,10 +118,18 @@ def cli_parser():
             parser = subparsers.add_parser(resource_type)
             append_generator_args(parser, forecasts=forecasts)
 
+    def append_weather_subparsers(parser):
+        subparsers = parser.add_subparsers(dest='type')
+        for resource_type in resource_types:
+            parser = subparsers.add_parser(resource_type)
+            append_weather_args(parser)
+
     append_generator_subparsers(actual_parser)
     append_generator_subparsers(forecast_parser, forecasts=True)
+    append_weather_subparsers(weather_parser)
 
-    append_weather_args(weather_parser)
+    parser.add_argument('-d', '--debug', action='store_true', default=False,
+                        help="Option to output debug information.")
 
     return parser
 
@@ -125,6 +137,10 @@ def cli_parser():
 def cli_main():
     parser = cli_parser()
     args = parser.parse_args()
+
+    log_level = logging.DEBUG if args.debug else logging.INFO
+    fmt = '%(asctime)s|%(levelname)s|%(name)s|\n    %(message)s'
+    logging.basicConfig(format=fmt, level=log_level)  # to console
 
     # 0. Set up logging, connect to data stores, and make output directory
     # assert args.external_datastore == 'DRPower'
@@ -134,6 +150,14 @@ def cli_main():
     # 1 connect to external datastore
     # ext_store = DRPower.connect(config=args.ext_ds_config)
     ext_store = Peregrine.connect(config=args.ds_config)
+    total_size, wind_size, solar_size = ext_store._local_cache.cache_size
+    max_size = ext_store._local_cache._size
+    print('''Local Cache Initialized: \n
+    Maximum size = {m} GB\n
+    Current size = {t} GB\n
+    \t Cached wind data = {w} GB \n
+    \t Cached solar data = {s} GB
+    '''.format(m=max_size, t=total_size, w=wind_size, s=solar_size))
 
     # 2. Load node data and initialize NodeCollections
     nodes = None
@@ -166,7 +190,11 @@ def cli_main():
     nodes = NodeCollection.factory(nodes)
 
     # 3 Download, cache, and apply resource to nodes
+    ts = time.time()
+    print('Downloading resource sites')
     nodes = get_resource_data(nodes, ext_store)
+    t_run = (time.time() - ts) / 60
+    print('Resource sites downloaded in {:.4f} minutes'.format(t_run))
 
     # 4. Calculate the data
 

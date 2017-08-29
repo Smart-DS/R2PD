@@ -16,7 +16,8 @@ power system modelers. Functionalities needed include:
 
 import inspect
 import numpy as np
-from .tshelpers import TemporalParameters
+import os
+from .tshelpers import TemporalParameters, ForecastParameters
 # from .library import DefaultTimeseriesShaper
 
 
@@ -47,6 +48,11 @@ class Node(object):
             raise RuntimeError("Resource must be defined before calling " +
                                caller + ".")
 
+    @classmethod
+    def _save_csv(cls, ts_or_df, filename):
+        filename = os.path.splitext(filename) + '.csv'
+        ts_or_df.to_csv(filename)
+
 
 class GeneratorNode(Node):
     def __init__(self, node_id, latitude, longitude, capacity):
@@ -70,29 +76,34 @@ class GeneratorNode(Node):
         power_data = self._resource.power_data
 
         if shaper is None:
-            return power_data
+            self.power = power_data
         else:
             ts_params = TemporalParameters.infer_params(power_data)
-            return shaper(power_data, ts_params, temporal_params)
+            self.power = shaper(power_data, ts_params, temporal_params)
 
-    def get_forecasts(self, temporal_params, forecast_params, shaper=None):
+    def get_forecasts(self, forecast_params, shaper=None):
         assert self._fcst
         self._require_resource()
         fcst_data = self._resource.forecast_data
         if shaper is None:
-            return fcst_data
+            self.fcst = fcst_data
+        else:
+            ts_params = TemporalParameters.infer_params(fcst_data)
+            ts_params = ForecastParameters('discrete_leadtimes', ts_params,
+                                           leadtimes=[24, 1, 4, 6])
+            self.fcst = shaper(fcst_data, ts_params, forecast_params)
+
+    def save_power(self, filename, formatter=None):
+        if formatter is None:
+            self._save_csv(self.power, filename)
         else:
             pass
 
-    def save_power(self, filename, formatter=None):
-        pass
-
     def save_forecasts(self, filename, formatter=None):
-        pass
-
-    @classmethod
-    def _get_power(cls, ts_or_df, temporal_params):
-        pass
+        if formatter is None:
+            self._save_csv(self.fcst, filename)
+        else:
+            pass
 
     @classmethod
     def _get_forecasts(cls, ts_or_df, temporal_params, forecast_params):
@@ -113,15 +124,18 @@ class WeatherNode(Node):
         met_data = self._resource.meteorological_data
 
         if shaper is None:
-            return met_data
+            self.met = met_data
         else:
             p_interp = 'instantaneous'
             ts_params = TemporalParameters.infer_params(met_data,
                                                         point_interp=p_interp)
-            shaper(met_data, ts_params, temporal_params)
+            self.met = shaper(met_data, ts_params, temporal_params)
 
     def save_weather(self, filename, formatter=None):
-        pass
+        if formatter is None:
+            self._save_csv(self.met, filename)
+        else:
+            pass
 
 
 class WindMetNode(WeatherNode):
@@ -131,15 +145,22 @@ class WindMetNode(WeatherNode):
 class SolarMetNode(WeatherNode):
     def get_irradiance(self, temporal_params, shaper=None):
         self._require_resource()
-        met_data = self._resource.met_data
+        irradiance_data = self._resource.irradiance_data
 
         if shaper is None:
-            return met_data
+            self.irradiance = irradiance_data
         else:
             p_interp = 'instantaneous'
-            ts_params = TemporalParameters.infer_params(met_data,
+            ts_params = TemporalParameters.infer_params(irradiance_data,
                                                         point_interp=p_interp)
-            shaper(met_data, ts_params, temporal_params)
+            self.irradiance = shaper(irradiance_data, ts_params,
+                                     temporal_params)
+
+    def save_irradiance(self, filename, formatter=None):
+        if formatter is None:
+            self._save_csv(self.irradiance, filename)
+        else:
+            pass
 
 
 class NodeCollection(object):
@@ -218,16 +239,42 @@ solar or wind nodes')
         return np.array(node_data)
 
     def get_power(self, temporal_params, shaper=None):
-        pass
+        for node in self.nodes:
+            node.get_power(temporal_params, shaper=shaper)
 
-    def get_forecasts(self, temporal_params, forecast_params, shaper=None):
-        pass
+    def get_forecasts(self, forecast_params, shaper=None):
+        for node in self.nodes:
+            node.get_fcst(forecast_params, shaper=shaper)
 
-    def save_power(self, filename_or_dir, formatter=None):
-        pass
+    def save_power(self, out_dir, file_prefix=None, formatter=None):
+        for node in self.nodes:
+            i = node.id
+            if file_prefix is None:
+                file_name = '{d}_power_{i}'.format(d=self._dataset, i=i)
+            else:
+                file_name = '{f}_{i}'.format(f=file_prefix, i=i)
 
-    def save_forecasts(self, filename_or_dir, formatter=None):
-        pass
+            file_name = os.path.join(out_dir, file_name)
+
+            if formatter is None:
+                node.save_power(file_name)
+            else:
+                pass
+
+    def save_forecasts(self, out_dir, file_prefix=None, formatter=None):
+        for node in self.nodes:
+            i = node.id
+            if file_prefix is None:
+                file_name = '{d}_fcst_{i}'.format(d=self._dataset, i=i)
+            else:
+                file_name = '{f}_{i}'.format(f=file_prefix, i=i)
+
+            file_name = os.path.join(out_dir, file_name)
+
+            if formatter is None:
+                node.save_fcst(file_name)
+            else:
+                pass
 
 
 class WeatherNodeCollection(NodeCollection):
@@ -248,7 +295,20 @@ solar or wind nodes')
         return np.array(node_data)
 
     def get_weather(self, temporal_params, shaper=None):
-        pass
+        for node in self.nodes:
+            node.get_weather(temporal_params, shaper=shaper)
 
-    def save_weather(self, filename_or_dir, formatter=None):
-        pass
+    def save_weather(self, out_dir, file_prefix=None, formatter=None):
+        for node in self.nodes:
+            i = node.id
+            if file_prefix is None:
+                file_name = '{d}_met_{i}'.format(d=self._dataset, i=i)
+            else:
+                file_name = '{f}_{i}'.format(f=file_prefix, i=i)
+
+            file_name = os.path.join(out_dir, file_name)
+
+            if formatter is None:
+                node.save_weather(file_name)
+            else:
+                pass
