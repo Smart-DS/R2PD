@@ -19,7 +19,7 @@ def cli_parser():
     parser = argparse.ArgumentParser(description='''Get wind, solar, or weather
                  data for power system modeling.''')
 
-    parser.add_argument('-e', '--external-datastore', choices=['DRPower'],
+    parser.add_argument('-e', '--external-datastore', choices=['DRPower', 'Peregrine'],
                         default='DRPower',
                         help='''Name of the external datastore to query for
                         resource data not yet cached locally.''')
@@ -140,7 +140,7 @@ def cli_main():
 
     log_level = logging.DEBUG if args.debug else logging.INFO
     fmt = '%(asctime)s|%(levelname)s|%(name)s|\n    %(message)s'
-    logging.basicConfig(format=fmt, level=log_level)  # to console
+    #logging.basicConfig(format=fmt, level=log_level)  # to console
 
     # 0. Set up logging, connect to data stores, and make output directory
     # assert args.external_datastore == 'DRPower'
@@ -164,14 +164,14 @@ def cli_main():
     NodeClass = None
     if args.mode == 'weather':
         NodeClass = WindMetNode if args.type == 'wind' else SolarMetNode
-        if isinstance(args.node, (list, tuple)):
+        if isinstance(args.nodes, (list, tuple)):
             nodes = pds.DataFrame(args.nodes,
                                   columns=['node_id', 'lat', 'long'])
         else:
             nodes = pds.read_csv(args.nodes)
     else:
         NodeClass = WindGeneratorNode if args.type == 'wind' else SolarGeneratorNode
-        if isinstance(args.node, (list, tuple)):
+        if isinstance(args.nodes, (list, tuple)):
             nodes = pds.DataFrame(args.nodes,
                                   columns=['node_id', 'lat', 'long'])
         else:
@@ -189,6 +189,9 @@ def cli_main():
              for ind, node_info in nodes.iterrows()]
     nodes = NodeCollection.factory(nodes)
 
+    print('Finding resource for {l} {c}s'
+          .format(l=len(nodes), c=NodeClass.__class__.__name__))
+
     # 3 Download, cache, and apply resource to nodes
     ts = time.time()
     print('Downloading resource sites')
@@ -197,18 +200,16 @@ def cli_main():
     print('Resource sites downloaded in {:.4f} minutes'.format(t_run))
 
     # 4. Format and save to disk
-    temporal_params = TemporalParameters(args.temporal_extent,
-                                         args.point_interpretation,
-                                         timezone=args.timezone,
-                                         resolution=args.temporal_resolution)
+    try:
+        temporal_params = TemporalParameters(args.temporal_extent,
+                                             args.point_interpretation,
+                                             timezone=args.timezone,
+                                             resolution=args.temporal_resolution)
+    except:
+        temporal_params = None
     # todo: Set up library and match shaper and formatter arguments to objects
-    shaper = None
-    if args.shaper != 'None':
-        shaper = args.shaper
-
-    formatter = None
-    if args.formatter != 'None':
-        formatter = args.formatter
+    shaper = args.shaper
+    formatter = args.formatter
 
     if args.mode == 'weather':
         nodes.get_weather(temporal_params, shaper=shaper)

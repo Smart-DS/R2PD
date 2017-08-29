@@ -149,7 +149,7 @@ class ResourceList(object):
     def power_data(self):
         power_data = self._resources[0].power_data
         if len(self) > 1:
-            for resource in self._resource[1:]:
+            for resource in self._resources[1:]:
                 power_data.add(resource.power_data)
 
         return power_data
@@ -158,7 +158,7 @@ class ResourceList(object):
     def forecast_data(self):
         fcst_data = self._resources[0].forecast_data
         if len(self) > 1:
-            for resource in self._resource[1:]:
+            for resource in self._resources[1:]:
                 fcst_data.add(resource.forecast_data)
 
         return fcst_data
@@ -167,7 +167,7 @@ class ResourceList(object):
     def forecast_probabilities(self):
         fcst_prob = self._resources[0].forecast_probabilities
         if len(self) > 1:
-            for resource in self._resource[1:]:
+            for resource in self._resources[1:]:
                 fcst_prob.add(resource.forecast_probabilities)
 
         return fcst_prob

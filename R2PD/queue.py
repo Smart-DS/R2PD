@@ -266,6 +266,7 @@ def get_resource_data(node_collection, repo, **kwargs):
 
     download_resource_data(site_ids, dataset, resource_type, repo, **kwargs)
 
+    resources = []
     for node, meta in nearest_nodes.iterrows():
         site_id = meta['site_id']
         if isinstance(site_id, list):
@@ -274,7 +275,8 @@ def get_resource_data(node_collection, repo, **kwargs):
                                      for site, f in zip(site_id, fracs)])
         else:
             resource = repo.get_resource(dataset, site_id)
+        resources.append(resource)
 
-        node_collection[node].assign_resource(resource)
+    node_collection.assign_resource(resources)
 
     return node_collection

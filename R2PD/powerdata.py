@@ -18,7 +18,7 @@ import inspect
 import numpy as np
 import os
 from .tshelpers import TemporalParameters, ForecastParameters
-# from .library import DefaultTimeseriesShaper
+from .library import DefaultTimeseriesShaper
 
 
 class Node(object):
@@ -45,12 +45,12 @@ class Node(object):
     def _require_resource(self):
         if not self._resource_assigned:
             caller = inspect.getouterframes(inspect.currentframe(), 2)[1][3]
-            raise RuntimeError("Resource must be defined before calling " +
-                               caller + ".")
+            raise RuntimeError("Resource must be defined for node {:} before \
+calling ".format(self.id) + caller + ".")
 
     @classmethod
     def _save_csv(cls, ts_or_df, filename):
-        filename = os.path.splitext(filename) + '.csv'
+        filename = os.path.splitext(filename)[0] + '.csv'
         ts_or_df.to_csv(filename)
 
 
@@ -74,10 +74,12 @@ class GeneratorNode(Node):
         """
         self._require_resource()
         power_data = self._resource.power_data
-
-        if shaper is None:
+        if temporal_params is None:
             self.power = power_data
         else:
+            if shaper is None:
+                shaper = DefaultTimeseriesShaper
+
             ts_params = TemporalParameters.infer_params(power_data)
             self.power = shaper(power_data, ts_params, temporal_params)
 
@@ -179,7 +181,7 @@ class NodeCollection(object):
         return '{c} contains {n} nodes'.format(c=self.__class__.__name__,
                                                n=len(self.nodes))
 
-    def __getitem__(self, index):
+    def __getitem__(self, node_id):
             """
             Exract variable 'variable_name' from dataset.
             Parameters
@@ -192,8 +194,8 @@ class NodeCollection(object):
             'nc.dataset.variable'
                 variable instance from dataset, to get values call [:]
             """
-            if index in self._ids:
-                pos = self._ids.index(index)
+            if node_id in self._ids:
+                pos = self._ids.index(node_id)
                 return self.nodes[pos]
             else:
                 raise IndexError
@@ -201,10 +203,17 @@ class NodeCollection(object):
     def __len__(self):
         return(len(self.nodes))
 
-    def assign_resource(self, resources):
-        assert len(self) == len(resources)
-        for node, resource in zip(self.nodes, resources):
-            node.assign_resource(resource)
+    def assign_resource(self, resources, node_ids=None):
+        if node_ids is None:
+            assert len(self) == len(resources), 'number of resources ({r}) \
+does not match number of nodes ({n})'.format(r=len(resources), n=len(self))
+            for node, resource in zip(self.nodes, resources):
+                node.assign_resource(resource)
+        else:
+            assert len(node_ids) == len(resources), 'number of resources ({r}) \
+does not match number of nodes ({n})'.format(r=len(resources), n=len(node_ids))
+            for i, resource in zip(node_ids, resources):
+                self[i].assign_resource(resource)
 
     @classmethod
     def factory(cls, nodes):
