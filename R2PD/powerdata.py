@@ -84,7 +84,7 @@ class GeneratorNode(Node):
             self.power = shaper(power_data, ts_params, temporal_params)
 
     def get_forecasts(self, forecast_params, shaper=None):
-        assert self._fcst
+        #assert self._fcst
         self._require_resource()
         fcst_data = self._resource.forecast_data
         if forecast_params is None:
