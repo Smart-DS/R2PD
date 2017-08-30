@@ -12,12 +12,12 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
         time_index = ts.index
 
         out_start, out_end = out_tempparams.extent
-        if out_tempparams is None:
+        out_dt = out_tempparams.resolution
+        if out_dt is None:
             out_dt = ts_tempparams.resolution
-        else:
-            out_dt = out_tempparams.resolution
 
-        out_time = pds.date_range(out_start, out_end, freq=out_dt, closed='left')
+        out_time = pds.date_range(out_start, out_end, freq=out_dt,
+                                  closed='left')
 
         # aggegregating or disaggregating?
 

@@ -78,7 +78,7 @@ class GeneratorNode(Node):
             self.power = power_data
         else:
             if shaper is None:
-                shaper = DefaultTimeseriesShaper
+                shaper = DefaultTimeseriesShaper()
 
             ts_params = TemporalParameters.infer_params(power_data)
             self.power = shaper(power_data, ts_params, temporal_params)
@@ -128,7 +128,7 @@ class WeatherNode(Node):
             self.met = met_data
         else:
             if shaper is None:
-                shaper = DefaultTimeseriesShaper
+                shaper = DefaultTimeseriesShaper()
 
             ts_params = TemporalParameters.infer_params(met_data,)
             self.met = shaper(met_data, ts_params, temporal_params)

@@ -39,10 +39,10 @@ def cli_parser():
                             of tuples describing nodes. Each tuple or each row
                             of the csv file should contain (node_id, latitude,
                             longitude).''')
-        parser.add_argument('temporal-extent',
+        parser.add_argument('temporal_extent',
                             help='''Start and end datetimes for output
                             data.''', nargs=2, type=dateutil.parser.parse)
-        parser.add_argument('point-interpretation',
+        parser.add_argument('point_interpretation',
                             help='''Interpretation that will be assumed for
                             output timeseries values. Can affect exactly which
                             raw data points are pulled, and any upscaling or
@@ -138,12 +138,10 @@ def cli_parser():
 def cli_main():
     parser = cli_parser()
     args = parser.parse_args()
-    try:
-        args.
 
-    log_level = logging.DEBUG if args.debug else logging.INFO
+    log_level = logging.DEBUG if args.debug else logging.WARN
     fmt = '%(asctime)s|%(levelname)s|%(name)s|\n    %(message)s'
-    #logging.basicConfig(format=fmt, level=log_level)  # to console
+    logging.basicConfig(format=fmt, level=log_level)  # to console
 
     # 0. Set up logging, connect to data stores, and make output directory
     # assert args.external_datastore == 'DRPower'
@@ -210,6 +208,7 @@ def cli_main():
           .format(n=sites, t=t_run))
 
     # 4. Format and save to disk
+
     temporal_params = TemporalParameters(args.temporal_extent,
                                          args.point_interpretation,
                                          timezone=args.timezone,
