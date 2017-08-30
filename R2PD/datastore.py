@@ -245,9 +245,8 @@ class InternalDataStore(DataStore):
 
             size = cls.decode_config_entry(config_parser.get('local_cache',
                                                              'size'))
-            size = int(size)
-            if size == 'None' or '':
-                size = None
+            if size is not None:
+                size = int(size)
 
         return InternalDataStore(size=size)
 
