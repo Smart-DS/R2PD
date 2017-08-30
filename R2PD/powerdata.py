@@ -87,13 +87,16 @@ class GeneratorNode(Node):
         assert self._fcst
         self._require_resource()
         fcst_data = self._resource.forecast_data
-        if shaper is None:
+        if forecast_params is None:
             self.fcst = fcst_data
         else:
-            ts_params = TemporalParameters.infer_params(fcst_data)
-            ts_params = ForecastParameters('discrete_leadtimes', ts_params,
-                                           leadtimes=[24, 1, 4, 6])
-            self.fcst = shaper(fcst_data, ts_params, forecast_params)
+            if shaper is None:
+                self.fcst = fcst_data
+            else:
+                ts_params = TemporalParameters.infer_params(fcst_data)
+                ts_params = ForecastParameters('discrete_leadtimes', ts_params,
+                                               leadtimes=[24, 1, 4, 6])
+                self.fcst = shaper(fcst_data, ts_params, forecast_params)
 
     def save_power(self, filename, formatter=None):
         if formatter is None:
@@ -106,10 +109,6 @@ class GeneratorNode(Node):
             self._save_csv(self.fcst, filename)
         else:
             pass
-
-    @classmethod
-    def _get_forecasts(cls, ts_or_df, temporal_params, forecast_params):
-        pass
 
 
 class WindGeneratorNode(GeneratorNode):
@@ -125,12 +124,13 @@ class WeatherNode(Node):
         self._require_resource()
         met_data = self._resource.meteorological_data
 
-        if shaper is None:
+        if temporal_params is None:
             self.met = met_data
         else:
-            p_interp = 'instantaneous'
-            ts_params = TemporalParameters.infer_params(met_data,
-                                                        point_interp=p_interp)
+            if shaper is None:
+                shaper = DefaultTimeseriesShaper
+
+            ts_params = TemporalParameters.infer_params(met_data,)
             self.met = shaper(met_data, ts_params, temporal_params)
 
     def save_weather(self, filename, formatter=None):
@@ -149,12 +149,13 @@ class SolarMetNode(WeatherNode):
         self._require_resource()
         irradiance_data = self._resource.irradiance_data
 
-        if shaper is None:
+        if temporal_params is None:
             self.irradiance = irradiance_data
         else:
-            p_interp = 'instantaneous'
-            ts_params = TemporalParameters.infer_params(irradiance_data,
-                                                        point_interp=p_interp)
+            if shaper is None:
+                shaper = DefaultTimeseriesShaper
+
+            ts_params = TemporalParameters.infer_params(irradiance_data)
             self.irradiance = shaper(irradiance_data, ts_params,
                                      temporal_params)
 

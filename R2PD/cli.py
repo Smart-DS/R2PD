@@ -2,6 +2,7 @@ import argparse
 import datetime as dt
 import dateutil
 import logging
+import numpy as np
 import pandas as pds
 import time
 
@@ -137,6 +138,8 @@ def cli_parser():
 def cli_main():
     parser = cli_parser()
     args = parser.parse_args()
+    try:
+        args.
 
     log_level = logging.DEBUG if args.debug else logging.INFO
     fmt = '%(asctime)s|%(levelname)s|%(name)s|\n    %(message)s'
@@ -153,10 +156,10 @@ def cli_main():
     total_size, wind_size, solar_size = ext_store._local_cache.cache_size
     max_size = ext_store._local_cache._size
     print('''Local Cache Initialized: \n
-    Maximum size = {m} GB\n
-    Current size = {t} GB\n
-    \t Cached wind data = {w} GB \n
-    \t Cached solar data = {s} GB
+    Maximum size = {m:.2f} GB\n
+    Current size = {t:.2f} GB\n
+    \t Cached wind data = {w:.2f} GB \n
+    \t Cached solar data = {s:.2f} GB
     '''.format(m=max_size, t=total_size, w=wind_size, s=solar_size))
 
     # 2. Load node data and initialize NodeCollections
@@ -190,26 +193,32 @@ def cli_main():
     nodes = NodeCollection.factory(nodes)
 
     print('Finding resource for {l} {c}s'
-          .format(l=len(nodes), c=NodeClass.__class__.__name__))
+          .format(l=len(nodes), c=NodeClass.__name__))
 
     # 3 Download, cache, and apply resource to nodes
     ts = time.time()
     print('Downloading resource sites')
-    nodes = get_resource_data(nodes, ext_store)
+    nodes, nearest = get_resource_data(nodes, ext_store)
     t_run = (time.time() - ts) / 60
-    print('Resource sites downloaded in {:.4f} minutes'.format(t_run))
+
+    if args.mode == 'weather':
+        sites = len(nearest['site_id'].values)
+    else:
+        sites = len(np.unique(np.concatenate(nearest['site_id'].values)))
+
+    print('{n} resource sites downloaded in {t:.4f} minutes'
+          .format(n=sites, t=t_run))
 
     # 4. Format and save to disk
-    try:
-        temporal_params = TemporalParameters(args.temporal_extent,
-                                             args.point_interpretation,
-                                             timezone=args.timezone,
-                                             resolution=args.temporal_resolution)
-    except:
-        temporal_params = None
+    temporal_params = TemporalParameters(args.temporal_extent,
+                                         args.point_interpretation,
+                                         timezone=args.timezone,
+                                         resolution=args.temporal_resolution)
+
     # todo: Set up library and match shaper and formatter arguments to objects
     shaper = args.shaper
     formatter = args.formatter
+    print('Saving processed resource data to {:}'.format(args.outdir))
 
     if args.mode == 'weather':
         nodes.get_weather(temporal_params, shaper=shaper)

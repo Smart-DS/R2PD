@@ -199,12 +199,12 @@ def download_resource_data(site_ids, dataset, resource_type, repo,
         open_cache = repo._local_cache._size - cache_size
         if open_cache < data_size:
             raise RuntimeError('Not enough space available in local cache: \
-\nDownload size = {d}GB \
-\nLocal cache = {c}GB of {m}GB in use \
-\n\tCached wind data = {w}GB \
-\n\tCached solar data = {s}GB'.format(d=data_size, c=cache_size,
-                                      m=repo._local_cache._size,
-                                      w=wind_size, s=solar_size))
+\nDownload size = {d:.2f}GB \
+\nLocal cache = {c:.2f}GB of {m:.2f}GB in use \
+\n\tCached wind data = {w:.2f}GB \
+\n\tCached solar data = {s:.2f}GB'.format(d=data_size, c=cache_size,
+                                          m=repo._local_cache._size,
+                                          w=wind_size, s=solar_size))
 
     files = []
     for site in site_ids:
@@ -279,4 +279,4 @@ def get_resource_data(node_collection, repo, **kwargs):
 
     node_collection.assign_resource(resources)
 
-    return node_collection
+    return node_collection, nearest_nodes
