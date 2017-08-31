@@ -22,55 +22,95 @@ from .library import DefaultTimeseriesShaper
 
 
 class Node(object):
+    """
+    Abstract class for a single Node
+    """
     def __init__(self, node_id, latitude, longitude):
+        """
+        Initialize generic Node object
+        Parameters
+        ----------
+        node_id : 'string'|'int'
+            Node id, must be an integer
+        latitude : 'float'
+            Latitude of node
+        longitude : 'float'
+            Longitude of node
+        """
         self._resource_assigned = False
         self.id = int(node_id)
         self.latitude = latitude
         self.longitude = longitude
 
     def __repr__(self):
+        """
+        Prints the type of node and its id
+        """
         return '{n} {i}'.format(n=self.__class__.__name__, i=self.id)
 
     def assign_resource(self, resource):
         """
-        Parameters:
-            - ResourceData or list of ResourceList
-                - nearby site(s) from which power actuals and/or forecast data
-                  will be constructed.
-                  ResourceData type must match the GeneratorNode type.
+        Assign resource to Node
+        Parameters
+        ----------
+        resource : 'Resource'|'ResourceList'
+            Resource or ResourceList instance with resource site(s) for node
         """
         self._resource_assigned = True
         self._resource = resource
 
     def _require_resource(self):
+        """
+        Checks to ensure resource has been assigned
+        """
         if not self._resource_assigned:
             caller = inspect.getouterframes(inspect.currentframe(), 2)[1][3]
             raise RuntimeError("Resource must be defined for node {:} before \
 calling ".format(self.id) + caller + ".")
 
     @classmethod
-    def _save_csv(cls, ts_or_df, filename):
-        filename = os.path.splitext(filename)[0] + '.csv'
-        ts_or_df.to_csv(filename)
+    def _save_csv(cls, df, file_path):
+        """
+        Saves data to csv with given file_path
+        Parameters
+        ----------
+        df : 'pandas.DataFrame'
+            timeseries data to be saved
+        """
+        file_path = os.path.splitext(file_path)[0] + '.csv'
+        df.to_csv(file_path)
 
 
 class GeneratorNode(Node):
+    """
+    Abstract class for GeneratorNode
+    """
     def __init__(self, node_id, latitude, longitude, capacity):
+        """
+        Initialize generic GeneratorNode object
+        Parameters
+        ----------
+        node_id : 'string'|'int'
+            Node id, must be an integer
+        latitude : 'float'
+            Latitude of node
+        longitude : 'float'
+            Longitude of node
+        capacity : 'float'
+            Capacity of generator in MW
+        """
         super(GeneratorNode, self).__init__(node_id, latitude, longitude)
         self.capacity = capacity
 
     def get_power(self, temporal_params, shaper=None):
         """
-        Parameters:
-            - temporal_params (TemporalParameters)
-                - requirements for timeseries output
-            - shaper (function or callable conforming to the
-                TimeseriesShaper.__call__ interface)
-                    -  method for converting between the resource_data time
-                    convenctions, to those defined by temporal_params
-
-        Returns actual power timeseries for this GeneratorNode based on the
-        resource_data that has already been assigned.
+        Extracts and processes power data for Node
+        Parameters
+        ----------
+        temporal_params : 'TemporalParameters'
+            Requiements for timeseries output
+        shaper : 'TimeseriesShaper'|'function'
+            Method to convert Resource data into required output
         """
         self._require_resource()
         power_data = self._resource.power_data
@@ -84,6 +124,15 @@ class GeneratorNode(Node):
             self.power = shaper(power_data, ts_params, temporal_params)
 
     def get_forecasts(self, forecast_params, shaper=None):
+        """
+        Extracts and processes forecast data for Node
+        Parameters
+        ----------
+        forecast_params : 'ForecastParameters'
+            Requiements for forecast output
+        shaper : 'ForecastShaper'|'function'
+            Method to convert forecast data into required output
+        """
         #assert self._fcst
         self._require_resource()
         fcst_data = self._resource.forecast_data
@@ -98,29 +147,65 @@ class GeneratorNode(Node):
                                                leadtimes=[24, 1, 4, 6])
                 self.fcst = shaper(fcst_data, ts_params, forecast_params)
 
-    def save_power(self, filename, formatter=None):
+    def save_power(self, file_path, formatter=None):
+        """
+        Save power data to disc
+        Parameters
+        ----------
+        file_path : 'string'
+            Output file path
+        formatter : ''
+            Method to save powerdata to desired format
+        """
         if formatter is None:
-            self._save_csv(self.power, filename)
+            self._save_csv(self.power, file_path)
         else:
             pass
 
-    def save_forecasts(self, filename, formatter=None):
+    def save_forecasts(self, file_path, formatter=None):
+        """
+        Save forecast data to disc
+        Parameters
+        ----------
+        file_path : 'string'
+            Output file path
+        formatter : ''
+            Method to save powerdata to desired format
+        """
         if formatter is None:
-            self._save_csv(self.fcst, filename)
+            self._save_csv(self.fcst, file_path)
         else:
             pass
 
 
 class WindGeneratorNode(GeneratorNode):
+    """
+    Class for Wind Generator Nodes
+    """
     pass
 
 
 class SolarGeneratorNode(GeneratorNode):
+    """
+    Class for Solar Generator Nodes
+    """
     pass
 
 
 class WeatherNode(Node):
+    """
+    Abstract Class for Weather Nodes
+    """
     def get_weather(self, temporal_params, shaper=None):
+        """
+        Extracts and processes weather data for Node
+        Parameters
+        ----------
+        temporal_params : 'TemporalParameters'
+            Requiements for timeseries output
+        shaper : 'TimeseriesShaper'|'function'
+            Method to convert Resource data into required output
+        """
         self._require_resource()
         met_data = self._resource.meteorological_data
 
@@ -133,19 +218,43 @@ class WeatherNode(Node):
             ts_params = TemporalParameters.infer_params(met_data,)
             self.met = shaper(met_data, ts_params, temporal_params)
 
-    def save_weather(self, filename, formatter=None):
+    def save_weather(self, file_path, formatter=None):
+        """
+        Save weather data to disc
+        Parameters
+        ----------
+        file_path : 'string'
+            Output file path
+        formatter : ''
+            Method to save powerdata to desired format
+        """
         if formatter is None:
-            self._save_csv(self.met, filename)
+            self._save_csv(self.met, file_path)
         else:
             pass
 
 
 class WindMetNode(WeatherNode):
+    """
+    Class for Wind Weather Nodes
+    """
     pass
 
 
 class SolarMetNode(WeatherNode):
+    """
+    Class for Solar Weather Nodes
+    """
     def get_irradiance(self, temporal_params, shaper=None):
+        """
+        Extracts and processes irradiance data for Node
+        Parameters
+        ----------
+        temporal_params : 'TemporalParameters'
+            Requiements for timeseries output
+        shaper : 'TimeseriesShaper'|'function'
+            Method to convert Resource data into required output
+        """
         self._require_resource()
         irradiance_data = self._resource.irradiance_data
 
@@ -160,6 +269,15 @@ class SolarMetNode(WeatherNode):
                                      temporal_params)
 
     def save_irradiance(self, filename, formatter=None):
+        """
+        Save weather data to disc
+        Parameters
+        ----------
+        file_path : 'string'
+            Output file path
+        formatter : ''
+            Method to save powerdata to desired format
+        """
         if formatter is None:
             self._save_csv(self.irradiance, filename)
         else:
@@ -168,9 +286,9 @@ class SolarMetNode(WeatherNode):
 
 class NodeCollection(object):
     """
-    List of nodes of the same type, with resource data already definied. This
-    class is provided to give a DataFrame, rather than a Series, interface for
-    processing timeseries data in bulk.
+    Abstract Class of list of nodes of the same type.
+    This class is provided to interface w/ Pandas for processing timeseries
+    data in bulk. (TODO)
     """
     def __init__(self, nodes):
         # todo: implement iterating over this class work to avoid

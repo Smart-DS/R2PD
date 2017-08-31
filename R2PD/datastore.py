@@ -31,9 +31,6 @@ class DataStore(object):
         solar_dir: 'string'
             Name of directory in which solar data is/will be stored
             if None set to 'solar'
-
-        Returns
-        ---------
         """
         if self.ROOT_PATH is not None:
             if wind_dir is None:
@@ -51,11 +48,6 @@ class DataStore(object):
     def __repr__(self):
         """
         Print the type of datastore and its ROOT_PATH
-        Parameters
-        ----------
-
-        Returns
-        ---------
         """
         return '{n} at {i}'.format(n=self.__class__.__name__,
                                    i=self.ROOT_PATH)
@@ -99,9 +91,6 @@ class ExternalDataStore(DataStore):
             InternalDataStore object represening internal data cache
         **kwargs :
             kwargs for DataStore
-
-        Returns
-        ---------
         """
         if local_cache is None:
             local_cache = InternalDataStore.connect()
@@ -171,9 +160,6 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
             Path to source file to be downloaded
         dst : 'string'
             Path to destination directory of file path
-
-        Returns
-        ---------
         """
         pass
 
@@ -257,9 +243,6 @@ class Peregrine(ExternalDataStore):
             Peregrine password
         **kwargs :
             kwargs for ExternalDataStore
-
-        Returns
-        ---------
         """
         self._username = username
         self._password = password
@@ -277,9 +260,6 @@ class Peregrine(ExternalDataStore):
             Path to destination directory of file path
         timeout : 'int'
             Timeout in seconds
-
-        Returns
-        ---------
         """
         if os.path.basename(src) == os.path.basename(dst):
             file_path = dst
@@ -355,9 +335,6 @@ class Scratch(ExternalDataStore):
             Path to destination directory of file path
         timeout : 'int'
             Timeout in seconds
-
-        Returns
-        ---------
         """
         if os.path.basename(src) == os.path.basename(dst):
             file_path = dst
@@ -402,9 +379,6 @@ class InternalDataStore(DataStore):
             Maximum local cache size in GB
         **kwargs :
             kwargs for DataStore
-
-        Returns
-        ---------
         """
         self._size = size
         super(InternalDataStore, self).__init__(**kwargs)
@@ -540,9 +514,6 @@ class InternalDataStore(DataStore):
         ----------
         dataset : 'string'
             'wind' or 'solar'
-
-        Returns
-        ---------
         """
         if dataset == 'wind':
             cache_path = self._wind_cache
@@ -591,9 +562,6 @@ class InternalDataStore(DataStore):
             'wind' or 'solar'
         site : 'string'
             Path to resource file for site
-
-        Returns
-        ---------
         """
         if dataset == 'wind':
             cache_path = self._wind_cache
@@ -676,9 +644,6 @@ class InternalDataStore(DataStore):
             'wind' or 'solar'
         site : 'string'
             Path to resource file for site
-
-        Returns
-        ---------
         """
         for site in sites:
             self.cache_site(dataset, site)
