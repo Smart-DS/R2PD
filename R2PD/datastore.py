@@ -1,6 +1,6 @@
 """
-This module provides classes for accessing site-level wind and solar data from
-internal and external data stores.
+This module provides classes for accessing site-level wind and solar data
+from internal and external data stores.
 """
 
 from configparser import ConfigParser
@@ -15,9 +15,26 @@ from .Timeout import Timeout
 
 
 class DataStore(object):
+    """
+    Abstract class to define interface for accessing stores of resource data.
+    """
     ROOT_PATH = None
 
     def __init__(self, wind_dir=None, solar_dir=None):
+        """
+        Initialize generic DataStore object
+        Parameters
+        ----------
+        wind_dir : 'string'
+            Name of directory in which wind data is/will be stored
+            if None set to 'wind'
+        solar_dir: 'string'
+            Name of directory in which solar data is/will be stored
+            if None set to 'solar'
+
+        Returns
+        ---------
+        """
         if self.ROOT_PATH is not None:
             if wind_dir is None:
                 self._wind_root = os.path.join(self.ROOT_PATH, 'wind')
@@ -32,11 +49,32 @@ class DataStore(object):
             raise ValueError('ROOT_PATH must be defined')
 
     def __repr__(self):
+        """
+        Print the type of datastore and its ROOT_PATH
+        Parameters
+        ----------
+
+        Returns
+        ---------
+        """
         return '{n} at {i}'.format(n=self.__class__.__name__,
                                    i=self.ROOT_PATH)
 
     @classmethod
     def decode_config_entry(cls, entry):
+        """
+        Decode config entry converting missing or 'None' entires to None
+        Parameters
+        ----------
+        entry : 'string'
+            entry from ConfigParser call
+
+        Returns
+        ---------
+        entry : 'string' or None
+            if config entry is not 'None' or empty the entry is returned
+            else None is returned
+        """
         if entry == 'None' or '':
             return None
         else:
@@ -45,14 +83,26 @@ class DataStore(object):
 
 class ExternalDataStore(DataStore):
     """
-    Abstract class to define interface for accessing stores of resource data.
+    Abstract class to define interface for accessing external stores
+    of resource data.
     """
     # Average File size in MB currently estimates
     WIND_FILE_SIZES = {'met': 14, 'power': 5, 'fcst': 2}
     SOLAR_FILE_SIZES = {'met': 10, 'irradiance': 20, 'power': 1, 'fcst': 1}
 
-    def __init__(self, local_cache=None, username=None, password=None,
-                 **kwargs):
+    def __init__(self, local_cache=None, **kwargs):
+        """
+        Initialize ExternalDataStore object
+        Parameters
+        ----------
+        local_cache : 'InternalDataStore'
+            InternalDataStore object represening internal data cache
+        **kwargs :
+            kwargs for DataStore
+
+        Returns
+        ---------
+        """
         if local_cache is None:
             local_cache = InternalDataStore.connect()
         elif not isinstance(local_cache, InternalDataStore):
@@ -60,8 +110,6 @@ class ExternalDataStore(DataStore):
 InternalDataStore, but is {:}.".format(type(local_cache)))
 
         self._local_cache = local_cache
-        self._username = username
-        self._password = password
         super(ExternalDataStore, self).__init__(**kwargs)
 
         meta_path = os.path.join(self._wind_root, 'wind_site_meta.json')
@@ -84,34 +132,66 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
     def connect(cls, config):
         """
         Reads the configuration. From configuration and defaults,
-        determines location of external datastore.
+        determines initializes ExternalDataStore object.
+
+        Parameters
+        ----------
+        config : 'string'
+            Path to .ini configuration file.
+            See library/config.ini for an example
+
+        Returns
+        ---------
+        Initialized ExternalDataStore object
         """
         config_parser = ConfigParser()
         config_parser.read(config)
-        wind_dir = cls.decode_config_entry(config_parser.get('repository',
-                                                             'wind_directory'))
+
+        wind_dir = config_parser.get('repository', 'wind_directory')
+        wind_dir = cls.decode_config(wind_dir)
 
         solar_dir = config_parser.get('repository', 'solar_directory')
         solar_dir = cls.decode_config_entry(solar_dir)
-
-        username = cls.decode_config_entry(config_parser.get('repository',
-                                                             'username'))
-
-        password = cls.decode_config_entry(config_parser.get('repository',
-                                                             'password'))
 
         if config_parser.has_section('local_cache'):
             local_cache = InternalDataStore.connect(config=config)
         else:
             local_cache = None
 
-        return cls(local_cache=local_cache, wind_dir=wind_dir,
-                   solar_dir=solar_dir, username=username, password=password)
+        return cls(wind_dir=wind_dir, solar_dir=solar_dir,
+                   local_cache=local_cache)
 
     def download(self, src, dst):
+        """
+        Abstract method to download src to dst
+
+        Parameters
+        ----------
+        src : 'string'
+            Path to source file to be downloaded
+        dst : 'string'
+            Path to destination directory of file path
+
+        Returns
+        ---------
+        """
         pass
 
     def nearest_neighbors(self, node_collection):
+        """
+        Find the nearest neighbor resource sites for all nodes in
+        Node_collection
+
+        Parameters
+        ----------
+        node_collection : 'NodeCollection'
+            Collection of nodes for which resource sites are to be identified
+
+        Returns
+        ---------
+        nearest_nodes : 'pandas.DataFrame'
+            Dataframe with the nearest neighbor resource sites for each node
+        """
         dataset = node_collection._dataset
         if dataset == 'wind':
             resource_meta = self.wind_meta
@@ -129,8 +209,20 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
 
     def get_resource(self, dataset, site_id, frac=None):
         """
-        Return resourcedata.Resource object
-        If any site_id is not valid or not in the store error is raised
+        Initialize and return Resource class object for specified resource site
+
+        Parameters
+        ----------
+        dataset : 'string'
+            'wind' or 'solar'
+        site_id : int
+            Resource site_id
+        frac : 'float'
+            Fraction of resource to use from resource site
+
+        Returns
+        ---------
+        Wind or Solar Resource class instance
         """
         cache = self._local_cache.check_cache(dataset, site_id)
         if cache is not None:
@@ -149,9 +241,46 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
 
 
 class Peregrine(ExternalDataStore):
+    """
+    Class object for External DataStore on Peregrine
+    """
     ROOT_PATH = '/scratch/mrossol/Resource_Repo'
 
+    def __init__(self, username, password, **kwargs):
+        """
+        Initialize Peregrine object
+        Parameters
+        ----------
+        username : 'string'
+            Peregrine username
+        password : 'string'
+            Peregrine password
+        **kwargs :
+            kwargs for ExternalDataStore
+
+        Returns
+        ---------
+        """
+        self._username = username
+        self._password = password
+        super(Peregrine, self).__init__(**kwargs)
+
     def download(self, src, dst, timeout=30):
+        """
+        Method to download src file from Peregrine to local dst
+
+        Parameters
+        ----------
+        src : 'string'
+            Path to source file to be downloaded
+        dst : 'string'
+            Path to destination directory of file path
+        timeout : 'int'
+            Timeout in seconds
+
+        Returns
+        ---------
+        """
         if os.path.basename(src) == os.path.basename(dst):
             file_path = dst
         else:
@@ -175,11 +304,61 @@ password:".format(self._username)
             except Exception:
                 raise
 
+    @classmethod
+    def connect(cls, config):
+        """
+        Reads the configuration. From configuration and defaults,
+        determines initializes Peregine DataStore object.
+
+        Parameters
+        ----------
+        config : 'string'
+            Path to .ini configuration file.
+
+        Returns
+        ---------
+        Initialized Peregrine object
+        """
+        config_parser = ConfigParser()
+        config_parser.read(config)
+
+        username = cls.decode_config_entry(config_parser.get('repository',
+                                                             'username'))
+
+        password = cls.decode_config_entry(config_parser.get('repository',
+                                                             'password'))
+
+        if config_parser.has_section('local_cache'):
+            local_cache = InternalDataStore.connect(config=config)
+        else:
+            local_cache = None
+
+        return cls(username, password, local_cache=local_cache)
+
 
 class Scratch(ExternalDataStore):
+    """
+    Class object for External DataStore on Peregrine
+    to be used within Peregrine
+    """
     ROOT_PATH = '/scratch/mrossol/Resource_Repo'
 
     def download(self, src, dst, timeout=30):
+        """
+        Method to download src file to dst internally to Peregrine
+
+        Parameters
+        ----------
+        src : 'string'
+            Path to source file to be downloaded
+        dst : 'string'
+            Path to destination directory of file path
+        timeout : 'int'
+            Timeout in seconds
+
+        Returns
+        ---------
+        """
         if os.path.basename(src) == os.path.basename(dst):
             file_path = dst
         else:
@@ -194,6 +373,9 @@ class Scratch(ExternalDataStore):
 
 
 class DRPower(ExternalDataStore):
+    """
+    Class object for External DataStore at DR Power (egrid.org)
+    """
     pass
 
 
@@ -211,9 +393,21 @@ class InternalDataStore(DataStore):
     """
     ROOT_PATH = os.path.join(os.getcwd(), 'R2PD_Cache')
 
-    def __init__(self, size=None):
+    def __init__(self, size=None, **kwargs):
+        """
+        Initialize InternalDataStore object
+        Parameters
+        ----------
+        size : 'float'
+            Maximum local cache size in GB
+        **kwargs :
+            kwargs for DataStore
+
+        Returns
+        ---------
+        """
         self._size = size
-        super(InternalDataStore, self).__init__()
+        super(InternalDataStore, self).__init__(**kwargs)
 
         if not os.path.exists(self._wind_root):
             os.makedirs(self._wind_root)
@@ -228,10 +422,18 @@ class InternalDataStore(DataStore):
     @classmethod
     def connect(cls, config=None):
         """
-        Reads the configuration, if provided. From configuration and defaults,
-        determines location of internal data cache. If the cache is not yet
-        there, creates it. Returns an InternalDataStore object open and ready
-        for querying / adding data.
+        Reads the configuration. From configuration and defaults,
+        determines initializes InternalDataStore object.
+
+        Parameters
+        ----------
+        config : 'string'
+            Path to .ini configuration file.
+            See library/config.ini for an example
+
+        Returns
+        ---------
+        Initialized InternalDataStore object
         """
         if config is None:
             size = None
@@ -246,9 +448,15 @@ class InternalDataStore(DataStore):
             size = cls.decode_config_entry(config_parser.get('local_cache',
                                                              'size'))
             if size is not None:
-                size = int(size)
+                size = float(size)
 
-        return InternalDataStore(size=size)
+            wind_dir = config_parser.get('local_cache', 'wind_directory')
+            wind_dir = cls.decode_config(wind_dir)
+
+            solar_dir = config_parser.get('local_cache', 'solar_directory')
+            solar_dir = cls.decode_config_entry(solar_dir)
+
+        return cls(wind_dir=wind_dir, solar_dir=solar_dir, size=size)
 
     @classmethod
     def get_cache_size(cls, path):
