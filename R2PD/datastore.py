@@ -460,6 +460,20 @@ class InternalDataStore(DataStore):
 
     @classmethod
     def get_cache_size(cls, path):
+        """
+        Searches all sub directories in path for .hdf5 files
+        computes total size in GB
+
+        Parameters
+        ----------
+        path : 'string'
+            Path to cache directory
+
+        Returns
+        ---------
+        repo_size : 'float'
+            Returns total size of .hdf5 files in cache in GB
+        """
         repo_size = 0
         for (path, dirs, files) in os.walk(path):
             for file in files:
@@ -471,6 +485,20 @@ class InternalDataStore(DataStore):
 
     @classmethod
     def get_cache_summary(cls, path):
+        """
+        Summarize the data available in the local cache
+
+        Parameters
+        ----------
+        path : 'string'
+            Path to cache meta .csv
+
+        Returns
+        ---------
+        summary : 'pandas.Series'
+            Summary table of number of sites, and corresponding resource types
+            in local cache
+        """
         cache_meta = pds.read_csv(path, index_col=0)
         summary = pds.Series()
         summary['sites'] = len(cache_meta)
@@ -481,6 +509,9 @@ class InternalDataStore(DataStore):
         return summary
 
     def initialize_cache_metas(self):
+        """
+        Initialize cache meta .csv files by scanning cache directories
+        """
         for dataset in ['wind', 'solar']:
             if dataset == 'wind':
                 cache_path = os.path.join(self._wind_root,
@@ -502,6 +533,17 @@ class InternalDataStore(DataStore):
                 cache_meta.to_csv(cache_path)
 
     def refresh_cache_meta(self, dataset):
+        """
+        Refresh cache metadata by rescanning cache directory
+
+        Parameters
+        ----------
+        dataset : 'string'
+            'wind' or 'solar'
+
+        Returns
+        ---------
+        """
         if dataset == 'wind':
             cache_path = self._wind_cache
         elif dataset == 'solar':
@@ -539,6 +581,20 @@ class InternalDataStore(DataStore):
         cache_meta.to_csv(cache_path)
 
     def cache_site(self, dataset, site):
+        """
+        Searches all sub directories in path for .hdf5 files
+        computes total size in GB
+
+        Parameters
+        ----------
+        dataset : 'string'
+            'wind' or 'solar'
+        site : 'string'
+            Path to resource file for site
+
+        Returns
+        ---------
+        """
         if dataset == 'wind':
             cache_path = self._wind_cache
         elif dataset == 'solar':
@@ -567,6 +623,27 @@ class InternalDataStore(DataStore):
         cache_meta.to_csv(cache_path)
 
     def check_cache(self, dataset, site_id, resource_type=None):
+        """
+        Check cache for presence of resource.
+        If resource_type is None check for any resource_type of site_id
+        else check for specific resource_type for site_id
+
+        Parameters
+        ----------
+        dataset : 'string'
+            'wind' or 'solar'
+        site_id : 'int'
+            Site id number
+        resource_type : 'string'
+            type of resource
+            wind -> ('power', 'fcst', 'met')
+            solar -> ('power', 'fcst', 'met', 'irradiance')
+
+        Returns
+        ---------
+        Returns subdirectory containing resource site file
+        Returns None if resource is not in cache
+        """
         if dataset == 'wind':
             cache_path = self._wind_cache
         elif dataset == 'solar':
@@ -574,7 +651,7 @@ class InternalDataStore(DataStore):
         else:
             raise ValueError("Invalid dataset type, must be 'wind' or \
 'solar'")
-
+        self.refresh_cache_meta(cache_path)
         cache_meta = pds.read_csv(cache_path, index_col=0)
         cache_sites = cache_meta.index
 
@@ -591,8 +668,17 @@ class InternalDataStore(DataStore):
 
     def cache_data(self, dataset, sites):
         """
-        Saves each (ResourceLocation, ResourceData) tuple to disk and logs it
-        in the registry / database.
+        Add site to cache meta
+
+        Parameters
+        ----------
+        dataset : 'string'
+            'wind' or 'solar'
+        site : 'string'
+            Path to resource file for site
+
+        Returns
+        ---------
         """
         for site in sites:
             self.cache_site(dataset, site)
@@ -600,7 +686,7 @@ class InternalDataStore(DataStore):
     @property
     def cache_size(self):
         """
-        Calculate size of local cache in GB
+        Calculate size of local cache and dataset caches in GB
         """
         total_cache = self.get_cache_size(self.ROOT_PATH)
         wind_cache = self.get_cache_size(self._wind_root)
