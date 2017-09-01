@@ -10,6 +10,9 @@ import numpy as np
 
 
 class TemporalParameters(object):
+    """
+    Class to specify temporal parameters
+    """
     POINT_INTERPRETATIONS = Enum('POINT_INTERPRETATIONS',
                                  ['instantaneous',
                                   'average_next',
@@ -23,6 +26,20 @@ class TemporalParameters(object):
     #       have to be provided by the user?
     def __init__(self, extent, point_interp='instantaneous', timezone='UTC',
                  resolution=None):
+        """
+        Initialize TemporalParameters
+
+        Parameters
+        ----------
+        extent : 'list'|'tuple'
+            Start and end datetime
+        point_interp : 'POINT_INTERPRETATIONS'
+            element of POINT_INTERPRETATIONS representing data
+        timezone : 'string'
+            timezone for timeseries
+        resolution : 'string'
+            resolution for timeseries, if None use data's native resolution
+        """
         self.extent = extent
         self.point_interp = get_enum_instance(point_interp,
                                               self.POINT_INTERPRETATIONS)
@@ -36,6 +53,13 @@ class TemporalParameters(object):
         resolution are inferred from timeseries.index.
         The user must provide the appropriate point_interp (element of
         TemporalParameters.POINT_INTERPRETATIONS), and timezone.
+
+        Parameters
+        ----------
+        ts : 'pd.DataFrame'
+            Timeseries DataFrame
+        **kwargs
+            kwargs for TemporalParameters
         """
         time_index = ts.index
         extent = time_index[[0, -1]]
@@ -53,21 +77,25 @@ class TimeseriesShaper(object):
     Abstract class defining the call signature for reshaping timeseries to
     conform to the desired temporal parameters.
     """
-
     @abc.abstractmethod
     def __call__(self, ts, ts_tempparams, out_tempparams):
         """
         Accepts a timeseries ts that has TemporalParameters ts_tempparams, and
         returns a re-shaped timeseries conforming to out_tempparams.
 
-        Parameters:
-        - ts (pandas.Series or pandas.DataFrame) - timeseries to be reshaped
-        - ts_tempparams (TemporalParameters) - description of ts's time
-              conventions
-        - out_tempparams (TemporalParameters) - the desired temporal parameters
-              for the output timeseries
+        Parameters
+        ----------
+        ts : 'pandas.Series'|'pandas.DataFrame'
+            timeseries to be reshaped
+        ts_tempparams : 'TemporalParameters'
+            description of ts's temporal parameters
+        out_tempparams : 'TemporalParameters'
+            the desired temporal parameters for the output timeseries
 
-        Returns reshaped data (pandas.Series or pandas.DataFrame).
+        Returns
+        ---------
+        'pandas.Series'|'pandas.DataFrame'
+            Returns reshaped timeseries data
         """
         return
 
@@ -95,6 +123,18 @@ class ForecastParameters(object):
                            'dispatch_lookahead'])
 
     def __init__(self, forecast_type, temporal_params, **kwargs):
+        """
+        Initialize ForecastParameters
+
+        Parameters
+        ----------
+        forecast_type : 'FORECAST_TYPES
+            element of FORECAST_TYPES representing type of forecast
+        temporal_params : 'TemporalParameters'
+            TemporalParameters instance describing timeseries parameters
+        **kwargs
+            kwargs specific to forecast type
+        """
         self._forecast_type = get_enum_instance(forecast_type,
                                                 self.FORECAST_TYPES)
         if not isinstance(temporal_params, TemporalParameters):
@@ -116,12 +156,25 @@ TemporalParameters, but is {}.".format(type(temporal_params)))
 
     @property
     def forecast_type(self):
+        """
+        Type of forecast
+
+        Returns
+        ---------
+        'FORECAST_TYPES'
+            element of FORECAST_TYPES
+        """
         return self._forecast_type
 
     @property
     def temporal_params(self):
         """
-        The overall extents and resolution of the forecast data.
+        Temporal Parameters for forecast timeseries
+
+        Returns
+        ---------
+        'TemporalParameters'
+            Timeseries temporal parameters
         """
         return self._temporal_params
 
@@ -132,6 +185,11 @@ TemporalParameters, but is {}.".format(type(temporal_params)))
         which forecasts are available, e.g. [datetime.timedelta(hours=1),
         datetime.timedelta(hours=4), datetime.timedelta(hours=6),
         datetime.timedelta(hours=24)].
+
+        Returns
+        ---------
+        'list'
+            List of forecast leadtimes
         """
         return self._leadtimes
 
@@ -140,6 +198,11 @@ TemporalParameters, but is {}.".format(type(temporal_params)))
         """
         For 'dispatch_lookahead' data, the frequency at which forecasts are
         needed.
+
+        Returns
+        ---------
+        'datetime.timedelta'
+            Frequency of lookahead forecasts
         """
         return self._frequency
 
@@ -148,6 +211,11 @@ TemporalParameters, but is {}.".format(type(temporal_params)))
         """
         For 'dispatch_lookahead' data, the amount of time covered by each
         forecast.
+
+        Returns
+        ---------
+        'datetime.timedelta'
+            Amount of time covered by each forecast
         """
         return self._lookahead
 
@@ -156,29 +224,106 @@ TemporalParameters, but is {}.".format(type(temporal_params)))
         """
         For 'dispatch_lookahead' data, the amount of time ahead of the start of
         the modeled time that the forecast data would need to be provided.
+
+        Returns
+        ---------
+        'datetime.timedelta'
+            Amount of leadtime for lookahead forecast
         """
         return self._leadtime
 
     @classmethod
     def define_discrete_leadtime_params(cls, temporal_params, leadtimes):
+        """
+        Constructs ForecastParameters for leadtime forecasts
+
+        Parameters
+        ----------
+        temporal_params : 'TemporalParameters'
+            Timeseries temporal parameters for leadtime forecasts
+        leadtimes : 'list'
+            List of forecast leadtimes
+
+        Returns
+        ---------
+        'ForecastParameters'
+            Forecast parameters for leadtime forecasts
+        """
         return ForecastParameters('discrete_leadtimes', temporal_params,
                                   leadtimes=leadtimes)
 
     @classmethod
     def define_dispatch_lookahead_params(cls, temporal_params, frequency,
-                                         lookahead, leadtime=dt.timedelta()):
+                                         lookahead, leadtime):
+        """
+        Constructs ForecastParameters for lookahead forecasts
+
+        Parameters
+        ----------
+        temporal_params : 'TemporalParameters'
+            Timeseries temporal parameters for lookahead forecast
+        frequency : 'datetime.timedelta'
+            frequency of lookahead forecasts
+        lookahead : 'datetime.timedelta'
+            amount of lookahead for forecast
+        leadtime : 'datetime.timedelta'
+            leadtime for lookahead forcast
+
+        Returns
+        ---------
+        'ForecastParameters'
+            Forecast parameters for lookahead forecast
+        """
         return ForecastParameters('dispatch_lookahead', temporal_params,
                                   frequency=frequency, lookahead=lookahead,
                                   leadtime=leadtime)
 
 
 class ForecastShaper(object):
+    """
+    Abstract class defining the call signature for reshaping timeseries to
+    conform to the desired temporal parameters.
+    """
 
     @abc.abstractmethod
     def __call__(self, forecast_data, forecast_data_params,
                  out_forecast_params):
+        """
+        Accepts a timeseries of forecast_data that has ForecastParameters
+        forecast_data_params
+        returns a re-shaped timeseries conforming to out_forecast_params
+
+        Parameters
+        ----------
+        forecast_data : 'pandas.Series'|'pandas.DataFrame'
+            timeseries to be reshaped
+        forecast_data_params : 'TemporalParameters'
+            description of forecast_data parameters
+        out_forecast_params : 'TemporalParameters'
+            the desired forecast parameters for the output timeseries
+
+        Returns
+        ---------
+        'pandas.Series'|'pandas.DataFrame'
+            Returns reshaped forecast data
+        """
         return
 
 
 def get_enum_instance(value, enum_class):
+    """
+    Extracts value from enum_class if needed
+
+    Parameters
+    ----------
+    value : 'string'|'enum_class'
+        Either enum_class value or string for value
+    enum_class : 'Enum'
+        enum class object for which value belongs
+
+    Returns
+    ---------
+    'enum_class'
+        enum_class value
+    """
     return value if isinstance(value, enum_class) else enum_class[value]

@@ -14,16 +14,19 @@ class Timeout(object):
     Currently only compatible with linux systems, need to update for windows
     """
     def __init__(self, sec):
+        """
+        Initialize timeout
+
+        Parameters
+        ----------
+        sec : 'float'
+            seconds before raising TimeoutError
+        """
         self.sec = sec
 
     def __enter__(self):
         """
         Enter method to allow use of with
-        Parameters
-        ----------
-
-        Returns
-        ---------
         """
         signal.signal(signal.SIGALRM, self.raise_timeout)
         signal.alarm(self.sec)
@@ -31,11 +34,15 @@ class Timeout(object):
     def __exit__(self, type, value, traceback):
         """
         Closes event_loop on exit from with
+
         Parameters
         ----------
-
-        Returns
-        ---------
+        type : 'Error'
+            error type
+        value : 'string'
+            error message
+        traceback : 'string'
+            error traceback
         """
         # Reset alarm
         signal.alarm(0)
@@ -46,12 +53,11 @@ class Timeout(object):
     def raise_timeout(self, *args):
         """
         Closes event_loop on exit from with
+
         Parameters
         ----------
         *args : 'signal.signal handler args'
             signal number and frame
-        Returns
-        ---------
         """
         raise TimeoutError("Connection timed out after {:} seconds!"
                            .format(self.sec))

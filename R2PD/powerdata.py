@@ -15,7 +15,6 @@ power system modelers. Functionalities needed include:
 """
 
 import inspect
-import numpy as np
 import os
 import pandas as pds
 from .tshelpers import TemporalParameters, ForecastParameters
@@ -412,6 +411,11 @@ does not match number of nodes ({n})'.format(r=len(resources), n=len(node_ids))
         ----------
         nodes : 'list'
             List of Node objects
+
+        Returns
+        ---------
+        'NodeCollection'
+            Proper type of node collection based on type of Nodes
         """
         if isinstance(nodes[0], WeatherNode):
             return WeatherNodeCollection(nodes)
