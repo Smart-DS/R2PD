@@ -134,9 +134,6 @@ def nearest_met_nodes(node_collection, resource_meta):
 
     # Create and populate DataFrame from requested list of nodes
     nodes = pds.DataFrame(columns=['latitude', 'longitude', 'site_id'],
-                          index=node_data[:, 0].astype(int))
-    nodes.index.name = 'node_id'
-    nodes = pds.DataFrame(columns=['latitude', 'longitude', 'site_id'],
                           index=node_data.index)
 
     nodes.loc[:, ['latitude', 'longitude']] = node_data.values

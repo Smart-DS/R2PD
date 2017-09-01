@@ -47,6 +47,11 @@ class Node(object):
     def __repr__(self):
         """
         Prints the type of node and its id
+
+        Returns
+        ---------
+        'str'
+            type of Node and its id
         """
         return '{n} {i}'.format(n=self.__class__.__name__, i=self.id)
 
@@ -334,7 +339,12 @@ class NodeCollection(object):
 
     def __repr__(self):
         """
-        Prints the type of node collection and number of nodes it contains
+        Prints the type of NodeCollection and number of nodes it contains
+
+        Returns
+        ---------
+        'str'
+            type of NodeCollection and number of nodes
         """
         return '{c} contains {n} nodes'.format(c=self.__class__.__name__,
                                                n=len(self.nodes))
@@ -410,15 +420,20 @@ does not match number of nodes ({n})'.format(r=len(resources), n=len(node_ids))
     @property
     def locations(self):
         """
-        Array of (latitude, longitude) coordinates for nodes in NodeCollection
+        DataFrame of (latitude, longitude) coordinates for nodes in
+        NodeCollection
 
         Returns
         ---------
-        'nd.array'
-            Summary of Wind and Solar caches
+        'pandas.DataFrame'
+            Latitude and longitude for each node in NodeCollection
         """
-        return np.array([(node.latitude, node.longitude)
-                         for node in self.nodes])
+        lat_lon = [(node.id, node.latitude, node.longitude)
+                   for node in self.nodes]
+        lat_lon = pds.DataFrame(lat_lon,
+                                columns=['node_id', 'latitude', 'longitude'])
+        lat_lon = lat_lon.set_index('node_id')
+        return lat_lon
 
 
 class GeneratorNodeCollection(NodeCollection):

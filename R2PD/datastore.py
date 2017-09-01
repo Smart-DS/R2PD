@@ -53,7 +53,7 @@ class DataStore(object):
         Returns
         ---------
         'str'
-            type of datastore and its ROOT_PATH
+            type of DataStore and its ROOT_PATH
         """
         return '{n} at {i}'.format(n=self.__class__.__name__,
                                    i=self.ROOT_PATH)
