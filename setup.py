@@ -10,5 +10,4 @@ setup(
     url='https://github.com/Smart-DS/R2PD',
     description='Power system modeler-friendly tool for downloading and \
 formatting wind and solar weather, power and forecast data.',
-    long_description=open('README.txt').read(),
 )
