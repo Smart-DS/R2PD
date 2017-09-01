@@ -23,6 +23,7 @@ class DataStore(object):
     def __init__(self, wind_dir=None, solar_dir=None):
         """
         Initialize generic DataStore object
+
         Parameters
         ----------
         wind_dir : 'string'
@@ -48,6 +49,11 @@ class DataStore(object):
     def __repr__(self):
         """
         Print the type of datastore and its ROOT_PATH
+
+        Returns
+        ---------
+        'str'
+            type of datastore and its ROOT_PATH
         """
         return '{n} at {i}'.format(n=self.__class__.__name__,
                                    i=self.ROOT_PATH)
@@ -56,6 +62,7 @@ class DataStore(object):
     def decode_config_entry(cls, entry):
         """
         Decode config entry converting missing or 'None' entires to None
+
         Parameters
         ----------
         entry : 'string'
@@ -85,6 +92,7 @@ class ExternalDataStore(DataStore):
     def __init__(self, local_cache=None, **kwargs):
         """
         Initialize ExternalDataStore object
+
         Parameters
         ----------
         local_cache : 'InternalDataStore'
@@ -131,13 +139,14 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
 
         Returns
         ---------
-        Initialized ExternalDataStore object
+        'ExternalDataStore'
+            Initialized ExternalDataStore object
         """
         config_parser = ConfigParser()
         config_parser.read(config)
 
         wind_dir = config_parser.get('repository', 'wind_directory')
-        wind_dir = cls.decode_config(wind_dir)
+        wind_dir = cls.decode_config_entry(wind_dir)
 
         solar_dir = config_parser.get('repository', 'solar_directory')
         solar_dir = cls.decode_config_entry(solar_dir)
@@ -208,7 +217,8 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
 
         Returns
         ---------
-        Wind or Solar Resource class instance
+        'Resource'
+            Wind or Solar Resource class instance
         """
         cache = self._local_cache.check_cache(dataset, site_id)
         if cache is not None:
@@ -235,6 +245,7 @@ class Peregrine(ExternalDataStore):
     def __init__(self, username, password, **kwargs):
         """
         Initialize Peregrine object
+
         Parameters
         ----------
         username : 'string'
@@ -297,7 +308,8 @@ password:".format(self._username)
 
         Returns
         ---------
-        Initialized Peregrine object
+        'Peregrine'
+            Initialized Peregrine object
         """
         config_parser = ConfigParser()
         config_parser.read(config)
@@ -373,6 +385,7 @@ class InternalDataStore(DataStore):
     def __init__(self, size=None, **kwargs):
         """
         Initialize InternalDataStore object
+
         Parameters
         ----------
         size : 'float'
@@ -407,7 +420,8 @@ class InternalDataStore(DataStore):
 
         Returns
         ---------
-        Initialized InternalDataStore object
+        'InternalDataStore'
+            Initialized InternalDataStore object
         """
         if config is None:
             size = None
@@ -425,7 +439,7 @@ class InternalDataStore(DataStore):
                 size = float(size)
 
             wind_dir = config_parser.get('local_cache', 'wind_directory')
-            wind_dir = cls.decode_config(wind_dir)
+            wind_dir = cls.decode_config_entry(wind_dir)
 
             solar_dir = config_parser.get('local_cache', 'solar_directory')
             solar_dir = cls.decode_config_entry(solar_dir)
@@ -609,9 +623,11 @@ class InternalDataStore(DataStore):
 
         Returns
         ---------
-        Returns subdirectory containing resource site file
-        Returns None if resource is not in cache
+        'int'|None
+            Returns subdirectory containing resource site file
+            Returns None if resource is not in cache
         """
+        self.refresh_cache_meta(dataset)
         if dataset == 'wind':
             cache_path = self._wind_cache
         elif dataset == 'solar':
@@ -619,7 +635,6 @@ class InternalDataStore(DataStore):
         else:
             raise ValueError("Invalid dataset type, must be 'wind' or \
 'solar'")
-        self.refresh_cache_meta(cache_path)
         cache_meta = pds.read_csv(cache_path, index_col=0)
         cache_sites = cache_meta.index
 
@@ -652,6 +667,11 @@ class InternalDataStore(DataStore):
     def cache_size(self):
         """
         Calculate size of local cache and dataset caches in GB
+
+        Returns
+        ---------
+        'tuple'
+            total, wind, and solar cache sizes in GB (floats)
         """
         total_cache = self.get_cache_size(self.ROOT_PATH)
         wind_cache = self.get_cache_size(self._wind_root)
@@ -663,8 +683,12 @@ class InternalDataStore(DataStore):
     def cache_summary(self):
         """
         Summarize sites and resource types in cache
-        """
 
+        Returns
+        ---------
+        'pandas.DataFrame'
+            Summary of Wind and Solar caches
+        """
         wind_summary = self.get_cache_summary(self._wind_cache)
         wind_summary.name = 'wind'
 

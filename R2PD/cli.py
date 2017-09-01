@@ -195,7 +195,7 @@ def cli_main():
 
     # 3 Download, cache, and apply resource to nodes
     ts = time.time()
-    print('Downloading resource sites')
+    print('Identifying resource sites and downloading if necessary')
     nodes, nearest = get_resource_data(nodes, ext_store)
     t_run = (time.time() - ts) / 60
 
@@ -204,7 +204,7 @@ def cli_main():
     else:
         sites = len(np.unique(np.concatenate(nearest['site_id'].values)))
 
-    print('{n} resource sites downloaded in {t:.4f} minutes'
+    print('{n} resource sites extracted in {t:.4f} minutes'
           .format(n=sites, t=t_run))
 
     # 4. Format and save to disk

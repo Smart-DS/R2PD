@@ -28,6 +28,7 @@ class Node(object):
     def __init__(self, node_id, latitude, longitude):
         """
         Initialize generic Node object
+
         Parameters
         ----------
         node_id : 'string'|'int'
@@ -51,6 +52,7 @@ class Node(object):
     def assign_resource(self, resource):
         """
         Assign resource to Node
+
         Parameters
         ----------
         resource : 'Resource'|'ResourceList'
@@ -72,6 +74,7 @@ calling ".format(self.id) + caller + ".")
     def _save_csv(cls, df, file_path):
         """
         Saves data to csv with given file_path
+
         Parameters
         ----------
         df : 'pandas.DataFrame'
@@ -88,6 +91,7 @@ class GeneratorNode(Node):
     def __init__(self, node_id, latitude, longitude, capacity):
         """
         Initialize generic GeneratorNode object
+
         Parameters
         ----------
         node_id : 'string'|'int'
@@ -102,9 +106,25 @@ class GeneratorNode(Node):
         super(GeneratorNode, self).__init__(node_id, latitude, longitude)
         self.capacity = capacity
 
+    def assign_resource(self, resource, forecasts=False):
+        """
+        Assign resource to Node
+
+        Parameters
+        ----------
+        resource : 'Resource'|'ResourceList'
+            Resource or ResourceList instance with resource site(s) for node
+        forecasts : 'bool'
+            Are forecasts included in generator resource
+        """
+        self._resource_assigned = True
+        self._resource = resource
+        self._fcst = forecasts
+
     def get_power(self, temporal_params, shaper=None):
         """
         Extracts and processes power data for Node
+
         Parameters
         ----------
         temporal_params : 'TemporalParameters'
@@ -126,6 +146,7 @@ class GeneratorNode(Node):
     def get_forecasts(self, forecast_params, shaper=None):
         """
         Extracts and processes forecast data for Node
+
         Parameters
         ----------
         forecast_params : 'ForecastParameters'
@@ -133,7 +154,7 @@ class GeneratorNode(Node):
         shaper : 'ForecastShaper'|'function'
             Method to convert forecast data into required output
         """
-        #assert self._fcst
+        assert self._fcst
         self._require_resource()
         fcst_data = self._resource.forecast_data
         if forecast_params is None:
@@ -150,6 +171,7 @@ class GeneratorNode(Node):
     def save_power(self, file_path, formatter=None):
         """
         Save power data to disc
+
         Parameters
         ----------
         file_path : 'string'
@@ -165,6 +187,7 @@ class GeneratorNode(Node):
     def save_forecasts(self, file_path, formatter=None):
         """
         Save forecast data to disc
+
         Parameters
         ----------
         file_path : 'string'
@@ -199,6 +222,7 @@ class WeatherNode(Node):
     def get_weather(self, temporal_params, shaper=None):
         """
         Extracts and processes weather data for Node
+
         Parameters
         ----------
         temporal_params : 'TemporalParameters'
@@ -221,6 +245,7 @@ class WeatherNode(Node):
     def save_weather(self, file_path, formatter=None):
         """
         Save weather data to disc
+
         Parameters
         ----------
         file_path : 'string'
@@ -248,6 +273,7 @@ class SolarMetNode(WeatherNode):
     def get_irradiance(self, temporal_params, shaper=None):
         """
         Extracts and processes irradiance data for Node
+
         Parameters
         ----------
         temporal_params : 'TemporalParameters'
@@ -271,6 +297,7 @@ class SolarMetNode(WeatherNode):
     def save_irradiance(self, filename, formatter=None):
         """
         Save weather data to disc
+
         Parameters
         ----------
         file_path : 'string'
@@ -291,38 +318,68 @@ class NodeCollection(object):
     data in bulk. (TODO)
     """
     def __init__(self, nodes):
-        # todo: implement iterating over this class work to avoid
+        """
+        Initialize generic NodeCollection object
+
+        Parameters
+        ----------
+        nodes : 'list'
+            List of Node objects
+        """
+        # TODO: implement iterating over this class work to avoid
         #       for node in nodes.nodes:
         self.nodes = nodes
         self._ids = [node.id for node in self.nodes]
 
     def __repr__(self):
+        """
+        Prints the type of node collection and number of nodes it contains
+        """
         return '{c} contains {n} nodes'.format(c=self.__class__.__name__,
                                                n=len(self.nodes))
 
     def __getitem__(self, node_id):
-            """
-            Exract variable 'variable_name' from dataset.
-            Parameters
-            ----------
-            variable_name : 'sting'
-                Variable key
+        """
+        Extract node with given id
 
-            Returns
-            ---------
-            'nc.dataset.variable'
-                variable instance from dataset, to get values call [:]
-            """
-            if node_id in self._ids:
-                pos = self._ids.index(node_id)
-                return self.nodes[pos]
-            else:
-                raise IndexError
+        Parameters
+        ----------
+        node_id : 'int'
+            id of node of interest
+
+        Returns
+        ---------
+        'Node'
+            Node object for node of interest
+        """
+        if node_id in self._ids:
+            pos = self._ids.index(node_id)
+            return self.nodes[pos]
+        else:
+            raise IndexError
 
     def __len__(self):
+        """
+        Return number of nodes in NodeCollection
+
+        Returns
+        ---------
+        'int'
+            Size of NodeCollection
+        """
         return(len(self.nodes))
 
     def assign_resource(self, resources, node_ids=None):
+        """
+        Assign resource to nodes in NodeCollection
+
+        Parameters
+        ----------
+        resources : 'list'
+            List of Resource or ResourceList objects
+        node_ids : 'list'
+            node ids that correspond to Resource in resources list
+        """
         if node_ids is None:
             assert len(self) == len(resources), 'number of resources ({r}) \
 does not match number of nodes ({n})'.format(r=len(resources), n=len(self))
@@ -332,12 +389,18 @@ does not match number of nodes ({n})'.format(r=len(resources), n=len(self))
             assert len(node_ids) == len(resources), 'number of resources ({r}) \
 does not match number of nodes ({n})'.format(r=len(resources), n=len(node_ids))
             for i, resource in zip(node_ids, resources):
-                self[i].assign_resource(resource)
+                pos = self._ids.index(i)
+                self.nodes[pos].assign_resource(resource)
 
     @classmethod
     def factory(cls, nodes):
         """
         Constructs the right type of NodeCollection based on the type of nodes.
+
+        Parameters
+        ----------
+        nodes : 'list'
+            List of Node objects
         """
         if isinstance(nodes[0], WeatherNode):
             return WeatherNodeCollection(nodes)
@@ -345,12 +408,32 @@ does not match number of nodes ({n})'.format(r=len(resources), n=len(node_ids))
 
     @property
     def locations(self):
+        """
+        Array of (latitude, longitude) coordinates for nodes in NodeCollection
+
+        Returns
+        ---------
+        'nd.array'
+            Summary of Wind and Solar caches
+        """
         return np.array([(node.latitude, node.longitude)
                          for node in self.nodes])
 
 
 class GeneratorNodeCollection(NodeCollection):
+    """
+    Collection of GeneratorNodes
+    """
     def __init__(self, nodes):
+        """
+        Initialize GeneratorNodeCollection object
+        Determines if the nodes are wind or solar nodes
+
+        Parameters
+        ----------
+        nodes : 'list'
+            List of Node objects
+        """
         super(GeneratorNodeCollection, self).__init__(nodes)
         if isinstance(self.nodes[0], WindGeneratorNode):
             self._dataset = 'wind'
@@ -360,21 +443,89 @@ class GeneratorNodeCollection(NodeCollection):
             raise RuntimeError('Must be a collection of either \
 solar or wind nodes')
 
+    def assign_resource(self, resources, node_ids=None, forecasts=False):
+        """
+        Assign resource to nodes in GeneratorNodeCollection
+
+        Parameters
+        ----------
+        resources : 'list'
+            List of Resource or ResourceList objects
+        node_ids : 'list'
+            node ids that correspond to Resource in resources list
+        forecasts : 'bool'
+            If forecasts are included in resources or not
+        """
+        if node_ids is None:
+            assert len(self) == len(resources), 'number of resources ({r}) \
+does not match number of nodes ({n})'.format(r=len(resources), n=len(self))
+            for node, resource in zip(self.nodes, resources):
+                node.assign_resource(resource, forecasts=forecasts)
+        else:
+            assert len(node_ids) == len(resources), 'number of resources ({r}) \
+does not match number of nodes ({n})'.format(r=len(resources), n=len(node_ids))
+            for i, resource in zip(node_ids, resources):
+                pos = self._ids.index(i)
+                self.nodes[pos].assign_resource(resource, forecasts=forecasts)
+
     @property
     def node_data(self):
+        """
+        Array of node data [id, latitude, longitude, capacity (MW)]
+
+        Returns
+        ---------
+        'nd.array'
+            Meta data for all nodes in GeneratorNodeCollection
+            [id, latitude, longitude, capacity (MW)]
+        """
         node_data = [(node.id, node.latitude, node.longitude, node.capacity)
                      for node in self.nodes]
         return np.array(node_data)
 
     def get_power(self, temporal_params, shaper=None):
+        """
+        Extracts and processes power data for all Nodes in
+        GeneratorNodeCollection
+
+        Parameters
+        ----------
+        temporal_params : 'TemporalParameters'
+            Requiements for timeseries output
+        shaper : 'TimeseriesShaper'|'function'
+            Method to convert Resource data into required output
+        """
         for node in self.nodes:
             node.get_power(temporal_params, shaper=shaper)
 
     def get_forecasts(self, forecast_params, shaper=None):
+        """
+        Extracts and processes forecast data for all nodes in
+        GeneratorNodeCollection
+
+        Parameters
+        ----------
+        forecast_params : 'ForecastParameters'
+            Requiements for forecast output
+        shaper : 'ForecastShaper'|'function'
+            Method to convert forecast data into required output
+        """
         for node in self.nodes:
             node.get_fcst(forecast_params, shaper=shaper)
 
     def save_power(self, out_dir, file_prefix=None, formatter=None):
+        """
+        Save power data to disc
+
+        Parameters
+        ----------
+        out_dir : 'string'
+            Path to root directory to save power data
+        file_prefix : 'string'
+            Prefix for files to be save after appending node id and extension
+        formatter : ''
+            Method to save powerdata to desired format
+        """
         for node in self.nodes:
             i = node.id
             if file_prefix is None:
@@ -390,6 +541,18 @@ solar or wind nodes')
                 pass
 
     def save_forecasts(self, out_dir, file_prefix=None, formatter=None):
+        """
+        Save forecast data to disc
+
+        Parameters
+        ----------
+        out_dir : 'string'
+            Path to root directory to save power data
+        file_prefix : 'string'
+            Prefix for files to be save after appending node id and extension
+        formatter : ''
+            Method to save powerdata to desired format
+        """
         for node in self.nodes:
             i = node.id
             if file_prefix is None:
@@ -407,6 +570,15 @@ solar or wind nodes')
 
 class WeatherNodeCollection(NodeCollection):
     def __init__(self, nodes):
+        """
+        Initialize WeatherNodeCollection object
+        Determines if the nodes are wind or solar nodes
+
+        Parameters
+        ----------
+        nodes : 'list'
+            List of Node objects
+        """
         super(WeatherNodeCollection, self).__init__(nodes)
         if isinstance(self.nodes[0], WindMetNode):
             self._dataset = 'wind'
@@ -418,15 +590,47 @@ solar or wind nodes')
 
     @property
     def node_data(self):
+        """
+        Array of node data [id, latitude, longitude]
+
+        Returns
+        ---------
+        'nd.array'
+            Meta data for all nodes in WeatherNodeCollection
+            [id, latitude, longitude]
+        """
         node_data = [(node.id, node.latitude, node.longitude)
                      for node in self.nodes]
         return np.array(node_data)
 
     def get_weather(self, temporal_params, shaper=None):
+        """
+        Extracts and processes weather data for all nodes in
+        WeatherNodeCollection
+
+        Parameters
+        ----------
+        temporal_params : 'TemporalParameters'
+            Requiements for timeseries output
+        shaper : 'TimeseriesShaper'|'function'
+            Method to convert Resource data into required output
+        """
         for node in self.nodes:
             node.get_weather(temporal_params, shaper=shaper)
 
     def save_weather(self, out_dir, file_prefix=None, formatter=None):
+        """
+        Save weather data to disc
+
+        Parameters
+        ----------
+        out_dir : 'string'
+            Path to root directory to save power data
+        file_prefix : 'string'
+            Prefix for files to be save after appending node id and extension
+        formatter : ''
+            Method to save powerdata to desired format
+        """
         for node in self.nodes:
             i = node.id
             if file_prefix is None:

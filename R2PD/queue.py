@@ -247,7 +247,7 @@ def download_resource_data(site_ids, dataset, resource_type, repo,
                 executor.submit(cache_resource, site, dataset, repo)
 
 
-def get_resource_data(node_collection, repo, **kwargs):
+def get_resource_data(node_collection, repo, forecasts=False, **kwargs):
     """
     Finds nearest nodes, caches files to local datastore and assigns resource
     to node_collection
@@ -264,7 +264,8 @@ def get_resource_data(node_collection, repo, **kwargs):
 
     dataset = node_collection._dataset
 
-    download_resource_data(site_ids, dataset, resource_type, repo, **kwargs)
+    download_resource_data(site_ids, dataset, resource_type, repo,
+                           forecasts=False, **kwargs)
 
     resources = []
     for node, meta in nearest_nodes.iterrows():
@@ -277,6 +278,9 @@ def get_resource_data(node_collection, repo, **kwargs):
             resource = repo.get_resource(dataset, site_id)
         resources.append(resource)
 
-    node_collection.assign_resource(resources)
+    if forecasts:
+        node_collection.assign_resource(resources, forecasts=forecasts)
+    else:
+        node_collection.assign_resource(resources)
 
     return node_collection, nearest_nodes
