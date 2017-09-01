@@ -14,18 +14,23 @@ from .resourcedata import ResourceList
 
 def nearest_power_nodes(node_collection, resource_meta):
     """
-    Fill requested power nodes in node list with resource node
+    Fill requested power nodes in node_collection with resource sites in
+    resource_meta
+
     Parameters
     ----------
-    node_list : 'ndarray'
-        Array of requested nodes [lat, lon, capacity]
+    node_collection : 'pandas.DataFrame'|'GeneratorNodeCollection'
+        DataFrame of requested nodes
+            [node_id(index), latitude, longitude, capacity]
+        or NodeCollection instance
     resource_meta : 'pd.DataFrame'
-        DataFrame with resource node meta-data [lat, lon, capacity]
+        DataFrame with resource node meta-data
+            [site_id(index), latitude, longitude, capacity]
 
     Returns
     ---------
     nodes : 'pd.DataFrame'
-        Requested nodes with site_ids and fractions of resource for each id
+        Requested nodes with site_ids and fractions of resource for each node
     """
     if isinstance(node_collection, NodeCollection):
         node_data = node_collection.node_data
@@ -33,16 +38,12 @@ def nearest_power_nodes(node_collection, resource_meta):
         node_data = node_collection
 
     # Create and populate DataFrame from requested list of nodes
-    nodes = pds.DataFrame(columns=['node_id', 'lat', 'lon', 'cap', 'site_id',
-                                   'site_fracs', 'r_cap'],
-                          index=node_data[:, 0].astype(int))
-    nodes.index.name = 'node_id'
+    nodes = pds.DataFrame(columns=['latitude', 'longitude', 'capacity',
+                                   'site_id', 'site_fracs', 'r_cap'],
+                          index=node_data.index)
 
-    nodes['lat'] = node_data[:, 1]
-    nodes['lon'] = node_data[:, 2]
-    nodes['cap'] = node_data[:, 3]
-    # Placeholder for remaining capacity to be filled
-    nodes['r_cap'] = node_data[:, 3]
+    nodes.loc[:, ['latitude', 'longitude', 'capacity']] = node_data.values
+    nodes.loc[:, 'r_cap'] = node_data['capacity (MW)']
 
     r_nodes = resource_meta[['longitude', 'latitude', 'capacity']].copy()
     # Add placeholder for remaining capacity available at resource node
@@ -60,7 +61,7 @@ def nearest_power_nodes(node_collection, resource_meta):
         # Extract nodes that still have capacity to be filled
         nodes_left = nodes[nodes['r_cap'] > 0]
         n_index = nodes_left.index
-        node_lat_lon = nodes_left.as_matrix(['lat', 'lon'])
+        node_lat_lon = nodes_left.as_matrix(['latitude', 'longitude'])
 
         # Find first nearest resource node to each requested node
         dist, pos = tree.query(node_lat_lon, k=1)
@@ -102,23 +103,29 @@ def nearest_power_nodes(node_collection, resource_meta):
         if np.sum(nodes['r_cap'] > 0) == 0:
             break
 
-    return nodes[['lat', 'lon', 'cap', 'site_id', 'site_fracs']]
+    return nodes[['latitude', 'longitude', 'capacity', 'site_id',
+                  'site_fracs']]
 
 
 def nearest_met_nodes(node_collection, resource_meta):
     """
-    Fill requested weather nodes in node list with resource node
+    Fill requested weather nodes in node_collection with resource sites in
+    resource_meta
+
     Parameters
     ----------
-    node_list : 'ndarray'
-        Array of requested nodes [lat, lon]
+    node_collection : 'pandas.DataFrame'|'WeatherNodeCollection'
+        DataFrame of requested nodes
+            [node_id(index), latitude, longitude]
+        or NodeCollection instance
     resource_meta : 'pd.DataFrame'
-        DataFrame with resource node meta-data [lat, lon]
+        DataFrame with resource node meta-data
+            [site_id(index), latitude, longitude]
 
     Returns
     ---------
     nodes : 'pd.DataFrame'
-        Requested nodes with resource site_ids
+        Requested nodes with site_id of resource for each node
     """
     if isinstance(node_collection, NodeCollection):
         node_data = node_collection.node_data
@@ -126,12 +133,13 @@ def nearest_met_nodes(node_collection, resource_meta):
         node_data = node_collection
 
     # Create and populate DataFrame from requested list of nodes
-    nodes = pds.DataFrame(columns=['lat', 'lon', 'site_id'],
+    nodes = pds.DataFrame(columns=['latitude', 'longitude', 'site_id'],
                           index=node_data[:, 0].astype(int))
     nodes.index.name = 'node_id'
+    nodes = pds.DataFrame(columns=['latitude', 'longitude', 'site_id'],
+                          index=node_data.index)
 
-    nodes['lat'] = node_data[:, 1]
-    nodes['lon'] = node_data[:, 2]
+    nodes.loc[:, ['latitude', 'longitude']] = node_data.values
 
     # Extract resource nodes lat, lon
     lat_lon = resource_meta.as_matrix(['latitude', 'longitude'])
@@ -139,15 +147,27 @@ def nearest_met_nodes(node_collection, resource_meta):
     tree = cKDTree(lat_lon)
 
     # Extract requested lat, lon
-    node_lat_lon = nodes.as_matrix(['lat', 'lon'])
+    node_lat_lon = nodes.as_matrix(['latitude', 'longitude'])
     # Find first nearest resource node to each requested node
     _, site_id = tree.query(node_lat_lon, k=1)
     nodes['site_id'] = site_id
 
-    return nodes[['lat', 'lon', 'site_id']]
+    return nodes[['latitude', 'longitude', 'site_id']]
 
 
-def cache_resource(site, dataset, repo):
+def cache_resource(site_file, dataset, repo):
+    """
+    Download the resource site file from repo and add site to cache meta
+
+    Parameters
+    ----------
+    site_file : 'string'
+        Path to resource file for site
+    dataste : 'string'
+        'wind' or 'solar'
+    repo : 'ExternalDataStore'
+        ExternalDataStore instance
+    """
     if dataset == 'wind':
         src = repo._wind_root
         dst = repo._local_cache._wind_root
@@ -158,8 +178,8 @@ def cache_resource(site, dataset, repo):
         raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
 
     lock_file = os.path.join(dst, '{:}_lock'.format(dataset))
-    src = os.path.join(src, site)
-    dst = os.path.join(dst, site)
+    src = os.path.join(src, site_file)
+    dst = os.path.join(dst, site_file)
 
     try:
         repo.download(src, dst)
@@ -172,6 +192,25 @@ def cache_resource(site, dataset, repo):
 
 def download_resource_data(site_ids, dataset, resource_type, repo,
                            forecasts=False, cores=None):
+    """
+    Download resources from repo
+
+    Parameters
+    ----------
+    site_ids : 'list'
+        List of site ids to be downloaded
+    dataset : 'string'
+        'wind' or 'solar'
+    resource_type : 'string'
+        'power' or 'met'
+    repo : 'ExternalDataStore'
+        ExternalDataStore instance
+    forecasts : 'bool'
+        Download forecast along with power
+    cores : 'int'
+        Number of cores to use for parallel downloads
+        If None download in series
+    """
     if dataset == 'wind':
         meta = repo.wind_meta
         if resource_type == 'power':
@@ -251,6 +290,24 @@ def get_resource_data(node_collection, repo, forecasts=False, **kwargs):
     """
     Finds nearest nodes, caches files to local datastore and assigns resource
     to node_collection
+
+    Parameters
+    ----------
+    node_collection : 'NodeCollection'
+        Collection of either weather of generator nodes
+    repo : 'ExternalDataStore'
+        External datastore from which to get resouce data
+    forecasts : 'bool'
+        Whether to download forecasts along with power data
+    **kwargs
+        Internal kwargs
+
+    Returns
+    ---------
+    node_collection : 'NodeCollection'
+        Node collection with resources assigned to nodes
+    nearest_nodes : 'pandas.DataFrame'
+        DataFrame of the nearest neighbor matching between nodes and resources
     """
     nearest_nodes = repo.nearest_neighbors(node_collection)
 
@@ -265,7 +322,7 @@ def get_resource_data(node_collection, repo, forecasts=False, **kwargs):
     dataset = node_collection._dataset
 
     download_resource_data(site_ids, dataset, resource_type, repo,
-                           forecasts=False, **kwargs)
+                           forecasts=forecasts, **kwargs)
 
     resources = []
     for node, meta in nearest_nodes.iterrows():

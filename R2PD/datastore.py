@@ -565,7 +565,7 @@ class InternalDataStore(DataStore):
         cache_meta = cache_meta.sort_index()
         cache_meta.to_csv(cache_path)
 
-    def cache_site(self, dataset, site):
+    def cache_site(self, dataset, site_file):
         """
         Searches all sub directories in path for .hdf5 files
         computes total size in GB
@@ -574,7 +574,7 @@ class InternalDataStore(DataStore):
         ----------
         dataset : 'string'
             'wind' or 'solar'
-        site : 'string'
+        site_file : 'string'
             Path to resource file for site
         """
         if dataset == 'wind':
@@ -588,7 +588,7 @@ class InternalDataStore(DataStore):
         cache_meta = pds.read_csv(cache_path, index_col=0)
         cache_sites = cache_meta.index
 
-        sub_dir, name = os.path.split(site)
+        sub_dir, name = os.path.split(site_file)
         name = os.path.splitext(name)[0]
         _, resource, site_id = name.split('_')
         site_id = int(site_id)
@@ -649,7 +649,7 @@ class InternalDataStore(DataStore):
         else:
             return None
 
-    def cache_data(self, dataset, sites):
+    def cache_data(self, dataset, site_files):
         """
         Add site to cache meta
 
@@ -657,11 +657,11 @@ class InternalDataStore(DataStore):
         ----------
         dataset : 'string'
             'wind' or 'solar'
-        site : 'string'
-            Path to resource file for site
+        site_files : 'list'
+            List of paths to resource files for sites
         """
-        for site in sites:
-            self.cache_site(dataset, site)
+        for site_file in site_files:
+            self.cache_site(dataset, site_file)
 
     @property
     def cache_size(self):

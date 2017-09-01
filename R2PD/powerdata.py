@@ -17,6 +17,7 @@ power system modelers. Functionalities needed include:
 import inspect
 import numpy as np
 import os
+import pandas as pds
 from .tshelpers import TemporalParameters, ForecastParameters
 from .library import DefaultTimeseriesShaper
 
@@ -481,7 +482,11 @@ does not match number of nodes ({n})'.format(r=len(resources), n=len(node_ids))
         """
         node_data = [(node.id, node.latitude, node.longitude, node.capacity)
                      for node in self.nodes]
-        return np.array(node_data)
+        node_data = pds.DataFrame(node_data,
+                                  columns=['node_id', 'latitude', 'longitude',
+                                           'capacity (MW)'])
+        node_data = node_data.set_index('node_id')
+        return node_data
 
     def get_power(self, temporal_params, shaper=None):
         """
@@ -601,7 +606,10 @@ solar or wind nodes')
         """
         node_data = [(node.id, node.latitude, node.longitude)
                      for node in self.nodes]
-        return np.array(node_data)
+        node_data = pds.DataFrame(node_data,
+                                  columns=['node_id', 'latitude', 'longitude'])
+        node_data = node_data.set_index('node_id')
+        return node_data
 
     def get_weather(self, temporal_params, shaper=None):
         """
