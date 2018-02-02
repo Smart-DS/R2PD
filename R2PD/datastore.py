@@ -11,7 +11,7 @@ from .powerdata import GeneratorNodeCollection
 from .queue import nearest_power_nodes, nearest_met_nodes
 from .resourcedata import WindResource, SolarResource
 import shutil
-from .Timeout import Timeout
+from .timeout import Timeout
 
 
 class DataStore(object):

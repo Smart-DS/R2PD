@@ -7,6 +7,7 @@ import abc
 import datetime as dt
 from enum import Enum
 import numpy as np
+import pytz
 
 
 class TemporalParameters(object):
@@ -70,6 +71,24 @@ class TemporalParameters(object):
         resolution = resolution / np.timedelta64(1, 'm')
 
         return TemporalParameters(extent, resolution=resolution, **kwargs)
+
+    def infer_extent(self, ts):
+        time_index = ts.index
+        extent = time_index[[0, -1]]
+        self.extent = extent
+
+    def infer_resolution(self, ts):
+        time_index = ts.index
+        resolution = np.unique(time_index[1:] - time_index[:-1])
+        assert len(resolution) == 1, 'time resolution is not constant!'
+        resolution = resolution.astype('timedelta64[m]')[0]
+        resolution = resolution / np.timedelta64(1, 'm')
+        self.resolution = resolution
+
+    def localize_ts(self, ts):
+        ts.index = [pytz.timezone(self.timezone).localize(time_stamp)
+                    for time_stamp in ts.index]
+        return ts
 
 
 class TimeseriesShaper(object):

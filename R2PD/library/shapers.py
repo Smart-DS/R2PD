@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pds
+import pytz
 from R2PD.tshelpers import TimeseriesShaper, ForecastShaper
 
 
@@ -9,21 +10,29 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
         This method compares ts_tempparams and out_tempparams to determine
         what operations need to be performed.
         """
-        time_index = ts.index
+        if ts_tempparams.resolution is None:
+            ts_tempparams.infer_resolution(ts)
+        self.ts_params = ts_tempparams
 
-        out_start, out_end = out_tempparams.extent
-        out_dt = out_tempparams.resolution
-        if out_dt is None:
-            out_dt = ts_tempparams.resolution
+        if out_tempparams.resolution is None:
+            out_tempparams.resolution = self.ts_params.resolution
+        self.out_params
 
-        out_time = pds.date_range(out_start, out_end, freq=out_dt,
-                                  closed='left')
+        if ts.index.tz is None:
+            ts = self.ts_params.localize_ts(ts)
 
         # aggegregating or disaggregating?
 
         # do i need to shift?
 
         # do i need to average
+
+    def get_extent(self, ts):
+        time_index = ts.index
+        out_start, out_end = self.out_params.extent
+        out_dt = self.out_params.resolution
+        out_time = pds.date_range(out_start, out_end, freq=out_dt,
+                                  closed='left', tz=self.out_params.timezone)
 
         if not np.array_equal(out_time, time_index):
             start = time_index[0] <= out_time[0]

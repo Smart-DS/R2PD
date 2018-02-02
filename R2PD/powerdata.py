@@ -18,7 +18,7 @@ import inspect
 import os
 import pandas as pds
 from .tshelpers import TemporalParameters, ForecastParameters
-from .library import DefaultTimeseriesShaper
+#from .library import DefaultTimeseriesShaper
 
 
 class Node(object):
