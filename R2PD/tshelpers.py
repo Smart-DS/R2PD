@@ -7,6 +7,7 @@ import abc
 import datetime as dt
 from enum import Enum
 import numpy as np
+import pandas as pds
 import pytz
 
 
@@ -45,7 +46,7 @@ class TemporalParameters(object):
         self.point_interp = get_enum_instance(point_interp,
                                               self.POINT_INTERPRETATIONS)
         self.timezone = timezone
-        self.resolution = resolution
+        self.resolution = pds.to_timedelta(resolution)
 
     @classmethod
     def infer_params(cls, ts, **kwargs):
@@ -67,8 +68,7 @@ class TemporalParameters(object):
 
         resolution = np.unique(time_index[1:] - time_index[:-1])
         assert len(resolution) == 1, 'time resolution is not constant!'
-        resolution = resolution.astype('timedelta64[m]')[0]
-        resolution = resolution / np.timedelta64(1, 'm')
+        resolution = pds.to_timedelta(resolution[0])
 
         return TemporalParameters(extent, resolution=resolution, **kwargs)
 
@@ -81,14 +81,8 @@ class TemporalParameters(object):
         time_index = ts.index
         resolution = np.unique(time_index[1:] - time_index[:-1])
         assert len(resolution) == 1, 'time resolution is not constant!'
-        resolution = resolution.astype('timedelta64[m]')[0]
-        resolution = resolution / np.timedelta64(1, 'm')
+        resolution = pds.to_timedelta(resolution[0])
         self.resolution = resolution
-
-    def localize_ts(self, ts):
-        ts.index = [pytz.timezone(self.timezone).localize(time_stamp)
-                    for time_stamp in ts.index]
-        return ts
 
 
 class TimeseriesShaper(object):
