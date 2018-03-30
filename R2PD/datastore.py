@@ -2,8 +2,9 @@
 This module provides classes for accessing site-level wind and solar data
 from internal and external data stores.
 """
-
+import concurrent.futures as cf
 from configparser import ConfigParser
+import filelock
 import os
 import pandas as pds
 import pexpect
@@ -202,6 +203,38 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
 
         return nearest_nodes
 
+    def cache_resource(self, site_file, dataset):
+        """
+        Download the resource site file from repo and add site to cache meta
+
+        Parameters
+        ----------
+        site_file : 'string'
+            Path to resource file for site
+        dataste : 'string'
+            'wind' or 'solar'
+        """
+        if dataset == 'wind':
+            src = self._wind_root
+            dst = self._local_cache._wind_root
+        elif dataset == 'solar':
+            src = self._solar_root
+            dst = self._local_cache._solar_root
+        else:
+            raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
+
+        lock_file = os.path.join(dst, '{:}_lock'.format(dataset))
+        src = os.path.join(src, site_file)
+        dst = os.path.join(dst, os.path.basename(site_file))
+
+        try:
+            self.download(src, dst)
+        except Exception:
+            raise
+        finally:
+            with filelock.FileLock(lock_file):
+                self._local_cache.cache_site(dataset, dst)
+
     def get_resource(self, dataset, site_id, frac=None):
         """
         Initialize and return Resource class object for specified resource site
@@ -326,6 +359,101 @@ password:".format(self._username)
             local_cache = None
 
         return cls(username, password, local_cache=local_cache)
+
+    def download_resource_data(self, site_ids, dataset, resource_type,
+                               forecasts=False, cores=None):
+        """
+        Download resources from repo
+
+        Parameters
+        ----------
+        site_ids : 'list'
+            List of site ids to be downloaded
+        dataset : 'string'
+            'wind' or 'solar'
+        resource_type : 'string'
+            'power' or 'met'
+        repo : 'ExternalDataStore'
+            ExternalDataStore instance
+        forecasts : 'bool'
+            Download forecast along with power
+        cores : 'int'
+            Number of cores to use for parallel downloads
+            If None download in series
+        """
+        if dataset == 'wind':
+            meta = self.wind_meta
+            if resource_type == 'power':
+                data_size = len(site_ids) * self.WIND_FILE_SIZES['power']
+                if forecasts:
+                    data_size += len(site_ids) * self.WIND_FILE_SIZES['fcst']
+            else:
+                data_size = len(site_ids) * self.WIND_FILE_SIZES['met']
+        elif dataset == 'solar':
+            meta = self.solar_meta
+            if resource_type == 'power':
+                data_size = len(site_ids) * self.SOLAR_FILE_SIZES['power']
+                if forecasts:
+                    data_size += len(site_ids) * self.SOLAR_FILE_SIZES['fcst']
+            else:
+                data_size = len(site_ids) * self.SOLAR_FILE_SIZES['met']
+                data_size += len(site_ids) * self.SOLAR_FILE_SIZES['irradiance']
+        else:
+            raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
+
+        data_size = data_size / 1000
+
+        if self._local_cache._size is not None:
+            cache_size, wind_size, solar_size = self._local_cache.cache_size
+            open_cache = self._local_cache._size - cache_size
+            if open_cache < data_size:
+                raise RuntimeError('Not enough space available in local cache: \
+    \nDownload size = {d:.2f}GB \
+    \nLocal cache = {c:.2f}GB of {m:.2f}GB in use \
+    \n\tCached wind data = {w:.2f}GB \
+    \n\tCached solar data = {s:.2f}GB'.format(d=data_size, c=cache_size,
+                                              m=self._local_cache._size,
+                                              w=wind_size, s=solar_size))
+
+        files = []
+        for site in site_ids:
+            sub_dir = str(meta.loc[site, 'sub_directory'])
+            if dataset == 'wind':
+                dir_path = os.path.join(self._local_cache._wind_root, sub_dir)
+            elif dataset == 'solar':
+                dir_path = os.path.join(self._local_cache._solar_root, sub_dir)
+            else:
+                raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
+
+            if not os.path.exists(dir_path):
+                os.makedirs(dir_path)
+
+            f_name = '{d}_{r}_{s}.hdf5'.format(d=dataset,
+                                               r=resource_type,
+                                               s=site)
+            files.append(os.path.join(sub_dir, f_name))
+
+            if resource_type == 'power' and forecasts:
+                f_name = '{d}_fcst_{s}.hdf5'.format(d=dataset,
+                                                    s=site)
+                files.append(os.path.join(sub_dir, f_name))
+
+            if dataset == 'solar' and resource_type == 'met':
+                f_name = 'solar_irradiance_{:}.hdf5'.format(site)
+                files.append(os.path.join(sub_dir, f_name))
+
+        if cores is None:
+            for site in files:
+                self.cache_resource(site, dataset)
+        else:
+            if 'ix' not in os.name:
+                EXECUTOR = cf.ThreadPoolExecutor
+            else:
+                EXECUTOR = cf.ProcessPoolExecutor
+
+            with EXECUTOR(max_workers=cores) as executor:
+                for site in files:
+                    executor.submit(self.cache_resource, site, dataset)
 
 
 class Scratch(ExternalDataStore):
