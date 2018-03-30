@@ -3,7 +3,6 @@ This module provides an API to the raw resource data and meta-data.
 """
 import os
 import h5py
-import numpy as np
 import pandas as pds
 
 

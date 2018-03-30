@@ -4,11 +4,9 @@ as well as abstract function calls for converting between them.
 """
 
 import abc
-import datetime as dt
 from enum import Enum
 import numpy as np
 import pandas as pds
-import pytz
 
 
 class TemporalParameters(object):
@@ -42,14 +40,14 @@ class TemporalParameters(object):
         resolution : 'string'
             resolution for timeseries, if None use data's native resolution
         """
-        self.extent = extent
+        self.extent = list(pds.to_datetime(extent).tz_localize(timezone))
         self.point_interp = get_enum_instance(point_interp,
                                               self.POINT_INTERPRETATIONS)
         self.timezone = timezone
         self.resolution = pds.to_timedelta(resolution)
 
     @classmethod
-    def infer_params(cls, ts, **kwargs):
+    def infer_params(cls, ts, timezone=None, **kwargs):
         """
         Returns a TemporalParameters object where the extent, and
         resolution are inferred from timeseries.index.
@@ -65,17 +63,14 @@ class TemporalParameters(object):
         """
         time_index = ts.index
         extent = time_index[[0, -1]]
+        extent.tz = None
+        ts_params = TemporalParameters(extent, **kwargs)
+        ts_params.infer_resolution(ts)
 
-        resolution = np.unique(time_index[1:] - time_index[:-1])
-        assert len(resolution) == 1, 'time resolution is not constant!'
-        resolution = pds.to_timedelta(resolution[0])
+        if timezone is None:
+            ts_params.infer_timezone(ts)
 
-        return TemporalParameters(extent, resolution=resolution, **kwargs)
-
-    def infer_extent(self, ts):
-        time_index = ts.index
-        extent = time_index[[0, -1]]
-        self.extent = extent
+        return ts_params
 
     def infer_resolution(self, ts):
         time_index = ts.index
@@ -84,6 +79,13 @@ class TemporalParameters(object):
         resolution = pds.to_timedelta(resolution[0])
         self.resolution = resolution
 
+    def infer_timezone(self, ts):
+        timezone = ts.index.tz
+        if timezone is None:
+            timezone = 'UTC'
+
+        self.timezone = timezone
+
 
 class TimeseriesShaper(object):
     """
@@ -91,7 +93,7 @@ class TimeseriesShaper(object):
     conform to the desired temporal parameters.
     """
     @abc.abstractmethod
-    def __call__(self, ts, ts_tempparams, out_tempparams):
+    def __call__(self, ts, out_tempparams, ts_tempparams=None):
         """
         Accepts a timeseries ts that has TemporalParameters ts_tempparams, and
         returns a re-shaped timeseries conforming to out_tempparams.
@@ -100,10 +102,10 @@ class TimeseriesShaper(object):
         ----------
         ts : 'pandas.Series'|'pandas.DataFrame'
             timeseries to be reshaped
-        ts_tempparams : 'TemporalParameters'
-            description of ts's temporal parameters
         out_tempparams : 'TemporalParameters'
             the desired temporal parameters for the output timeseries
+        ts_tempparams : 'TemporalParameters'
+            description of ts's temporal parameters
 
         Returns
         ---------
