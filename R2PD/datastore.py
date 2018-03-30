@@ -221,7 +221,7 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
             Wind or Solar Resource class instance
         """
         cache = self._local_cache.check_cache(dataset, site_id)
-        if cache is not None:
+        if cache:
             if dataset == 'wind':
                 return WindResource(self.wind_meta.loc[site_id],
                                     self._local_cache._wind_root, frac=frac)
@@ -491,8 +491,7 @@ class InternalDataStore(DataStore):
         summary = pds.Series()
         summary['sites'] = len(cache_meta)
         for col in cache_meta.columns:
-            if col != 'sub_directory':
-                summary[col] = cache_meta[col].sum()
+            summary[col] = cache_meta[col].sum()
 
         return summary
 
@@ -505,14 +504,12 @@ class InternalDataStore(DataStore):
                 cache_path = os.path.join(self._wind_root,
                                           '{:}_cache.csv'.format(dataset))
                 self._wind_cache = cache_path
-                columns = ['met', 'power', 'fcst', 'fcst-prob',
-                           'sub_directory']
+                columns = ['met', 'power', 'fcst', 'fcst-prob']
             elif dataset == 'solar':
                 cache_path = os.path.join(self._solar_root,
                                           '{:}_cache.csv'.format(dataset))
                 self._solar_cache = cache_path
-                columns = ['met', 'irradiance', 'power', 'fcst', 'fcst-prob',
-                           'sub_directory']
+                columns = ['met', 'irradiance', 'power', 'fcst', 'fcst-prob']
 
             if not os.path.isfile(cache_path):
                 cache_meta = pds.DataFrame(columns=columns)
@@ -542,22 +539,17 @@ class InternalDataStore(DataStore):
         cache_sites = cache_meta.index
 
         file_paths = []
-        for path, subdirs, files in os.walk(root_path):
-            for name in files:
-                if name.endswith('.hdf5'):
-                    file_paths.append(os.path.join(path, name))
+        for file in os.listdir(root_path):
+            if file.endswith('.hdf5'):
+                file_paths.append(os.path.join(root_path, file))
 
         for file in file_paths:
-            sub_dir, name = os.path.split(file)
-            name = os.path.splitext(name)[0]
+            name = os.path.splitext(os.path.basename(file))[0]
             _, resource, site_id = name.split('_')
             site_id = int(site_id)
 
-            sub_dir = int(os.path.basename(sub_dir))
-
             if site_id not in cache_sites:
                 cache_meta.loc[site_id] = False
-                cache_meta.loc[site_id, 'sub_directory'] = sub_dir
 
             cache_meta.loc[site_id, resource] = True
             cache_sites = cache_meta.index
@@ -588,16 +580,12 @@ class InternalDataStore(DataStore):
         cache_meta = pds.read_csv(cache_path, index_col=0)
         cache_sites = cache_meta.index
 
-        sub_dir, name = os.path.split(site_file)
-        name = os.path.splitext(name)[0]
+        name = os.path.splitext(os.path.basename(site_file))[0]
         _, resource, site_id = name.split('_')
         site_id = int(site_id)
 
-        sub_dir = int(os.path.basename(sub_dir))
-
         if site_id not in cache_sites:
             cache_meta.loc[site_id] = False
-            cache_meta.loc[site_id, 'sub_directory'] = sub_dir
 
         cache_meta.loc[site_id, resource] = True
 
@@ -623,9 +611,8 @@ class InternalDataStore(DataStore):
 
         Returns
         ---------
-        'int'|None
-            Returns subdirectory containing resource site file
-            Returns None if resource is not in cache
+        'bool'
+            Is site/resource present in cache
         """
         self.refresh_cache_meta(dataset)
         if dataset == 'wind':
@@ -641,13 +628,15 @@ class InternalDataStore(DataStore):
         if site_id in cache_sites:
             if resource_type is not None:
                 if cache_meta.loc[site_id, resource_type]:
-                    return cache_meta.loc[site_id, 'sub_directory']
+                    cached = True
                 else:
-                    return None
+                    cached = False
             else:
-                return cache_meta.loc[site_id, 'sub_directory']
+                cached = True
         else:
-            return None
+            cached = False
+
+        return cached
 
     def cache_data(self, dataset, site_files):
         """

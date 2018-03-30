@@ -151,7 +151,7 @@ def nearest_met_nodes(node_collection, resource_meta):
 
     return nodes[['latitude', 'longitude', 'site_id']]
 
-
+#TODO: Move to datastore
 def cache_resource(site_file, dataset, repo):
     """
     Download the resource site file from repo and add site to cache meta

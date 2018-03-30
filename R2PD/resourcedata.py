@@ -29,7 +29,6 @@ class Resource(object):
         self._meta = loc_meta
         self._frac = frac
         self._root_path = root_path
-        self._sub_dir = loc_meta['sub_directory']
 
         if self.DATASET is not None:
             self._file_name = '{d}_*_{s}.hdf5'.format(d=self.DATASET,
@@ -37,8 +36,7 @@ class Resource(object):
         else:
             self._file_name = '*_{:}.hdf5'.format(self._id)
 
-        self._file_path = os.path.join(self._root_path, str(self._sub_dir),
-                                       self._file_name)
+        self._file_path = os.path.join(self._root_path, self._file_name)
 
     def __repr__(self):
         """
