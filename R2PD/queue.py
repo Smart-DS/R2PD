@@ -149,9 +149,6 @@ def nearest_met_nodes(node_collection, resource_meta):
     return nodes[['latitude', 'longitude', 'site_id']]
 
 
-
-
-
 def get_resource_data(node_collection, repo, forecasts=False, **kwargs):
     """
     Finds nearest nodes, caches files to local datastore and assigns resource

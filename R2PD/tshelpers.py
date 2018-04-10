@@ -35,9 +35,9 @@ class TemporalParameters(object):
             Start and end datetime
         point_interp : 'POINT_INTERPRETATIONS'
             element of POINT_INTERPRETATIONS representing data
-        timezone : 'string'
+        timezone : 'str'
             timezone for timeseries
-        resolution : 'string'
+        resolution : 'str'
             resolution for timeseries, if None use data's native resolution
         """
         self.extent = list(pds.to_datetime(extent).tz_localize(timezone))
@@ -331,7 +331,7 @@ def get_enum_instance(value, enum_class):
 
     Parameters
     ----------
-    value : 'string'|'enum_class'
+    value : 'str'|'enum_class'
         Either enum_class value or string for value
     enum_class : 'Enum'
         enum class object for which value belongs

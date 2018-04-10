@@ -20,7 +20,8 @@ def cli_parser():
     parser = argparse.ArgumentParser(description='''Get wind, solar, or weather
                  data for power system modeling.''')
 
-    parser.add_argument('-e', '--external-datastore', choices=['DRPower', 'Peregrine'],
+    parser.add_argument('-e', '--external-datastore',
+                        choices=['DRPower', 'Peregrine'],
                         default='DRPower',
                         help='''Name of the external datastore to query for
                         resource data not yet cached locally.''')
@@ -53,7 +54,7 @@ def cli_parser():
                             help='''Timezone for all output data. Also used in
                             interpreting temporal-extent if no explicit
                             timezone is provided for those inputs.''',
-                            choices=['UTC'], default='UTC') # todo: Make actual list of choices
+                            choices=['UTC'], default='UTC')
         parser.add_argument('-r', '--temporal-resolution',
                             help='''Resolution for output timeseries data.
                             Default is to retain the native resolution.''')

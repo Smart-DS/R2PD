@@ -3,12 +3,29 @@ from R2PD.tshelpers import (TemporalParameters,
 
 
 class DefaultTimeseriesShaper(TimeseriesShaper):
+    """
+    Default set of functions to reshape timeseries data
+    """
     POINT_INTERPS = TemporalParameters.POINT_INTERPRETATIONS
 
     def __call__(self, ts, out_tempparams, ts_tempparams=None):
         """
-        This method compares ts_tempparams and out_tempparams to determine
-        what operations need to be performed.
+        Convert time series to conform with desired temporal parameters
+
+        Parameters
+        ----------
+        ts : 'pd.DataFrame'
+            Input timeseries to be shaped
+        out_tempparams : 'TemporalParameters'
+            Temporal parameters desired
+        ts_tempparams : 'TemporalParameters'
+            Temporal parameters of input timeseries,
+            if None they will be infered
+
+        Returns
+        -------
+        'pd.DataFrame'
+            Reshaped timeseries
         """
         if ts_tempparams is None:
             ts_tempparams = TemporalParameters.infer_params(ts)
@@ -40,6 +57,19 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
         return self.get_extent(ts)
 
     def get_extent(self, ts):
+        """
+        Extract desired extent from time-series
+
+        Parameters
+        ----------
+        ts : 'pd.DataFrame'
+            Time-series data
+
+        Returns
+        -------
+        'pd.DataFrame'
+             Desired extent of time-series
+        """
         out_start, out_end = self.out_params.extent
         out_dt = self.out_params.resolution
         start = self.ts_params.extent[0] <= out_start
@@ -55,6 +85,19 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
         return ts
 
     def integrate(self, ts):
+        """
+        Integrate time-series
+
+        Parameters
+        ----------
+        ts : 'pd.DataFrame'
+            Time-series data
+
+        Returns
+        -------
+        'pd.DataFrame'
+             Integrated time-series
+        """
         dt = self.out_params.resolution
         assert dt > self.ts_params.resolution, 'Requested temporal resolution\
  must be greater than {:}'.format(self.ts_params.resolution)
@@ -69,6 +112,19 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
         return ts
 
     def average(self, ts):
+        """
+        Average time-series
+
+        Parameters
+        ----------
+        ts : 'pd.DataFrame'
+            Time-series data
+
+        Returns
+        -------
+        'pd.DataFrame'
+            Averaged time-series
+        """
         dt = self.out_params.resolution
         assert dt > self.ts_params.resolution, 'Requested temporal resolution\
  must be greater than {:}'.format(self.ts_params.resolution)
@@ -83,6 +139,19 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
         return ts
 
     def interpolate(self, ts):
+        """
+        Interpolate time-series
+
+        Parameters
+        ----------
+        ts : 'pd.DataFrame'
+            Time-series data
+
+        Returns
+        -------
+        'pd.DataFrame'
+            Interpolated time-series
+        """
         dt = self.out_params.resolution
         assert dt < self.ts_params.resolution, 'Requested temporal resolution\
  must be less than {:}'.format(self.ts_params.resolution)
@@ -90,6 +159,19 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
         return ts
 
     def tz_shift(self, ts):
+        """
+        Shift time-series to new timezone
+
+        Parameters
+        ----------
+        ts : 'pd.DataFrame'
+            Time-series data
+
+        Returns
+        -------
+        'pd.DataFrame'
+             Shifted time-series
+        """
         ts = ts.tz_convert(self.out_params.timezone)
         return ts
 

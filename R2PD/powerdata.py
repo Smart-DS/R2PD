@@ -31,7 +31,7 @@ class Node(object):
 
         Parameters
         ----------
-        node_id : 'string'|'int'
+        node_id : 'str'|'int'
             Node id, must be an integer
         latitude : 'float'
             Latitude of node
@@ -99,7 +99,7 @@ class GeneratorNode(Node):
 
         Parameters
         ----------
-        node_id : 'string'|'int'
+        node_id : 'str'|'int'
             Node id, must be an integer
         latitude : 'float'
             Latitude of node
@@ -179,7 +179,7 @@ class GeneratorNode(Node):
 
         Parameters
         ----------
-        file_path : 'string'
+        file_path : 'str'
             Output file path
         formatter : ''
             Method to save powerdata to desired format
@@ -195,7 +195,7 @@ class GeneratorNode(Node):
 
         Parameters
         ----------
-        file_path : 'string'
+        file_path : 'str'
             Output file path
         formatter : ''
             Method to save powerdata to desired format
@@ -253,7 +253,7 @@ class WeatherNode(Node):
 
         Parameters
         ----------
-        file_path : 'string'
+        file_path : 'str'
             Output file path
         formatter : ''
             Method to save powerdata to desired format
@@ -305,7 +305,7 @@ class SolarMetNode(WeatherNode):
 
         Parameters
         ----------
-        file_path : 'string'
+        file_path : 'str'
             Output file path
         formatter : ''
             Method to save powerdata to desired format
@@ -543,9 +543,9 @@ does not match number of nodes ({n})'.format(r=len(resources), n=len(node_ids))
 
         Parameters
         ----------
-        out_dir : 'string'
+        out_dir : 'str'
             Path to root directory to save power data
-        file_prefix : 'string'
+        file_prefix : 'str'
             Prefix for files to be save after appending node id and extension
         formatter : ''
             Method to save powerdata to desired format
@@ -570,9 +570,9 @@ does not match number of nodes ({n})'.format(r=len(resources), n=len(node_ids))
 
         Parameters
         ----------
-        out_dir : 'string'
+        out_dir : 'str'
             Path to root directory to save power data
-        file_prefix : 'string'
+        file_prefix : 'str'
             Prefix for files to be save after appending node id and extension
         formatter : ''
             Method to save powerdata to desired format
@@ -651,9 +651,9 @@ solar or wind nodes')
 
         Parameters
         ----------
-        out_dir : 'string'
+        out_dir : 'str'
             Path to root directory to save power data
-        file_prefix : 'string'
+        file_prefix : 'str'
             Prefix for files to be save after appending node id and extension
         formatter : ''
             Method to save powerdata to desired format

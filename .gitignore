@@ -1,4 +1,4 @@
 *.pyc
 
-doc/build/**
-doc/source/api/resource*
+docs/build/**
+docs/source/api/resource*

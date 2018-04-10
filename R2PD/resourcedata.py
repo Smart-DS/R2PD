@@ -19,7 +19,7 @@ class Resource(object):
         ----------
         loc_meta : 'pandas.Series'
             meta data for resource location
-        root_path : 'string'
+        root_path : 'str'
             path to internal repository
         frac : 'float'
             fraction of site's capacity to be used
@@ -107,7 +107,7 @@ class Resource(object):
 
         Parameters
         ----------
-        data_type : 'string'
+        data_type : 'str'
             type of data ('met', 'power', 'fcst')
 
         Returns

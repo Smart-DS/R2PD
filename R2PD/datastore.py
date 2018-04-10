@@ -27,10 +27,10 @@ class DataStore(object):
 
         Parameters
         ----------
-        wind_dir : 'string'
+        wind_dir : 'str'
             Name of directory in which wind data is/will be stored
             if None set to 'wind'
-        solar_dir: 'string'
+        solar_dir : 'str'
             Name of directory in which solar data is/will be stored
             if None set to 'solar'
         """
@@ -66,12 +66,12 @@ class DataStore(object):
 
         Parameters
         ----------
-        entry : 'string'
+        entry : 'str'
             entry from ConfigParser call
 
         Returns
         ---------
-        entry : 'string' or None
+        entry : 'str' or None
             if config entry is not 'None' or empty the entry is returned
             else None is returned
         """
@@ -134,7 +134,7 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
 
         Parameters
         ----------
-        config : 'string'
+        config : 'str'
             Path to .ini configuration file.
             See library/config.ini for an example
 
@@ -166,9 +166,9 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
 
         Parameters
         ----------
-        src : 'string'
+        src : 'str'
             Path to source file to be downloaded
-        dst : 'string'
+        dst : 'str'
             Path to destination directory of file path
         """
         pass
@@ -209,9 +209,9 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
 
         Parameters
         ----------
-        site_file : 'string'
+        site_file : 'str'
             Path to resource file for site
-        dataste : 'string'
+        dataste : 'str'
             'wind' or 'solar'
         """
         if dataset == 'wind':
@@ -241,7 +241,7 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
 
         Parameters
         ----------
-        dataset : 'string'
+        dataset : 'str'
             'wind' or 'solar'
         site_id : int
             Resource site_id
@@ -281,9 +281,9 @@ class Peregrine(ExternalDataStore):
 
         Parameters
         ----------
-        username : 'string'
+        username : 'str'
             Peregrine username
-        password : 'string'
+        password : 'str'
             Peregrine password
         **kwargs :
             kwargs for ExternalDataStore
@@ -298,9 +298,9 @@ class Peregrine(ExternalDataStore):
 
         Parameters
         ----------
-        src : 'string'
+        src : 'str'
             Path to source file to be downloaded
-        dst : 'string'
+        dst : 'str'
             Path to destination directory of file path
         timeout : 'int'
             Timeout in seconds
@@ -336,7 +336,7 @@ password:".format(self._username)
 
         Parameters
         ----------
-        config : 'string'
+        config : 'str'
             Path to .ini configuration file.
 
         Returns
@@ -369,10 +369,10 @@ password:".format(self._username)
         ----------
         site_ids : 'list'
             List of site ids to be downloaded
-        dataset : 'string'
+        dataset : 'str'
             'wind' or 'solar'
-        resource_type : 'string'
-            'power' or 'met'
+        resource_type : 'str'
+            power or met
         repo : 'ExternalDataStore'
             ExternalDataStore instance
         forecasts : 'bool'
@@ -423,7 +423,8 @@ password:".format(self._username)
             elif dataset == 'solar':
                 dir_path = os.path.join(self._local_cache._solar_root, sub_dir)
             else:
-                raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
+                raise ValueError("Invalid dataset type, must be 'wind' or \
+'solar'")
 
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
@@ -469,9 +470,9 @@ class Scratch(ExternalDataStore):
 
         Parameters
         ----------
-        src : 'string'
+        src : 'str'
             Path to source file to be downloaded
-        dst : 'string'
+        dst : 'str'
             Path to destination directory of file path
         timeout : 'int'
             Timeout in seconds
@@ -542,7 +543,7 @@ class InternalDataStore(DataStore):
 
         Parameters
         ----------
-        config : 'string'
+        config : 'str'
             Path to .ini configuration file.
             See library/config.ini for an example
 
@@ -582,7 +583,7 @@ class InternalDataStore(DataStore):
 
         Parameters
         ----------
-        path : 'string'
+        path : 'str'
             Path to cache directory
 
         Returns
@@ -606,7 +607,7 @@ class InternalDataStore(DataStore):
 
         Parameters
         ----------
-        path : 'string'
+        path : 'str'
             Path to cache meta .csv
 
         Returns
@@ -651,7 +652,7 @@ class InternalDataStore(DataStore):
 
         Parameters
         ----------
-        dataset : 'string'
+        dataset : 'str'
             'wind' or 'solar'
         """
         if dataset == 'wind':
@@ -692,9 +693,9 @@ class InternalDataStore(DataStore):
 
         Parameters
         ----------
-        dataset : 'string'
+        dataset : 'str'
             'wind' or 'solar'
-        site_file : 'string'
+        site_file : 'str'
             Path to resource file for site
         """
         if dataset == 'wind':
@@ -728,11 +729,11 @@ class InternalDataStore(DataStore):
 
         Parameters
         ----------
-        dataset : 'string'
+        dataset : 'str'
             'wind' or 'solar'
         site_id : 'int'
             Site id number
-        resource_type : 'string'
+        resource_type : 'str'
             type of resource
             wind -> ('power', 'fcst', 'met')
             solar -> ('power', 'fcst', 'met', 'irradiance')
@@ -772,7 +773,7 @@ class InternalDataStore(DataStore):
 
         Parameters
         ----------
-        dataset : 'string'
+        dataset : 'str'
             'wind' or 'solar'
         site_files : 'list'
             List of paths to resource files for sites

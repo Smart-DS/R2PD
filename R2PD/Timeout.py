@@ -39,9 +39,9 @@ class Timeout(object):
         ----------
         type : 'Error'
             error type
-        value : 'string'
+        value : 'str'
             error message
-        traceback : 'string'
+        traceback : 'str'
             error traceback
         """
         # Reset alarm

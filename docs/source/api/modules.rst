@@ -1,7 +1,7 @@
-resource
-========
+R2PD
+====
 
 .. toctree::
    :maxdepth: 4
 
-   resource
+   R2PD
