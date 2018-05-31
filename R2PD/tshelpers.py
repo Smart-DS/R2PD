@@ -49,17 +49,20 @@ class TemporalParameters(object):
     @classmethod
     def infer_params(cls, ts, timezone=None, **kwargs):
         """
-        Returns a TemporalParameters object where the extent, and
-        resolution are inferred from timeseries.index.
-        The user must provide the appropriate point_interp (element of
-        TemporalParameters.POINT_INTERPRETATIONS), and timezone.
+        Infer time-series temporal parameters
 
         Parameters
         ----------
-        ts : 'pd.DataFrame'
+        ts : 'pandas.DataFrame'
             Timeseries DataFrame
+        timezone : 'str'
+            Timezone of time-series, if None, infer
         **kwargs
             kwargs for TemporalParameters
+
+        Returns
+        -------
+        ts_params : 'TemporalParameters'
         """
         time_index = ts.index
         extent = time_index[[0, -1]]
@@ -73,6 +76,14 @@ class TemporalParameters(object):
         return ts_params
 
     def infer_resolution(self, ts):
+        """
+        Infer time-series temporal resolution
+
+        Parameters
+        ----------
+        ts : 'pandas.DataFrame'
+            Timeseries DataFrame
+        """
         time_index = ts.index
         resolution = np.unique(time_index[1:] - time_index[:-1])
         assert len(resolution) == 1, 'time resolution is not constant!'
@@ -80,6 +91,14 @@ class TemporalParameters(object):
         self.resolution = resolution
 
     def infer_timezone(self, ts):
+        """
+        Infer time-series timezone
+
+        Parameters
+        ----------
+        ts : 'pandas.DataFrame'
+            Timeseries DataFrame
+        """
         timezone = ts.index.tz
         if timezone is None:
             timezone = 'UTC'

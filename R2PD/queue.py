@@ -20,13 +20,13 @@ def nearest_power_nodes(node_collection, resource_meta):
         DataFrame of requested nodes
             [node_id(index), latitude, longitude, capacity]
         or NodeCollection instance
-    resource_meta : 'pd.DataFrame'
+    resource_meta : 'pandas.DataFrame'
         DataFrame with resource node meta-data
             [site_id(index), latitude, longitude, capacity]
 
     Returns
     ---------
-    nodes : 'pd.DataFrame'
+    nodes : 'pandas.DataFrame'
         Requested nodes with site_ids and fractions of resource for each node
     """
     if isinstance(node_collection, NodeCollection):
@@ -115,13 +115,13 @@ def nearest_met_nodes(node_collection, resource_meta):
         DataFrame of requested nodes
             [node_id(index), latitude, longitude]
         or NodeCollection instance
-    resource_meta : 'pd.DataFrame'
+    resource_meta : 'pandas.DataFrame'
         DataFrame with resource node meta-data
             [site_id(index), latitude, longitude]
 
     Returns
     ---------
-    nodes : 'pd.DataFrame'
+    nodes : 'pandas.DataFrame'
         Requested nodes with site_id of resource for each node
     """
     if isinstance(node_collection, NodeCollection):

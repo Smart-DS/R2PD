@@ -14,7 +14,7 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
 
         Parameters
         ----------
-        ts : 'pd.DataFrame'
+        ts : 'pandas.DataFrame'
             Input timeseries to be shaped
         out_tempparams : 'TemporalParameters'
             Temporal parameters desired
@@ -24,7 +24,7 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
 
         Returns
         -------
-        'pd.DataFrame'
+        'pandas.DataFrame'
             Reshaped timeseries
         """
         if ts_tempparams is None:
@@ -62,12 +62,12 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
 
         Parameters
         ----------
-        ts : 'pd.DataFrame'
+        ts : 'pandas.DataFrame'
             Time-series data
 
         Returns
         -------
-        'pd.DataFrame'
+        'pandas.DataFrame'
              Desired extent of time-series
         """
         out_start, out_end = self.out_params.extent
@@ -90,12 +90,12 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
 
         Parameters
         ----------
-        ts : 'pd.DataFrame'
+        ts : 'pandas.DataFrame'
             Time-series data
 
         Returns
         -------
-        'pd.DataFrame'
+        'pandas.DataFrame'
              Integrated time-series
         """
         dt = self.out_params.resolution
@@ -117,12 +117,12 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
 
         Parameters
         ----------
-        ts : 'pd.DataFrame'
+        ts : 'pandas.DataFrame'
             Time-series data
 
         Returns
         -------
-        'pd.DataFrame'
+        'pandas.DataFrame'
             Averaged time-series
         """
         dt = self.out_params.resolution
@@ -144,12 +144,12 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
 
         Parameters
         ----------
-        ts : 'pd.DataFrame'
+        ts : 'pandas.DataFrame'
             Time-series data
 
         Returns
         -------
-        'pd.DataFrame'
+        'pandas.DataFrame'
             Interpolated time-series
         """
         dt = self.out_params.resolution
@@ -164,12 +164,12 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
 
         Parameters
         ----------
-        ts : 'pd.DataFrame'
+        ts : 'pandas.DataFrame'
             Time-series data
 
         Returns
         -------
-        'pd.DataFrame'
+        'pandas.DataFrame'
              Shifted time-series
         """
         ts = ts.tz_convert(self.out_params.timezone)
