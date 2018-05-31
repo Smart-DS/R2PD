@@ -12,6 +12,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+# import os
+# import sys
+# sys.path.insert(0, os.path.abspath('.'))
 import sphinx_rtd_theme
 
 
@@ -22,7 +25,7 @@ copyright = '2017, Michael Rossol, Elaine Hale'
 author = 'Michael Rossol, Elaine Hale'
 
 # The short X.Y version
-version = '0.1.0'
+version = ''
 # The full version, including alpha/beta/rc tags
 release = '0.1.0'
 
@@ -42,8 +45,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'sphinx.ext.autosummary',
-    'numpydoc'
+    'sphinx.ext.napoleon'  # had numpydoc, but got lots of extraneous warnings
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -141,7 +143,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'R2PD.tex', 'R2PD Documentation',
-     author, 'manual'),
+     'Michael Rossol, Elaine Hale', 'manual'),
 ]
 
 
@@ -174,4 +176,4 @@ autodoc_member_order = 'bysource'
 # Uncomment when https://github.com/sphinx-doc/sphinx/pull/4076 is
 # released.
 # autodoc_special_members = ['__getitem__', '__setitem__','__iter__']
-numpy_show_class_member = False
+numpy_show_class_member = True
