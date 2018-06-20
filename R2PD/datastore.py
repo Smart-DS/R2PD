@@ -381,23 +381,24 @@ password:".format(self._username)
             Number of cores to use for parallel downloads
             If None download in series
         """
+        n = len(site_ids)
         if dataset == 'wind':
             meta = self.wind_meta
             if resource_type == 'power':
-                data_size = len(site_ids) * self.WIND_FILE_SIZES['power']
+                data_size = n * self.WIND_FILE_SIZES['power']
                 if forecasts:
-                    data_size += len(site_ids) * self.WIND_FILE_SIZES['fcst']
+                    data_size += n * self.WIND_FILE_SIZES['fcst']
             else:
-                data_size = len(site_ids) * self.WIND_FILE_SIZES['met']
+                data_size = n * self.WIND_FILE_SIZES['met']
         elif dataset == 'solar':
             meta = self.solar_meta
             if resource_type == 'power':
-                data_size = len(site_ids) * self.SOLAR_FILE_SIZES['power']
+                data_size = n * self.SOLAR_FILE_SIZES['power']
                 if forecasts:
-                    data_size += len(site_ids) * self.SOLAR_FILE_SIZES['fcst']
+                    data_size += n * self.SOLAR_FILE_SIZES['fcst']
             else:
-                data_size = len(site_ids) * self.SOLAR_FILE_SIZES['met']
-                data_size += len(site_ids) * self.SOLAR_FILE_SIZES['irradiance']
+                data_size = n * self.SOLAR_FILE_SIZES['met']
+                data_size += n * self.SOLAR_FILE_SIZES['irradiance']
         else:
             raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
 
@@ -408,12 +409,12 @@ password:".format(self._username)
             open_cache = self._local_cache._size - cache_size
             if open_cache < data_size:
                 raise RuntimeError('Not enough space available in local cache: \
-    \nDownload size = {d:.2f}GB \
-    \nLocal cache = {c:.2f}GB of {m:.2f}GB in use \
-    \n\tCached wind data = {w:.2f}GB \
-    \n\tCached solar data = {s:.2f}GB'.format(d=data_size, c=cache_size,
-                                              m=self._local_cache._size,
-                                              w=wind_size, s=solar_size))
+\nDownload size = {d:.2f}GB \
+\nLocal cache = {c:.2f}GB of {m:.2f}GB in use \
+\n\tCached wind data = {w:.2f}GB \
+\n\tCached solar data = {s:.2f}GB'.format(d=data_size, c=cache_size,
+                                          m=self._local_cache._size,
+                                          w=wind_size, s=solar_size))
 
         files = []
         for site in site_ids:
