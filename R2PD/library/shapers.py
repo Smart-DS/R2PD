@@ -1,4 +1,9 @@
-from R2PD.tshelpers import (TemporalParameters,
+"""
+Libary of Time-series and Forecast Shapers
+"""
+import numpy as np
+import pandas as pds
+from R2PD.tshelpers import (TemporalParameters, ForecastParameters,
                             TimeseriesShaper, ForecastShaper)
 
 
@@ -183,4 +188,64 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
 
 
 class DefaultForecastShaper(ForecastShaper):
-    pass
+    """
+    Default set of forecast shapers. Used to refine discrete leadtime format
+    or convert to dispatch lookahead format
+    """
+    FCST_TYPES = ForecastParameters.FORECAST_TYPES
+
+    def __call__(self, forecast_data, out_forecast_params,
+                 forecast_data_params=None):
+        """
+        Accepts a timeseries of forecast_data that has ForecastParameters
+        forecast_data_params
+        returns a re-shaped timeseries conforming to out_forecast_params
+
+        Parameters
+        ----------
+        forecast_data : 'pandas.Series'|'pandas.DataFrame'
+            timeseries to be reshaped
+        forecast_data_params : 'TemporalParameters'
+            description of forecast_data parameters
+        out_forecast_params : 'TemporalParameters'
+            the desired forecast parameters for the output timeseries
+
+        Returns
+        -------
+        'pandas.Series'|'pandas.DataFrame'
+            Returns reshaped forecast data
+        """
+        if forecast_data_params is None:
+            fcst_params = ForecastParameters.infer_params(forecast_data)
+
+        self.fcst_params = fcst_params
+
+    @staticmethod
+    def interp_leadtime(fcst_data, leadtime):
+        if isinstance(leadtime, str):
+            leadtime = pds.to_timedelta(leadtime)
+
+        lead_times = pds.to_timedelta(fcst_data.columns)
+        if leadtime in lead_times:
+            pos = list(lead_times).index(leadtime)
+            fcst_ts = fcst_data.iloc[:, pos]
+        else:
+            nearest = np.abs(lead_times - leadtime)
+            fcst_1, fcst_2 = np.argsort(nearest)[:2]
+            h_1, h_2 = lead_times[[fcst_1, fcst_2]]
+            m = ((fcst_data.iloc[:, fcst_2] - fcst_data.iloc[:, fcst_1]) /
+                 (h_2 - h_1).total_seconds())
+            b = fcst_data.iloc[:, fcst_1] - m * h_1.total_seconds()
+            fcst_ts = m * leadtime.total_seconds() + b
+
+        fcst_ts.name = '{:g}h'.format(leadtime.total_seconds() / 3600)
+        return fcst_ts.to_frame()
+
+    def get_leadtimes(self, fcst_data):
+        lead_times = [self.interp_leadtime(fcst_data, leadtime)
+                      for leadtime in self.fcst_params.leadtimes]
+
+        return pds.concat(lead_times, axis=1)
+
+    @staticmethod
+    def get_dispatch(fcst_data, ):

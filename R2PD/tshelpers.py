@@ -22,8 +22,6 @@ class TemporalParameters(object):
                                   'integrated_prev',
                                   'integrated_midpt'])
 
-    # todo: is there a reasonable default to assign to point_interp, or does it
-    #       have to be provided by the user?
     def __init__(self, extent, point_interp='instantaneous', timezone='UTC',
                  resolution=None):
         """
@@ -67,7 +65,7 @@ class TemporalParameters(object):
         time_index = ts.index
         extent = time_index[[0, -1]]
         extent.tz = None
-        ts_params = TemporalParameters(extent, **kwargs)
+        ts_params = cls(extent, **kwargs)
         ts_params.infer_resolution(ts)
 
         if timezone is None:
@@ -172,8 +170,10 @@ class ForecastParameters(object):
         self._forecast_type = get_enum_instance(forecast_type,
                                                 self.FORECAST_TYPES)
         if not isinstance(temporal_params, TemporalParameters):
-            raise RuntimeError("Expecting temporal_params to be instance of \
-TemporalParameters, but is {}.".format(type(temporal_params)))
+            msg = ("Expecting temporal_params to be instance of",
+                   "TemporalParameters, but is {}."
+                   .format(type(temporal_params)))
+            raise RuntimeError(" ".join(msg))
         self._temporal_params = temporal_params
         self._leadtimes = None
         self._frequency = None
@@ -181,12 +181,37 @@ TemporalParameters, but is {}.".format(type(temporal_params)))
         self._leadtime = None
         # store type-specific parameters
         if self.forecast_type == self.FORECAST_TYPES.discrete_leadtimes:
-            self._leadtimes = kwargs['leadtimes']
+            self._leadtimes = pds.to_timedelta(kwargs['leadtimes'])
         else:
             assert self.forecast_type == self.FORECAST_TYPES.dispatch_lookahead
-            self._frequency = kwargs['frequency']
-            self._lookahead = kwargs['lookahead']
-            self._leadtime = kwargs['leadtime']
+            self._frequency = pds.to_timedelta(kwargs['frequency'])
+            self._lookahead = pds.to_timedelta(kwargs['lookahead'])
+            self._leadtime = pds.to_timedelta(kwargs['leadtime'])
+
+    @classmethod
+    def infer_params(cls, ts, **kwargs):
+        """
+        Infer time-series temporal parameters
+
+        Parameters
+        ----------
+        ts : 'pandas.DataFrame'
+            Timeseries DataFrame
+        timezone : 'str'
+            Timezone of time-series, if None, infer
+        **kwargs
+            kwargs for TemporalParameters
+
+        Returns
+        -------
+        ts_params : 'TemporalParameters'
+        """
+        ts_params = TemporalParameters.infer_params(ts, **kwargs)
+        fcst_type = cls.FORECAST_TYPES.discrete_leadtimes
+        leadtimes = list(ts.columns)
+        fcst_params = cls(fcst_type, ts_params, leadtimes=leadtimes)
+
+        return fcst_params
 
     @property
     def forecast_type(self):
@@ -318,10 +343,9 @@ class ForecastShaper(object):
     Abstract class defining the call signature for reshaping timeseries to
     conform to the desired temporal parameters.
     """
-
     @abc.abstractmethod
-    def __call__(self, forecast_data, forecast_data_params,
-                 out_forecast_params):
+    def __call__(self, forecast_data, out_forecast_params,
+                 forecast_data_params=None):
         """
         Accepts a timeseries of forecast_data that has ForecastParameters
         forecast_data_params
