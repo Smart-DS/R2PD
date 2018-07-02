@@ -104,8 +104,10 @@ class ExternalDataStore(DataStore):
         if local_cache is None:
             local_cache = InternalDataStore.connect()
         elif not isinstance(local_cache, InternalDataStore):
-            raise RuntimeError("Expecting local_cache to be instance of \
-InternalDataStore, but is {:}.".format(type(local_cache)))
+            msg = ("Expecting local_cache to be instance of",
+                   "InternalDataStore,",
+                   "but is {:}.".format(type(local_cache)))
+            raise RuntimeError(' '.join(msg))
 
         self._local_cache = local_cache
         super(ExternalDataStore, self).__init__(**kwargs)
@@ -262,8 +264,8 @@ InternalDataStore, but is {:}.".format(type(local_cache)))
                 return SolarResource(self.solar_meta.loc[site_id],
                                      self._local_cache._solar_root, frac=frac)
             else:
-                raise ValueError("Invalid dataset type, must be 'wind' or \
-'solar'")
+                msg = "Invalid dataset type, must be 'wind' or 'solar'"
+                raise ValueError(msg)
         else:
             raise RuntimeError('{d} site {s} is not in local cache!'
                                .format(d=dataset, s=site_id))
@@ -311,10 +313,10 @@ class Peregrine(ExternalDataStore):
             file_path = os.path.join(dst, os.path.basename(src))
 
         if not os.path.isfile(file_path):
-            command = 'rsync -avz {u}@peregrine.nrel.gov:{src} \
-{dst}'.format(u=self._username, src=src, dst=dst)
-            expect = "{:}@peregrine.nrel.gov's \
-password:".format(self._username)
+            command = ('rsync -avz {u}@peregrine.nrel.gov:{src} {dst}'
+                       .format(u=self._username, src=src, dst=dst))
+            expect = ("{:}@peregrine.nrel.gov's password:"
+                      .format(self._username))
             try:
                 with pexpect.spawn(command, timeout=timeout) as child:
                     child.expect(expect)
@@ -408,13 +410,13 @@ password:".format(self._username)
             cache_size, wind_size, solar_size = self._local_cache.cache_size
             open_cache = self._local_cache._size - cache_size
             if open_cache < data_size:
-                raise RuntimeError('Not enough space available in local cache: \
-\nDownload size = {d:.2f}GB \
-\nLocal cache = {c:.2f}GB of {m:.2f}GB in use \
-\n\tCached wind data = {w:.2f}GB \
-\n\tCached solar data = {s:.2f}GB'.format(d=data_size, c=cache_size,
-                                          m=self._local_cache._size,
-                                          w=wind_size, s=solar_size))
+                msg = ('Not enough space available in local cache:',
+                       '\nDownload size = {:.2f}GB'.format(data_size),
+                       '\nLocal cache = {:.2f}GB of'.format(cache_size),
+                       ' {:.2f}GB in use'.format(self._local_cache),
+                       '\n\tCached wind data = {:.2f}GB'.format(wind_size),
+                       '\n\tCached solar data = {:.2f}GB'.format(solar_size))
+                raise RuntimeError(''.join(msg))
 
         files = []
         for site in site_ids:
@@ -424,8 +426,8 @@ password:".format(self._username)
             elif dataset == 'solar':
                 dir_path = os.path.join(self._local_cache._solar_root, sub_dir)
             else:
-                raise ValueError("Invalid dataset type, must be 'wind' or \
-'solar'")
+                msg = "Invalid dataset type, must be 'wind' or 'solar'"
+                raise ValueError(msg)
 
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
@@ -456,39 +458,6 @@ password:".format(self._username)
             with EXECUTOR(max_workers=cores) as executor:
                 for site in files:
                     executor.submit(self.cache_resource, site, dataset)
-
-
-class Scratch(ExternalDataStore):
-    """
-    Class object for External DataStore on Peregrine
-    to be used within Peregrine
-    """
-    ROOT_PATH = '/scratch/mrossol/Resource_Repo'
-
-    def download(self, src, dst, timeout=30):
-        """
-        Method to download src file to dst internally to Peregrine
-
-        Parameters
-        ----------
-        src : 'str'
-            Path to source file to be downloaded
-        dst : 'str'
-            Path to destination directory of file path
-        timeout : 'int'
-            Timeout in seconds
-        """
-        if os.path.basename(src) == os.path.basename(dst):
-            file_path = dst
-        else:
-            file_path = os.path.join(dst, os.path.basename(src))
-
-        if not os.path.isfile(file_path):
-            try:
-                with Timeout(timeout):
-                    shutil.copy(src, dst)
-            except Exception:
-                raise
 
 
 class DRPower(ExternalDataStore):
@@ -577,14 +546,14 @@ class InternalDataStore(DataStore):
         return cls(wind_dir=wind_dir, solar_dir=solar_dir, size=size)
 
     @classmethod
-    def get_cache_size(cls, path):
+    def get_cache_size(cls, cache_path):
         """
         Searches all sub directories in path for .hdf5 files
         computes total size in GB
 
         Parameters
         ----------
-        path : 'str'
+        cache_path : 'str'
             Path to cache directory
 
         Returns
@@ -593,7 +562,7 @@ class InternalDataStore(DataStore):
             Returns total size of .hdf5 files in cache in GB
         """
         repo_size = 0
-        for (path, dirs, files) in os.walk(path):
+        for (path, _, files) in os.walk(cache_path):
             for file in files:
                 if file.endswith('.hdf5'):
                     file_name = os.path.join(path, file)
@@ -661,8 +630,8 @@ class InternalDataStore(DataStore):
         elif dataset == 'solar':
             cache_path = self._solar_cache
         else:
-            raise ValueError("Invalid dataset type, must be 'wind' or \
-'solar'")
+            msg = "Invalid dataset type, must be 'wind' or 'solar'"
+            raise ValueError(msg)
 
         root_path = os.path.split(cache_path)[0]
         cache_meta = pds.read_csv(cache_path, index_col=0)
@@ -704,8 +673,8 @@ class InternalDataStore(DataStore):
         elif dataset == 'solar':
             cache_path = self._solar_cache
         else:
-            raise ValueError("Invalid dataset type, must be 'wind' or \
-'solar'")
+            msg = "Invalid dataset type, must be 'wind' or 'solar'"
+            raise ValueError(msg)
 
         cache_meta = pds.read_csv(cache_path, index_col=0)
         cache_sites = cache_meta.index
@@ -750,8 +719,8 @@ class InternalDataStore(DataStore):
         elif dataset == 'solar':
             cache_path = self._solar_cache
         else:
-            raise ValueError("Invalid dataset type, must be 'wind' or \
-'solar'")
+            msg = "Invalid dataset type, must be 'wind' or 'solar'"
+            raise ValueError(msg)
         cache_meta = pds.read_csv(cache_path, index_col=0)
         cache_sites = cache_meta.index
 

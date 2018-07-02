@@ -260,14 +260,14 @@ TemporalParameters, but is {}.".format(type(temporal_params)))
         the modeled time that the forecast data would need to be provided.
 
         Returns
-        ---------
+        -------
         'datetime.timedelta'
             Amount of leadtime for lookahead forecast
         """
         return self._leadtime
 
     @classmethod
-    def define_discrete_leadtime_params(cls, temporal_params, leadtimes):
+    def discrete_leadtime(cls, temporal_params, leadtimes):
         """
         Constructs ForecastParameters for leadtime forecasts
 
@@ -279,7 +279,7 @@ TemporalParameters, but is {}.".format(type(temporal_params)))
             List of forecast leadtimes
 
         Returns
-        ---------
+        -------
         'ForecastParameters'
             Forecast parameters for leadtime forecasts
         """
@@ -287,8 +287,8 @@ TemporalParameters, but is {}.".format(type(temporal_params)))
                                   leadtimes=leadtimes)
 
     @classmethod
-    def define_dispatch_lookahead_params(cls, temporal_params, frequency,
-                                         lookahead, leadtime):
+    def dispatch_lookahead(cls, temporal_params, frequency, lookahead,
+                           leadtime):
         """
         Constructs ForecastParameters for lookahead forecasts
 
@@ -304,7 +304,7 @@ TemporalParameters, but is {}.".format(type(temporal_params)))
             leadtime for lookahead forcast
 
         Returns
-        ---------
+        -------
         'ForecastParameters'
             Forecast parameters for lookahead forecast
         """
@@ -337,7 +337,7 @@ class ForecastShaper(object):
             the desired forecast parameters for the output timeseries
 
         Returns
-        ---------
+        -------
         'pandas.Series'|'pandas.DataFrame'
             Returns reshaped forecast data
         """
@@ -356,7 +356,7 @@ def get_enum_instance(value, enum_class):
         enum class object for which value belongs
 
     Returns
-    ---------
+    -------
     'enum_class'
         enum_class value
     """

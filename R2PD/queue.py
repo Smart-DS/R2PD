@@ -188,7 +188,7 @@ def get_resource_data(node_collection, repo, forecasts=False, **kwargs):
                                 forecasts=forecasts, **kwargs)
 
     resources = []
-    for node, meta in nearest_nodes.iterrows():
+    for _, meta in nearest_nodes.iterrows():
         site_id = meta['site_id']
         if isinstance(site_id, list):
             fracs = meta['site_fracs']

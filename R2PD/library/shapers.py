@@ -29,10 +29,12 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
         """
         if ts_tempparams is None:
             ts_tempparams = TemporalParameters.infer_params(ts)
+
         self.ts_params = ts_tempparams
 
         if out_tempparams.resolution is None:
             out_tempparams.resolution = self.ts_params.resolution
+
         self.out_params = out_tempparams
 
         if ts.index.tz is None:
@@ -79,8 +81,9 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
             ts_pos = (time_index >= out_start) & (time_index <= out_end)
             ts = ts.loc[ts_pos].asfreq(out_dt)
         else:
-            raise ValueError('Requested temporal extent must be between \
-{s}, {e}'.format(s=time_index[0], e=time_index[-1]))
+            msg = ('Requested temporal extent must be between {s}, {e}'
+                   .format(s=time_index[0], e=time_index[-1]))
+            raise ValueError(msg)
 
         return ts
 
@@ -99,8 +102,9 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
              Integrated time-series
         """
         dt = self.out_params.resolution
-        assert dt > self.ts_params.resolution, 'Requested temporal resolution\
- must be greater than {:}'.format(self.ts_params.resolution)
+        msg = ('Requested temporal resolutionmust be greater than {:}'
+               .format(self.ts_params.resolution))
+        assert dt > self.ts_params.resolution, msg
         point_interp = self.out_params.point_interp
         if point_interp == self.POINT_INTERPS['integrated_next']:
             ts.index += (dt - self.ts_params.resolution)
@@ -126,8 +130,9 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
             Averaged time-series
         """
         dt = self.out_params.resolution
-        assert dt > self.ts_params.resolution, 'Requested temporal resolution\
- must be greater than {:}'.format(self.ts_params.resolution)
+        msg = ('Requested temporal resolutionmust be greater than {:}'
+               .format(self.ts_params.resolution))
+        assert dt > self.ts_params.resolution, msg
         point_interp = self.out_params.point_interp
         if point_interp == self.POINT_INTERPS['average_next']:
             ts.index += (dt - self.ts_params.resolution)
@@ -153,8 +158,9 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
             Interpolated time-series
         """
         dt = self.out_params.resolution
-        assert dt < self.ts_params.resolution, 'Requested temporal resolution\
- must be less than {:}'.format(self.ts_params.resolution)
+        msg = ('Requested temporal resolution must be less than {:}'
+               .format(self.ts_params.resolution))
+        assert dt < self.ts_params.resolution, msg
         ts = ts.resample(dt).interpolate(method='time')
         return ts
 

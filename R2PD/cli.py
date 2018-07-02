@@ -1,3 +1,6 @@
+"""
+R2PD Command Line Interface (CLI)
+"""
 import argparse
 import datetime as dt
 import dateutil
@@ -6,7 +9,7 @@ import numpy as np
 import pandas as pds
 import time
 
-from .datastore import DRPower, Peregrine
+from .datastore import DRPower
 from .powerdata import (NodeCollection, WindGeneratorNode, SolarGeneratorNode,
                         WindMetNode, SolarMetNode)
 from .queue import get_resource_data
@@ -14,6 +17,8 @@ from .tshelpers import TemporalParameters, ForecastParameters
 
 
 logger = logging.getLogger(__name__)
+
+POINT_INTERPS = TemporalParameters.POINT_INTERPRETATIONS
 
 
 def cli_parser():
@@ -48,8 +53,7 @@ def cli_parser():
                             output timeseries values. Can affect exactly which
                             raw data points are pulled, and any upscaling or
                             downscaling that is applied.''',
-                            choices=[interp.name for interp
-                                     in TemporalParameters.POINT_INTERPRETATIONS])
+                            choices=[interp.name for interp in POINT_INTERPS])
         parser.add_argument('-tz', '--timezone',
                             help='''Timezone for all output data. Also used in
                             interpreting temporal-extent if no explicit
@@ -151,14 +155,14 @@ def cli_main():
     #       and matching string description to class.
     # 1 connect to external datastore
     # ext_store = DRPower.connect(config=args.ext_ds_config)
-    ext_store = Peregrine.connect(config=args.ds_config)
+    ext_store = DRPower.connect(config=args.ds_config)
     total_size, wind_size, solar_size = ext_store._local_cache.cache_size
     max_size = ext_store._local_cache._size
-    print('''Local Cache Initialized: \n
-    Maximum size = {m:.2f} GB\n
-    Current size = {t:.2f} GB\n
-    \t Cached wind data = {w:.2f} GB \n
-    \t Cached solar data = {s:.2f} GB
+    print('''Local Cache Initialized:
+    Maximum size = {m:.2f} GB
+    Current size = {t:.2f} GB
+        Cached wind data = {w:.2f} GB
+        Cached solar data = {s:.2f} GB
     '''.format(m=max_size, t=total_size, w=wind_size, s=solar_size))
 
     # 2. Load node data and initialize NodeCollections
@@ -172,7 +176,8 @@ def cli_main():
         else:
             nodes = pds.read_csv(args.nodes)
     else:
-        NodeClass = WindGeneratorNode if args.type == 'wind' else SolarGeneratorNode
+        arg_type = args.type == 'wind'
+        NodeClass = WindGeneratorNode if arg_type else SolarGeneratorNode
         if isinstance(args.nodes, (list, tuple)):
             nodes = pds.DataFrame(args.nodes,
                                   columns=['node_id', 'lat', 'long'])
@@ -230,11 +235,11 @@ def cli_main():
         assert args.mode == 'forecast-power'
         forecast_params = None
         if args.forecast_type == 'discrete_leadtimes':
-            forecast_params = ForecastParameters.define_discrete_leadtime_params(
+            forecast_params = ForecastParameters.discrete_leadtime(
                 temporal_params, args.leadtimes)
         else:
             assert args.forecast_type == 'dispatch_lookahead'
-            forecast_params = ForecastParameters.define_dispatch_lookahead_params(
+            forecast_params = ForecastParameters.dispatch_lookahead(
                 temporal_params, args.frequency, args.lookahead, args.leadtime)
         nodes.get_forecasts(temporal_params, forecast_params, shaper=shaper)
         nodes.save_forecasts(args.outdir, formatter=formatter)

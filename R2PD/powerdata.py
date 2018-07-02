@@ -72,8 +72,9 @@ class Node(object):
         """
         if not self._resource_assigned:
             caller = inspect.getouterframes(inspect.currentframe(), 2)[1][3]
-            raise RuntimeError("Resource must be defined for node {:} before \
-calling ".format(self.id) + caller + ".")
+            msg = ("Resource must be defined for node {:}".format(self.id),
+                   "before calling {}.".format(caller))
+            raise RuntimeError(" ".join(msg))
 
     @classmethod
     def _save_csv(cls, df, file_path):
@@ -377,7 +378,7 @@ class NodeCollection(object):
         'int'
             Size of NodeCollection
         """
-        return(len(self.nodes))
+        return len(self.nodes)
 
     def assign_resource(self, resources, node_ids=None):
         """
@@ -391,13 +392,16 @@ class NodeCollection(object):
             node ids that correspond to Resource in resources list
         """
         if node_ids is None:
-            assert len(self) == len(resources), 'number of resources ({r}) \
-does not match number of nodes ({n})'.format(r=len(resources), n=len(self))
+            msg = ('Number of resources ({})'.format(len(resources)),
+                   'does not match number of nodes ({})'.format(len(self)))
+            assert len(self) == len(resources), ' '.join(msg)
             for node, resource in zip(self.nodes, resources):
                 node.assign_resource(resource)
         else:
-            assert len(node_ids) == len(resources), 'number of resources ({r}) \
-does not match number of nodes ({n})'.format(r=len(resources), n=len(node_ids))
+            msg = ('Number of resources ({})'.format(len(resources)),
+                   'does not match number of nodes ({})'
+                   .format(len(node_ids)))
+            assert len(node_ids) == len(resources), ' '.join(msg)
             for i, resource in zip(node_ids, resources):
                 pos = self._ids.index(i)
                 self.nodes[pos].assign_resource(resource)
@@ -460,8 +464,8 @@ class GeneratorNodeCollection(NodeCollection):
         elif isinstance(self.nodes[0], SolarGeneratorNode):
             self._dataset = 'solar'
         else:
-            raise RuntimeError('Must be a collection of either \
-solar or wind nodes')
+            msg = ('Must be a collection of either solar or wind nodes')
+            raise RuntimeError(msg)
 
     def assign_resource(self, resources, node_ids=None, forecasts=False):
         """
@@ -477,13 +481,16 @@ solar or wind nodes')
             If forecasts are included in resources or not
         """
         if node_ids is None:
-            assert len(self) == len(resources), 'number of resources ({r}) \
-does not match number of nodes ({n})'.format(r=len(resources), n=len(self))
+            msg = ('Number of resources ({})'.format(len(resources)),
+                   'does not match number of nodes ({})'.format(len(self)))
+            assert len(self) == len(resources), ' '.join(msg)
             for node, resource in zip(self.nodes, resources):
                 node.assign_resource(resource, forecasts=forecasts)
         else:
-            assert len(node_ids) == len(resources), 'number of resources ({r}) \
-does not match number of nodes ({n})'.format(r=len(resources), n=len(node_ids))
+            msg = ('Number of resources ({})'.format(len(resources)),
+                   'does not match number of nodes ({})'
+                   .format(len(node_ids)))
+            assert len(node_ids) == len(resources), ' '.join(msg)
             for i, resource in zip(node_ids, resources):
                 pos = self._ids.index(i)
                 self.nodes[pos].assign_resource(resource, forecasts=forecasts)
@@ -593,6 +600,9 @@ does not match number of nodes ({n})'.format(r=len(resources), n=len(node_ids))
 
 
 class WeatherNodeCollection(NodeCollection):
+    """
+    Collection of WeatherNodes
+    """
     def __init__(self, nodes):
         """
         Initialize WeatherNodeCollection object
@@ -609,8 +619,8 @@ class WeatherNodeCollection(NodeCollection):
         elif isinstance(self.nodes[0], SolarMetNode):
             self._dataset = 'solar'
         else:
-            raise RuntimeError('Must be a collection of either \
-solar or wind nodes')
+            msg = 'Must be a collection of either solar or wind nodes'
+            raise RuntimeError(msg)
 
     @property
     def node_data(self):
