@@ -179,6 +179,7 @@ class ForecastParameters(object):
         self._frequency = None
         self._lookahead = None
         self._leadtime = None
+        self._dispatch_time = None
         # store type-specific parameters
         if self.forecast_type == self.FORECAST_TYPES.discrete_leadtimes:
             self._leadtimes = pds.to_timedelta(kwargs['leadtimes'])
@@ -187,6 +188,8 @@ class ForecastParameters(object):
             self._frequency = pds.to_timedelta(kwargs['frequency'])
             self._lookahead = pds.to_timedelta(kwargs['lookahead'])
             self._leadtime = pds.to_timedelta(kwargs['leadtime'])
+            self._dispatch_time = pds.to_datetime(kwargs['dispatch_time'])
+            self._dispatch_time = self._dispatch_time.time()
 
     @classmethod
     def infer_params(cls, ts, **kwargs):

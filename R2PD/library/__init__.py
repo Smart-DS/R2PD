@@ -1,1 +1,1 @@
-from .shapers import DefaultTimeseriesShaper
+from .shapers import DefaultTimeseriesShaper, DefaultForecastShaper

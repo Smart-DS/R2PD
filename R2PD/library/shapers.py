@@ -246,6 +246,3 @@ class DefaultForecastShaper(ForecastShaper):
                       for leadtime in self.fcst_params.leadtimes]
 
         return pds.concat(lead_times, axis=1)
-
-    @staticmethod
-    def get_dispatch(fcst_data, ):
