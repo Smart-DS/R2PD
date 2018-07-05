@@ -64,7 +64,6 @@ class TemporalParameters(object):
         """
         time_index = ts.index
         extent = time_index[[0, -1]]
-        extent.tz = None
         ts_params = cls(extent, **kwargs)
         ts_params.infer_resolution(ts)
 
