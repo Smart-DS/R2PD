@@ -159,8 +159,8 @@ class ForecastParameters(object):
 
         Parameters
         ----------
-        forecast_type : 'FORECAST_TYPES
-            element of FORECAST_TYPES representing type of forecast
+        forecast_type : 'FORECAST_TYPES'
+            Element of FORECAST_TYPES representing type of forecast
         temporal_params : 'TemporalParameters'
             TemporalParameters instance describing timeseries parameters
         **kwargs
@@ -173,6 +173,7 @@ class ForecastParameters(object):
                    "TemporalParameters, but is {}."
                    .format(type(temporal_params)))
             raise RuntimeError(" ".join(msg))
+
         self._temporal_params = temporal_params
         self._leadtimes = None
         self._frequency = None
@@ -242,10 +243,9 @@ class ForecastParameters(object):
     @property
     def leadtimes(self):
         """
-        For 'discrete_leadtimes' data, a list of the amounts of time ahead at
-        which forecasts are available, e.g. [datetime.timedelta(hours=1),
-        datetime.timedelta(hours=4), datetime.timedelta(hours=6),
-        datetime.timedelta(hours=24)].
+        A list of the amounts of time ahead at which forecasts are available,
+        e.g. [datetime.timedelta(hours=1), datetime.timedelta(hours=4),
+        datetime.timedelta(hours=6), datetime.timedelta(hours=24)].
 
         Returns
         ---------
@@ -292,6 +292,37 @@ class ForecastParameters(object):
             Amount of leadtime for lookahead forecast
         """
         return self._leadtime
+
+    @property
+    def dispatch_time(self):
+        """
+        For 'dispatch_lookahead' data, the time of day that the forecast model
+        is run.
+
+        Returns
+        -------
+        'datetime.time'
+            Time of day forecast is run
+        """
+        return self._dispatch_time
+
+    @property
+    def dispatch_leadtimes(self):
+        """
+        Get all leadtimes needed to create dispatch_lookahead forecast
+
+        Returns
+        -------
+        'list'
+            List of forecast leadtimes
+        """
+        if self._leadtimes is None:
+            s = self._leadtime
+            e = self._lookahead + self._leadtime
+            dt = self._temporal_params.resolution
+            self._leadtimes = pds.to_timedelta(np.arange(s, e, dt))
+
+        return self._leadtimes
 
     @classmethod
     def discrete_leadtime(cls, temporal_params, leadtimes):

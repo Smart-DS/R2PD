@@ -1,6 +1,7 @@
 """
 Libary of Time-series and Forecast Shapers
 """
+from datetime import datetime
 import numpy as np
 import pandas as pds
 from R2PD.tshelpers import (TemporalParameters, ForecastParameters,
@@ -195,7 +196,7 @@ class DefaultForecastShaper(ForecastShaper):
     FCST_TYPES = ForecastParameters.FORECAST_TYPES
 
     def __call__(self, forecast_data, out_forecast_params,
-                 forecast_data_params=None):
+                 forecast_data_params=None, ts_shaper=DefaultTimeseriesShaper):
         """
         Accepts a timeseries of forecast_data that has ForecastParameters
         forecast_data_params
@@ -204,11 +205,13 @@ class DefaultForecastShaper(ForecastShaper):
         Parameters
         ----------
         forecast_data : 'pandas.Series'|'pandas.DataFrame'
-            timeseries to be reshaped
-        forecast_data_params : 'TemporalParameters'
-            description of forecast_data parameters
+            Timeseries to be reshaped
         out_forecast_params : 'TemporalParameters'
-            the desired forecast parameters for the output timeseries
+            The desired forecast parameters for the output timeseries
+        forecast_data_params : 'TemporalParameters'
+            Description of forecast_data parameters desired
+        ts_shaper : 'TimeseriesShaper'
+            Time-series shaper to use during Forecast shaping
 
         Returns
         -------
@@ -219,6 +222,16 @@ class DefaultForecastShaper(ForecastShaper):
             fcst_params = ForecastParameters.infer_params(forecast_data)
 
         self.fcst_params = fcst_params
+        self.out_params = out_forecast_params
+
+        ts_shaper = ts_shaper()
+
+        
+        forecast_data = ts_shaper(forecast_data,
+                                  self.out_params._temporal_params)
+
+
+
 
     @staticmethod
     def interp_leadtime(fcst_data, leadtime):
@@ -246,3 +259,24 @@ class DefaultForecastShaper(ForecastShaper):
                       for leadtime in self.fcst_params.leadtimes]
 
         return pds.concat(lead_times, axis=1)
+
+    def get_dispatch_lookahead(self, fcst_data):
+            s, e = self.fcst_params._temporal_params.extent
+            s = datetime.combine(s.date(), self.fcst_params.dispatch_time)
+            dispatch_times = pds.date_range(s, e,
+                                            freq=self.fcst_params.frequency)
+
+            lead_times = self.get_leadtimes(fcst_data)
+            dispatch_fcst = []
+            for lt, ts in lead_times.iteritems():
+                lt = pds.to_timedelta(lt)
+                fcst_times = dispatch_times + lt
+                df = pds.DataFrame({'dispatch_time': dispatch_times,
+                                    'fcst_time': fcst_times,
+                                    'fcst': ts.loc[fcst_times].values})
+                dispatch_fcst.append(df)
+
+            dispatch_fcst = pds.concat(dispatch_fcst)
+            dispatch_fcst = dispatch_fcst.sort_values(['dispatch_time',
+                                                       'fcst_time'])
+            return dispatch_fcst
