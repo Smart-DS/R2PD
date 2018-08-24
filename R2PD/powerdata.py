@@ -17,8 +17,7 @@ power system modelers. Functionalities needed include:
 import inspect
 import os
 import pandas as pds
-from .tshelpers import TemporalParameters, ForecastParameters
-from .library import DefaultTimeseriesShaper
+from .library import DefaultTimeseriesShaper, DefaultForecastShaper
 
 
 class Node(object):
@@ -146,8 +145,7 @@ class GeneratorNode(Node):
             if shaper is None:
                 shaper = DefaultTimeseriesShaper()
 
-            ts_params = TemporalParameters.infer_params(power_data)
-            self.power = shaper(power_data, ts_params, temporal_params)
+            self.power = shaper(power_data, temporal_params)
 
     def get_forecasts(self, forecast_params, shaper=None):
         """
@@ -167,12 +165,9 @@ class GeneratorNode(Node):
             self.fcst = fcst_data
         else:
             if shaper is None:
-                self.fcst = fcst_data
-            else:
-                ts_params = TemporalParameters.infer_params(fcst_data)
-                ts_params = ForecastParameters('discrete_leadtimes', ts_params,
-                                               leadtimes=[24, 1, 4, 6])
-                self.fcst = shaper(fcst_data, ts_params, forecast_params)
+                shaper = DefaultForecastShaper()
+
+            self.fcst = shaper(fcst_data, forecast_params)
 
     def save_power(self, file_path, formatter=None):
         """
@@ -245,8 +240,7 @@ class WeatherNode(Node):
             if shaper is None:
                 shaper = DefaultTimeseriesShaper()
 
-            ts_params = TemporalParameters.infer_params(met_data,)
-            self.met = shaper(met_data, ts_params, temporal_params)
+            self.met = shaper(met_data, temporal_params)
 
     def save_weather(self, file_path, formatter=None):
         """
@@ -294,11 +288,9 @@ class SolarMetNode(WeatherNode):
             self.irradiance = irradiance_data
         else:
             if shaper is None:
-                shaper = DefaultTimeseriesShaper
+                shaper = DefaultTimeseriesShaper()
 
-            ts_params = TemporalParameters.infer_params(irradiance_data)
-            self.irradiance = shaper(irradiance_data, ts_params,
-                                     temporal_params)
+            self.irradiance = shaper(irradiance_data, temporal_params)
 
     def save_irradiance(self, filename, formatter=None):
         """

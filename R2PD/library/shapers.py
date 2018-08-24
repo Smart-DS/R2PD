@@ -61,6 +61,12 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
                               self.POINT_INTERPS['average_midpt'],
                               self.POINT_INTERPS['average_next']):
             ts = self.average(ts)
+        elif point_interp == self.POINT_INTERPS['instantaneous']:
+            pass
+        else:
+            msg = ("{} is not a valid Point Interpretation"
+                   .format(point_interp))
+            raise RuntimeError(msg)
 
         return self.get_extent(ts)
 
@@ -221,20 +227,43 @@ class DefaultForecastShaper(ForecastShaper):
         if forecast_data_params is None:
             fcst_params = ForecastParameters.infer_params(forecast_data)
 
-        self.fcst_params = fcst_params
+        if fcst_params.forecast_type != self.FCST_TYPES['discrete_leadtimes']:
+            msg = "Can only reshape Discrete Leadtime forecasts!"
+            raise RuntimeError(msg)
+
         self.out_params = out_forecast_params
 
         ts_shaper = ts_shaper()
-
-        
         forecast_data = ts_shaper(forecast_data,
                                   self.out_params._temporal_params)
 
+        fcst_type = self.out_params.forecast_type
+        if fcst_type == self.FCST_TYPES['discrete_leadtimes']:
+            fcst = self.get_leadtimes(forecast_data)
+        elif fcst_type == self.FCST_TYPES['dispatch_lookahead']:
+            fcst = self.get_dispatch_lookahead(forecast_data)
+        else:
+            msg = ("{} is not a valid Forecast Type"
+                   .format(fcst_type))
+            raise RuntimeError(msg)
 
-
+        return fcst
 
     @staticmethod
     def interp_leadtime(fcst_data, leadtime):
+        """
+        Interpolate discrete leadtimes forecasts to desired leadtime
+
+        Parameters
+        ----------
+        fcst_data : 'pandas.DataFrame'
+                Time-series discrete leadtime forecast data
+
+        Returns
+        -------
+        'pandas.DataFrame'
+             Time-series discrete leadtime forecast
+        """
         if isinstance(leadtime, str):
             leadtime = pds.to_timedelta(leadtime)
 
@@ -243,40 +272,83 @@ class DefaultForecastShaper(ForecastShaper):
             pos = list(lead_times).index(leadtime)
             fcst_ts = fcst_data.iloc[:, pos]
         else:
-            nearest = np.abs(lead_times - leadtime)
-            fcst_1, fcst_2 = np.argsort(nearest)[:2]
-            h_1, h_2 = lead_times[[fcst_1, fcst_2]]
-            m = ((fcst_data.iloc[:, fcst_2] - fcst_data.iloc[:, fcst_1]) /
-                 (h_2 - h_1).total_seconds())
-            b = fcst_data.iloc[:, fcst_1] - m * h_1.total_seconds()
+            pos = lead_times < leadtime
+            if pos.any():
+                h_1 = lead_times[pos].max()
+            else:
+                h_1 = None
+
+            pos = lead_times > leadtime
+            if pos.any():
+                h_2 = lead_times[pos].min()
+            else:
+                h_2 = None
+
+            if h_1 is None or h_2 is None:
+                nearest = np.abs(lead_times - leadtime)
+                h_1, h_2 = sorted(lead_times[np.argsort(nearest)[:2]])
+
+            fcst_1, fcst_2 = [fcst_data.iloc[:,
+                                             np.where(lead_times == h)[0][0]]
+                              for h in [h_1, h_2]]
+            m = ((fcst_2 - fcst_1) / (h_2 - h_1).total_seconds())
+            b = fcst_1 - m * h_1.total_seconds()
             fcst_ts = m * leadtime.total_seconds() + b
 
         fcst_ts.name = '{:g}h'.format(leadtime.total_seconds() / 3600)
         return fcst_ts.to_frame()
 
     def get_leadtimes(self, fcst_data):
+        """
+        Interpolate discrete leadtimes forecasts to desired leadtimes
+
+        Parameters
+        ----------
+        fcst_data : 'pandas.DataFrame'
+                Time-series discrete leadtime forecast data
+
+        Returns
+        -------
+        'pandas.DataFrame'
+             Time-series discrete leadtime forecasts
+        """
         lead_times = [self.interp_leadtime(fcst_data, leadtime)
-                      for leadtime in self.fcst_params.leadtimes]
+                      for leadtime in self.out_params.leadtimes]
 
         return pds.concat(lead_times, axis=1)
 
     def get_dispatch_lookahead(self, fcst_data):
-            s, e = self.fcst_params._temporal_params.extent
-            s = datetime.combine(s.date(), self.fcst_params.dispatch_time)
-            dispatch_times = pds.date_range(s, e,
-                                            freq=self.fcst_params.frequency)
+        """
+        Convert discrete leadtime forecasts to dispatch lookahead forecast
 
-            lead_times = self.get_leadtimes(fcst_data)
-            dispatch_fcst = []
-            for lt, ts in lead_times.iteritems():
-                lt = pds.to_timedelta(lt)
-                fcst_times = dispatch_times + lt
-                df = pds.DataFrame({'dispatch_time': dispatch_times,
-                                    'fcst_time': fcst_times,
-                                    'fcst': ts.loc[fcst_times].values})
-                dispatch_fcst.append(df)
+        Parameters
+        ----------
+        fcst_data : 'pandas.DataFrame'
+                Time-series discrete leadtime forecast data
 
-            dispatch_fcst = pds.concat(dispatch_fcst)
-            dispatch_fcst = dispatch_fcst.sort_values(['dispatch_time',
-                                                       'fcst_time'])
-            return dispatch_fcst
+        Returns
+        -------
+        'pandas.DataFrame'
+             FESTIV formated dispatch lookahead forecast
+        """
+        s, e = self.out_params._temporal_params.extent
+        s = datetime.combine(s.date(), self.out_params.dispatch_time)
+        tz = self.out_params._temporal_params.timezone
+        s = pds.to_datetime(s).tz_localize(tz)
+        dispatch_times = pds.date_range(s, e,
+                                        freq=self.out_params.frequency)
+
+        lead_times = self.get_leadtimes(fcst_data)
+        dispatch_fcst = []
+        for lt, ts in lead_times.iteritems():
+            lt = pds.to_timedelta(lt)
+            fcst_times = dispatch_times + lt
+            df = pds.DataFrame({'dispatch_time': dispatch_times,
+                                'fcst_time': fcst_times,
+                                'fcst': ts.loc[fcst_times].values})
+            dispatch_fcst.append(df)
+
+        dispatch_fcst = pds.concat(dispatch_fcst)
+        dispatch_fcst = dispatch_fcst.sort_values(['dispatch_time',
+                                                   'fcst_time'])
+        return dispatch_fcst

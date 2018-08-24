@@ -190,11 +190,13 @@ class ForecastParameters(object):
             self._leadtime = pds.to_timedelta(kwargs['leadtime'])
             self._dispatch_time = pds.to_datetime(kwargs['dispatch_time'])
             self._dispatch_time = self._dispatch_time.time()
+            self._leadtimes = self.dispatch_leadtimes
 
     @classmethod
     def infer_params(cls, ts, **kwargs):
         """
-        Infer time-series temporal parameters
+        Infer time-series temporal parameters and discrete lead time
+        parameters
 
         Parameters
         ----------
@@ -345,8 +347,8 @@ class ForecastParameters(object):
                                   leadtimes=leadtimes)
 
     @classmethod
-    def dispatch_lookahead(cls, temporal_params, frequency, lookahead,
-                           leadtime):
+    def dispatch_lookahead(cls, temporal_params, dispatch_time,
+                           frequency, lookahead, leadtime):
         """
         Constructs ForecastParameters for lookahead forecasts
 
@@ -354,6 +356,8 @@ class ForecastParameters(object):
         ----------
         temporal_params : 'TemporalParameters'
             Timeseries temporal parameters for lookahead forecast
+        dispatch_time : 'str'
+            Time of day forecast is dispatched
         frequency : 'datetime.timedelta'
             frequency of lookahead forecasts
         lookahead : 'datetime.timedelta'
@@ -367,6 +371,7 @@ class ForecastParameters(object):
             Forecast parameters for lookahead forecast
         """
         return ForecastParameters('dispatch_lookahead', temporal_params,
+                                  dispatch_time=dispatch_time,
                                   frequency=frequency, lookahead=lookahead,
                                   leadtime=leadtime)
 

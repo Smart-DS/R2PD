@@ -726,10 +726,7 @@ class InternalDataStore(DataStore):
 
         if site_id in cache_sites:
             if resource_type is not None:
-                if cache_meta.loc[site_id, resource_type]:
-                    cached = True
-                else:
-                    cached = False
+                cached = bool(cache_meta.loc[site_id, resource_type])
             else:
                 cached = True
         else:
