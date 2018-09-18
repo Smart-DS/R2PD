@@ -5,8 +5,7 @@ the external and internal store as well as processing the data using a queue.
 import numpy as np
 import pandas as pds
 from scipy.spatial import cKDTree
-from .powerdata import NodeCollection, GeneratorNodeCollection
-from .resourcedata import ResourceList
+from .powerdata import NodeCollection
 
 
 def nearest_power_nodes(node_collection, resource_meta):
@@ -147,60 +146,3 @@ def nearest_met_nodes(node_collection, resource_meta):
     nodes['site_id'] = site_id
 
     return nodes[['latitude', 'longitude', 'site_id']]
-
-
-def get_resource_data(node_collection, repo, forecasts=False, **kwargs):
-    """
-    Finds nearest nodes, caches files to local datastore and assigns resource
-    to node_collection
-
-    Parameters
-    ----------
-    node_collection : 'NodeCollection'
-        Collection of either weather of generator nodes
-    repo : 'ExternalDataStore'
-        External datastore from which to get resouce data
-    forecasts : 'bool'
-        Whether to download forecasts along with power data
-    **kwargs
-        Internal kwargs
-
-    Returns
-    ---------
-    node_collection : 'NodeCollection'
-        Node collection with resources assigned to nodes
-    nearest_nodes : 'pandas.DataFrame'
-        DataFrame of the nearest neighbor matching between nodes and resources
-    """
-    nearest_nodes = repo.nearest_neighbors(node_collection)
-
-    if isinstance(node_collection, GeneratorNodeCollection):
-        resource_type = 'power'
-        site_ids = np.concatenate(nearest_nodes['site_id'].values)
-        site_ids = np.unique(site_ids)
-    else:
-        resource_type = 'met'
-        site_ids = nearest_nodes['site_id'].values
-
-    dataset = node_collection._dataset
-
-    repo.download_resource_data(site_ids, dataset, resource_type, repo,
-                                forecasts=forecasts, **kwargs)
-
-    resources = []
-    for _, meta in nearest_nodes.iterrows():
-        site_id = meta['site_id']
-        if isinstance(site_id, list):
-            fracs = meta['site_fracs']
-            resource = ResourceList([repo.get_resource(dataset, site, frac=f)
-                                     for site, f in zip(site_id, fracs)])
-        else:
-            resource = repo.get_resource(dataset, site_id)
-        resources.append(resource)
-
-    if forecasts:
-        node_collection.assign_resource(resources, forecasts=forecasts)
-    else:
-        node_collection.assign_resource(resources)
-
-    return node_collection, nearest_nodes

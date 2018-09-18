@@ -33,8 +33,6 @@ class Resource(object):
         if self.DATASET is not None:
             self._file_name = '{d}_*_{s}.hdf5'.format(d=self.DATASET,
                                                       s=self._id)
-        else:
-            self._file_name = '*_{:}.hdf5'.format(self._id)
 
         self._file_path = os.path.join(self._root_path, self._file_name)
 
@@ -97,9 +95,9 @@ class Resource(object):
         """
         cap = self._meta['capacity']
         if self._frac is not None:
-            return cap * self._frac
-        else:
-            return cap
+            cap *= self._frac
+
+        return cap
 
     def extract_data(self, data_type):
         """
@@ -138,9 +136,9 @@ class Resource(object):
         power_data = self.extract_data('power_data')
 
         if self._frac is not None:
-            return power_data * self._frac
-        else:
-            return power_data
+            power_data *= self._frac
+
+        return power_data
 
     @property
     def meteorological_data(self):
@@ -203,24 +201,28 @@ class SolarResource(Resource):
     DATASET = 'solar'
 
     @property
-    def irradiance_data(self):
+    def forecast_data(self):
         """
-        Extract irradiance data
+        Extract forecast data
 
         Returns
         ---------
-        power_data : 'pandas.DataFrame'
-            Time series DataFrame of irradiance data
+        fcst_data : 'pandas.DataFrame'
+            Time series DataFrame of forecast data
         """
-        file_path = self._file_path.replace('*', 'met')
-        with h5py.File(file_path, 'r') as h5_file:
-            data = h5_file['irradiance_data'][...]
+        raise ValueError('Solar Forecast Data is no yet available')
 
-        data = pds.DataFrame(data)
-        data['time'] = pds.to_datetime(data['time'].str.decode('utf-8'))
-        data = data.set_index('time')
+    @property
+    def forecast_probabilities(self):
+        """
+        Extract forecast probabilities data
 
-        return data
+        Returns
+        ---------
+        fcst_prob : 'pandas.DataFrame'
+            Time series DataFrame of forecast probabilities
+        """
+        raise ValueError('Solar Forecast Data is no yet available')
 
 
 class ResourceList(object):
