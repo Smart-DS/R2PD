@@ -12,7 +12,6 @@ import time
 from .datastore import DRPower
 from .powerdata import (NodeCollection, WindGeneratorNode, SolarGeneratorNode,
                         WindMetNode, SolarMetNode)
-from .queue import get_resource_data
 from .tshelpers import TemporalParameters, ForecastParameters
 
 
@@ -149,18 +148,16 @@ def cli_main():
     logging.basicConfig(format=fmt, level=log_level)  # to console
 
     # 0. Set up logging, connect to data stores, and make output directory
-    # assert args.external_datastore == 'DRPower'
-    assert args.external_datastore == 'Peregrine'
+    assert args.external_datastore == 'DRPower'
     # todo: Implmement library mechanism for finding external datastore options
     #       and matching string description to class.
     # 1 connect to external datastore
-    # ext_store = DRPower.connect(config=args.ext_ds_config)
     ext_store = DRPower.connect(config=args.ds_config)
     total_size, wind_size, solar_size = ext_store._local_cache.cache_size
     max_size = ext_store._local_cache._size
     print('''Local Cache Initialized:
-    Maximum size = {m:.2f} GB
-    Current size = {t:.2f} GB
+        Maximum size = {m:.2f} GB
+        Current size = {t:.2f} GB
         Cached wind data = {w:.2f} GB
         Cached solar data = {s:.2f} GB
     '''.format(m=max_size, t=total_size, w=wind_size, s=solar_size))
@@ -202,7 +199,7 @@ def cli_main():
     # 3 Download, cache, and apply resource to nodes
     ts = time.time()
     print('Identifying resource sites and downloading if necessary')
-    nodes, nearest = get_resource_data(nodes, ext_store)
+    nodes, nearest = ext_store.get_resource(nodes)
     t_run = (time.time() - ts) / 60
 
     if args.mode == 'weather':

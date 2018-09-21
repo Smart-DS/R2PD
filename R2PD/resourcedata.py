@@ -167,9 +167,9 @@ class Resource(object):
         fcst_data = self.extract_data('fcst_data')
 
         if self._frac is not None:
-            return fcst_data * self._frac
-        else:
-            return fcst_data
+            fcst_data *= self._frac
+
+        return fcst_data
 
     @property
     def forecast_probabilities(self):
@@ -183,7 +183,10 @@ class Resource(object):
         """
         fcst_prob = self.extract_data('fcst-prob_data')
 
-        return fcst_prob * self._frac
+        if self._frac is not None:
+            fcst_prob *= self._frac
+
+        return fcst_prob
 
 
 class WindResource(Resource):
@@ -191,7 +194,6 @@ class WindResource(Resource):
     Class for wind Resource data
     """
     DATASET = 'wind'
-    pass
 
 
 class SolarResource(Resource):

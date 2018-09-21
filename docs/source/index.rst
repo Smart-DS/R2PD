@@ -1,9 +1,9 @@
-.. Resource Data Tool documentation master file, created by
-   sphinx-quickstart on Thu Feb 23 16:42:24 2017.
+.. Renewable Resource and Power Data tool (R2PD) documentation master file,
+   created by sphinx-quickstart on Thu Feb 23 16:42:24 2017.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Resource Data Tool's documentation!
+Welcome to Renewable Resource and Power Data tool (R2PD)'s documentation!
 ==============================================
 
 Contents:
@@ -11,7 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
-   api
+   R2PD
 
 
 Indices and tables

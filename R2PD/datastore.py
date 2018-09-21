@@ -4,12 +4,14 @@ from internal and external data stores.
 """
 import concurrent.futures as cf
 from configparser import ConfigParser
+import multiprocessing
+import numpy as np
 import os
 import pandas as pds
-import pexpect
+from urllib.request import urlretrieve
 from .powerdata import GeneratorNodeCollection
 from .nearestnodes import nearest_power_nodes, nearest_met_nodes
-from .resourcedata import WindResource, SolarResource
+from .resourcedata import WindResource, SolarResource, ResourceList
 
 
 class DataStore(object):
@@ -30,12 +32,25 @@ class DataStore(object):
         Returns
         ---------
         'str'
-            type of DataStore and its ROOT_PATH
+            type of DataStore
         """
         return self.__class__.__name__
 
     @staticmethod
     def load_meta(meta_path):
+        """
+        Load meta data from ./libray/*.json
+
+        Parameters
+        ----------
+        meta_path : 'str'
+            Path to meta data .json
+
+        Returns
+        ---------
+        meta : 'pandas.DataFrame'
+            DataFrame of resource meta data
+        """
         meta = pds.read_json(meta_path)
         meta.index.name = 'site_id'
         meta = meta.sort_index()
@@ -43,6 +58,14 @@ class DataStore(object):
 
     @property
     def wind_meta(self):
+        """
+        Return wind meta data
+
+        Returns
+        ---------
+        self._wind_meta : 'pandas.DataFrame'
+            DataFrame of wind resource meta data
+        """
         if self._wind_meta is None:
             path = os.path.join(self.META_ROOT, 'wind_site_meta.json')
             self._wind_meta = self.load_meta(path)
@@ -51,6 +74,14 @@ class DataStore(object):
 
     @property
     def solar_meta(self):
+        """
+        Return solar meta data
+
+        Returns
+        ---------
+        self._wind_meta : 'pandas.DataFrame'
+            DataFrame of solar resource meta data
+        """
         if self._solar_meta is None:
             path = os.path.join(self.META_ROOT, 'solar_site_meta.json')
             self._solar_meta = self.load_meta(path)
@@ -91,25 +122,25 @@ class InternalDataStore(DataStore):
     A configuration file can also be used to set user library locations, for
     pointing to externally provided shapers and formatters.
     """
+    PKG_DIR = os.path.dirname(os.path.realpath(__file__))
+    PKG_DIR = os.path.dirname(PKG_DIR)
+
     def __init__(self, cache_root=None, size=None):
         """
         Initialize InternalDataStore object
 
         Parameters
         ----------
-        wind_dir : 'str'
-            Name of directory in which wind data is/will be stored
-            if None set to 'wind'
-        solar_dir : 'str'
-            Name of directory in which solar data is/will be stored
-            if None set to 'solar'
+        cache_root : 'str'
+            Path to root directory in which local cache should be created
+            Default is ./R2PD/R2PD_Cache
         size : 'float'
             Maximum local cache size in GB
         """
         super(InternalDataStore, self).__init__()
 
         if cache_root is None:
-            cache_root = os.path.join(os.getcwd(), 'R2PD_Cache')
+            cache_root = os.path.join(self.PKG_DIR, 'R2PD_Cache')
 
         self._cache_root = cache_root
         self._wind_root = os.path.join(self._cache_root, 'wind')
@@ -122,9 +153,7 @@ class InternalDataStore(DataStore):
 
         self._size = size
 
-        self.initialize_cache_metas()
-        self.refresh_cache_meta('wind')
-        self.refresh_cache_meta('solar')
+        self.update_cache_meta()
 
     def __repr__(self):
         """
@@ -169,8 +198,8 @@ class InternalDataStore(DataStore):
 
         return cls(cache_root=root_path, size=size)
 
-    @classmethod
-    def get_cache_size(cls, cache_path):
+    @staticmethod
+    def get_cache_size(cache_path):
         """
         Searches all sub directories in path for .hdf5 files
         computes total size in GB
@@ -194,8 +223,8 @@ class InternalDataStore(DataStore):
 
         return repo_size
 
-    @classmethod
-    def get_cache_summary(cls, path):
+    @staticmethod
+    def get_cache_summary(cache_meta):
         """
         Summarize the data available in the local cache
 
@@ -210,167 +239,12 @@ class InternalDataStore(DataStore):
             Summary table of number of sites, and corresponding resource types
             in local cache
         """
-        cache_meta = pds.read_csv(path, index_col=0)
         summary = pds.Series()
         summary['sites'] = len(cache_meta)
         for col in cache_meta.columns:
             summary[col] = cache_meta[col].sum()
 
         return summary
-
-    def initialize_cache_metas(self):
-        """
-        Initialize cache meta .csv files by scanning cache directories
-        """
-        for dataset in ['wind', 'solar']:
-            if dataset == 'wind':
-                cache_path = os.path.join(self._wind_root,
-                                          '{:}_cache.csv'.format(dataset))
-                self._wind_cache = cache_path
-                columns = ['met', 'power', 'fcst', 'fcst-prob']
-            elif dataset == 'solar':
-                cache_path = os.path.join(self._solar_root,
-                                          '{:}_cache.csv'.format(dataset))
-                self._solar_cache = cache_path
-                # columns = ['met', 'power', 'fcst', 'fcst-prob']
-                columns = ['met', 'power']
-
-            if not os.path.isfile(cache_path):
-                cache_meta = pds.DataFrame(columns=columns)
-                cache_meta.index.name = 'site_id'
-
-                cache_meta.to_csv(cache_path)
-
-    def refresh_cache_meta(self, dataset):
-        """
-        Refresh cache metadata by rescanning cache directory
-
-        Parameters
-        ----------
-        dataset : 'str'
-            'wind' or 'solar'
-        """
-        if dataset == 'wind':
-            cache_path = self._wind_cache
-        elif dataset == 'solar':
-            cache_path = self._solar_cache
-        else:
-            msg = "Invalid dataset type, must be 'wind' or 'solar'"
-            raise ValueError(msg)
-
-        root_path = os.path.split(cache_path)[0]
-        cache_meta = pds.read_csv(cache_path, index_col=0)
-        cache_sites = cache_meta.index
-
-        file_paths = []
-        for file in os.listdir(root_path):
-            if file.endswith('.hdf5'):
-                file_paths.append(os.path.join(root_path, file))
-
-        for file in file_paths:
-            name = os.path.splitext(os.path.basename(file))[0]
-            _, resource, site_id = name.split('_')
-            site_id = int(site_id)
-
-            if site_id not in cache_sites:
-                cache_meta.loc[site_id] = False
-
-            cache_meta.loc[site_id, resource] = True
-            cache_sites = cache_meta.index
-
-        cache_meta = cache_meta.sort_index()
-        cache_meta.to_csv(cache_path)
-
-    def cache_site(self, dataset, site_file):
-        """
-        Searches all sub directories in path for .hdf5 files
-
-        Parameters
-        ----------
-        dataset : 'str'
-            'wind' or 'solar'
-        site_file : 'str'
-            Path to resource file for site
-        """
-        if dataset == 'wind':
-            cache_path = self._wind_cache
-        elif dataset == 'solar':
-            cache_path = self._solar_cache
-        else:
-            msg = "Invalid dataset type, must be 'wind' or 'solar'"
-            raise ValueError(msg)
-
-        cache_meta = pds.read_csv(cache_path, index_col=0)
-        cache_sites = cache_meta.index
-
-        name = os.path.splitext(os.path.basename(site_file))[0]
-        _, resource, site_id = name.split('_')
-        site_id = int(site_id)
-
-        if site_id not in cache_sites:
-            cache_meta.loc[site_id] = False
-
-        cache_meta.loc[site_id, resource] = True
-
-        cache_meta = cache_meta.sort_index()
-        cache_meta.to_csv(cache_path)
-
-    def check_cache(self, dataset, site_id, resource_type=None):
-        """
-        Check cache for presence of resource.
-        If resource_type is None check for any resource_type of site_id
-        else check for specific resource_type for site_id
-
-        Parameters
-        ----------
-        dataset : 'str'
-            'wind' or 'solar'
-        site_id : 'int'
-            Site id number
-        resource_type : 'str'
-            type of resource
-            wind -> ('power', 'fcst', 'met')
-            solar -> ('power', 'fcst', 'met', 'irradiance')
-
-        Returns
-        ---------
-        'bool'
-            Is site/resource present in cache
-        """
-        self.refresh_cache_meta(dataset)
-        if dataset == 'wind':
-            cache_path = self._wind_cache
-        elif dataset == 'solar':
-            cache_path = self._solar_cache
-        else:
-            msg = "Invalid dataset type, must be 'wind' or 'solar'"
-            raise ValueError(msg)
-        cache_meta = pds.read_csv(cache_path, index_col=0)
-        cache_sites = cache_meta.index
-
-        if site_id in cache_sites:
-            if resource_type is not None:
-                cached = bool(cache_meta.loc[site_id, resource_type])
-            else:
-                cached = True
-        else:
-            cached = False
-
-        return cached
-
-    def cache_sites(self, dataset, site_files):
-        """
-        Add site to cache meta
-
-        Parameters
-        ----------
-        dataset : 'str'
-            'wind' or 'solar'
-        site_files : 'list'
-            List of paths to resource files for sites
-        """
-        for site_file in site_files:
-            self.cache_site(dataset, site_file)
 
     @property
     def cache_size(self):
@@ -406,7 +280,140 @@ class InternalDataStore(DataStore):
 
         return pds.concat((wind_summary, solar_summary), axis=1).T
 
-    def test_cache(self, download_size):
+    @property
+    def wind_cache(self):
+        """
+        Scan wind cache and update cache meta
+
+        Returns
+        ---------
+        cache_meta : 'pandas.DataFrame'
+            DataFrame of files in wind cache
+        """
+        columns = ['met', 'power', 'fcst', 'fcst-prob']
+        cache_meta = pds.DataFrame(columns=columns)
+        cache_meta.index.name = 'site_id'
+
+        return self.scan_cache(cache_meta, self._wind_cache)
+
+        @property
+        def wind_cache(self):
+            """
+            Scan solar cache and update cache meta
+
+            Returns
+            ---------
+            cache_meta : 'pandas.DataFrame'
+                DataFrame of files in solar cache
+            """
+            columns = ['met', 'power']
+            cache_meta = pds.DataFrame(columns=columns)
+            cache_meta.index.name = 'site_id'
+            return self.scan_cache(cache_meta, self._solar_cache)
+
+    @staticmethod
+    def scan_cache(cache_path, cache_meta):
+        """
+        Scan cache_path and update cache_meta
+
+        Parameters
+        ----------
+        cache_path : 'str'
+            Root directory to be scanned for .hdf5 files
+        cache_meta : 'pandas.DataFrame'
+            DataFrame of resource files in cache
+
+        Returns
+        ---------
+        cache_meta : 'pandas.DataFrame'
+            Updated DataFrame of resource files in cache
+        """
+        cache_sites = cache_meta.index
+
+        for file in os.listdir(cache_path):
+            if file.endswith('.hdf5'):
+                name = os.path.splitext(os.path.basename(file))[0]
+                _, resource, site_id = name.split('_')
+                site_id = int(site_id)
+
+                if site_id not in cache_sites:
+                    cache_meta.loc[site_id] = False
+
+                cache_meta.loc[site_id, resource] = True
+                cache_sites = cache_meta.index
+
+        return cache_meta
+
+    def update_cache_meta(self, dataset=None):
+        """
+        Refresh cache metadata by rescanning cache directory
+
+        Parameters
+        ----------
+        dataset : 'str'
+            'wind' or 'solar'
+        """
+        if dataset is None:
+            self._wind_cache = self.wind_cache
+            self._solar_cache = self.solar_cache
+        elif dataset == 'wind':
+            self._wind_cache = self.wind_cache
+        elif dataset == 'solar':
+            self._solar_cache = self.solar_cache
+        else:
+            msg = "Invalid dataset type, must be 'wind' or 'solar'"
+            raise ValueError(msg)
+
+    def check_cache(self, dataset, site_id, resource_type=None):
+        """
+        Check cache for presence of resource.
+        If resource_type is None check for any resource_type of site_id
+        else check for specific resource_type for site_id
+
+        Parameters
+        ----------
+        dataset : 'str'
+            'wind' or 'solar'
+        site_id : 'int'
+            Site id number
+        resource_type : 'str'
+            type of resource
+            wind -> ('power', 'fcst', 'met')
+            solar -> ('power', 'fcst', 'met', 'irradiance')
+
+        Returns
+        ---------
+        'bool'
+            Is site/resource present in cache
+        """
+        if dataset == 'wind':
+            cache_meta = self._wind_cache
+        elif dataset == 'solar':
+            cache_meta = self._solar_cache
+        else:
+            msg = "Invalid dataset type, must be 'wind' or 'solar'"
+            raise ValueError(msg)
+        cache_sites = cache_meta.index
+
+        if site_id in cache_sites:
+            if resource_type is not None:
+                cached = bool(cache_meta.loc[site_id, resource_type])
+            else:
+                cached = True
+        else:
+            cached = False
+
+        return cached
+
+    def test_cache_size(self, download_size):
+        """
+        Test to see if download will fit in cache
+
+        Parameters
+        ----------
+        download_size : 'float'
+            Size of requested download in GB
+        """
         if self._size is not None:
             cache_size, wind_size, solar_size = self.cache_size
             open_cache = self._size - cache_size
@@ -414,7 +421,7 @@ class InternalDataStore(DataStore):
                 msg = ('Not enough space available in local cache:',
                        '\nDownload size = {:.2f}GB'.format(download_size),
                        '\nLocal cache = {:.2f}GB of'.format(cache_size),
-                       ' {:.2f}GB in use'.format(self._local_cache),
+                       ' {:.2f}GB in use'.format(self._size),
                        '\n\tCached wind data = {:.2f}GB'.format(wind_size),
                        '\n\tCached solar data = {:.2f}GB'.format(solar_size))
                 raise RuntimeError(''.join(msg))
@@ -429,7 +436,7 @@ class ExternalDataStore(DataStore):
     WIND_FILE_SIZES = {'met': 14, 'power': 4.1, 'fcst': 1}
     SOLAR_FILE_SIZES = {'met': 31, 'power': 8.4, 'fcst': 0}
 
-    def __init__(self, local_cache=None):
+    def __init__(self, local_cache=None, threads=None):
         """
         Initialize ExternalDataStore object
 
@@ -437,6 +444,8 @@ class ExternalDataStore(DataStore):
         ----------
         local_cache : 'InternalDataStore'
             InternalDataStore object represening internal data cache
+        threads : 'int'
+            Number of threads to use during downloads
         """
         super(ExternalDataStore, self).__init__()
 
@@ -449,6 +458,14 @@ class ExternalDataStore(DataStore):
             raise RuntimeError(' '.join(msg))
 
         self._local_cache = local_cache
+
+        if threads:
+            if not isinstance(threads, int):
+                threads = multiprocessing.cpu_count() // 2
+        else:
+            threads = None
+
+        self._threads = threads
 
     @classmethod
     def connect(cls, config):
@@ -475,9 +492,24 @@ class ExternalDataStore(DataStore):
         else:
             local_cache = None
 
-        return cls(local_cache=local_cache)
+        threads = config_parser.get('local_cache', 'threads', None)
+
+        return cls(local_cache=local_cache, threads=threads)
 
     def get_meta(self, dataset):
+        """
+        Get meta associated with given dataset
+
+        Parameters
+        ----------
+        dataset : 'str'
+            'wind' or 'solar'
+
+        Returns
+        ---------
+        meta : 'pandas.DataFrame'
+            DataFrame of resource meta
+        """
         if dataset == 'wind':
             meta = self.wind_meta
         elif dataset == 'solar':
@@ -489,6 +521,28 @@ class ExternalDataStore(DataStore):
 
     def get_download_size(self, dataset, numb_sites, resource_type,
                           forecasts=False):
+        """
+        Estimate download size
+
+        Parameters
+        ----------
+        dataset : 'str'
+            'wind' or 'solar'
+        num_sites : 'int'
+            Number of sites to be downloaded
+        resource_type : 'str'
+            type of resource
+            wind -> ('power', 'fcst', 'met')
+            solar -> ('power', 'fcst', 'met', 'irradiance')
+        forecasts : 'bool'
+            Boolean flag as to whether forecasts will be included in the
+            download or not
+
+        Returns
+        ---------
+        download_size : 'float'
+            Estimated download size in GB
+        """
         if dataset == 'wind':
             if resource_type == 'power':
                 download_size = numb_sites * self.WIND_FILE_SIZES['power']
@@ -509,6 +563,13 @@ class ExternalDataStore(DataStore):
     def download(self, src, dst):
         """
         Abstract method to download src to dst
+
+        Parameters
+        ----------
+        src : 'str'
+            Path or URL to src file
+        dst : 'str'
+            Path to which file should be downloaded
         """
         pass
 
@@ -539,37 +600,24 @@ class ExternalDataStore(DataStore):
 
         return nearest_nodes
 
-    def cache_resource(self, dataset, site_id, resource_type):
+    def download_resource(self, dataset, site_id, resource_type):
         """
-        Download the resource site file from repo and add site to cache meta
+        Download the resource site file from repository
 
         Parameters
         ----------
-        site_file : 'str'
-            Path to resource file for site
-        dataste : 'str'
+        dataset : 'str'
             'wind' or 'solar'
+        site_ids : 'list'
+            List of site ids to be downloaded
+        resource_type : 'str'
+            power or met or fcst
         """
-        if dataset == 'wind':
-            src = self._wind_root
-            dst = self._local_cache._wind_root
-        elif dataset == 'solar':
-            src = self._solar_root
-            dst = self._local_cache._solar_root
-        else:
-            raise ValueError("Invalid dataset type, must be 'wind' or 'solar'")
+        pass
 
-        try:
-            self.download(src, dst)
-        except Exception:
-            raise
-        finally:
-            self._local_cache.cache_site(dataset, dst)
-
-    def download_resource_data(self, dataset, site_ids, resource_type,
-                               forecasts=False):
+    def download_resource_data(self, dataset, site_ids, resource_type):
         """
-        Download resources from repo
+        Download resource files from repository
 
         Parameters
         ----------
@@ -579,29 +627,19 @@ class ExternalDataStore(DataStore):
             List of site ids to be downloaded
         resource_type : 'str'
             power or met
-        repo : 'ExternalDataStore'
-            ExternalDataStore instance
-        forecasts : 'bool'
-            Download forecast along with power
+        threads : 'int'
+            Number of threads to use for downloading
         """
-        # Check to see if download can fit in Cache
-        download_size = self.get_download_size(dataset, len(site_ids),
-                                               resource_type,
-                                               forecasts=forecasts)
-        self._local_cache.test_cache(download_size)
-
-        files = []
-        for site in site_ids:
-
-        if cores is None:
-            for site in files:
-                self.cache_resource(site, dataset)
+        if self._threads is None:
+            for site in site_ids:
+                self.download_resource(dataset, site, resource_type)
         else:
-            with cf.ThreadPoolExecutor(max_workers=cores) as executor:
-                for site in files:
-                    executor.submit(self.cache_resource, site, dataset)
+            with cf.ThreadPoolExecutor(max_workers=self._threads) as executor:
+                for site in site_ids:
+                    executor.submit(self.download_resource,
+                                    dataset, site, resource_type)
 
-    def get_resource(self, dataset, site_id, frac=None):
+    def get_node_resource(self, dataset, site_id, frac=None):
         """
         Initialize and return Resource class object for specified resource site
 
@@ -634,7 +672,7 @@ class ExternalDataStore(DataStore):
             raise RuntimeError('{d} site {s} is not in local cache!'
                                .format(d=dataset, s=site_id))
 
-    def get_resource_data(node_collection, forecasts=False, **kwargs):
+    def get_resource(self, node_collection, forecasts=False):
         """
         Finds nearest nodes, caches files to local datastore and assigns
         resource to node_collection
@@ -645,8 +683,6 @@ class ExternalDataStore(DataStore):
             Collection of either weather of generator nodes
         forecasts : 'bool'
             Whether to download forecasts along with power data
-        **kwargs
-            Internal kwargs
 
         Returns
         ---------
@@ -667,19 +703,21 @@ class ExternalDataStore(DataStore):
             site_ids = nearest_nodes['site_id'].values
 
         dataset = node_collection._dataset
+        self.download_resource_data(dataset, site_ids, resource_type)
+        if resource_type == 'power' & forecasts:
+            self.download_resource_data(dataset, site_ids, 'fcst')
 
-        self.download_resource_data(dataset, site_ids, resource_type,
-                                    forecasts=forecasts, **kwargs)
+        self._local_cache.update_cache_meta(dataset)
 
         resources = []
         for _, meta in nearest_nodes.iterrows():
             site_id = meta['site_id']
             if isinstance(site_id, list):
                 fracs = meta['site_fracs']
-                r = ResourceList([self.get_resource(dataset, site, frac=f)
+                r = ResourceList([self.get_node_resource(dataset, site, frac=f)
                                   for site, f in zip(site_id, fracs)])
             else:
-                r = repo.get_resource(dataset, site_id)
+                r = self.get_node_resource(dataset, site_id)
 
             resources.append(r)
 
@@ -691,102 +729,40 @@ class ExternalDataStore(DataStore):
         return node_collection, nearest_nodes
 
 
-class Peregrine(ExternalDataStore):
-    """
-    Class object for External DataStore on Peregrine
-    """
-    ROOT_PATH = '/scratch/mrossol/Resource_Repo'
-
-    def __init__(self, username, password, **kwargs):
-        """
-        Initialize Peregrine object
-
-        Parameters
-        ----------
-        username : 'str'
-            Peregrine username
-        password : 'str'
-            Peregrine password
-        **kwargs :
-            kwargs for ExternalDataStore
-        """
-        self._username = username
-        self._password = password
-        super(Peregrine, self).__init__(**kwargs)
-
-    def download(self, src, dst, timeout=30):
-        """
-        Method to download src file from Peregrine to local dst
-
-        Parameters
-        ----------
-        src : 'str'
-            Path to source file to be downloaded
-        dst : 'str'
-            Path to destination directory of file path
-        timeout : 'int'
-            Timeout in seconds
-        """
-        if os.path.basename(src) == os.path.basename(dst):
-            file_path = dst
-        else:
-            file_path = os.path.join(dst, os.path.basename(src))
-
-        if not os.path.isfile(file_path):
-            command = ('rsync -avz {u}@peregrine.nrel.gov:{src} {dst}'
-                       .format(u=self._username, src=src, dst=dst))
-            expect = ("{:}@peregrine.nrel.gov's password:"
-                      .format(self._username))
-            try:
-                with pexpect.spawn(command, timeout=timeout) as child:
-                    child.expect(expect)
-                    code = child.sendline(self._password)
-                    if code == 11:
-                        child.expect(pexpect.EOF)
-
-                exit_code = child.exitstatus
-                if exit_code != 0:
-                    raise RuntimeError('Download failed, check inputs!')
-            except Exception:
-                raise
-
-    @classmethod
-    def connect(cls, config):
-        """
-        Reads the configuration. From configuration and defaults,
-        determines initializes Peregine DataStore object.
-
-        Parameters
-        ----------
-        config : 'str'
-            Path to .ini configuration file.
-
-        Returns
-        ---------
-        'Peregrine'
-            Initialized Peregrine object
-        """
-        config_parser = ConfigParser()
-        config_parser.read(config)
-
-        username = cls.decode_config_entry(config_parser.get('repository',
-                                                             'username'))
-
-        password = cls.decode_config_entry(config_parser.get('repository',
-                                                             'password'))
-
-        if config_parser.has_section('local_cache'):
-            local_cache = InternalDataStore.connect(config=config)
-        else:
-            local_cache = None
-
-        return cls(username, password, local_cache=local_cache)
-
-
-
-
 class DRPower(ExternalDataStore):
     """
     Class object for External DataStore at DR Power (egrid.org)
     """
-    pass
+    DATA_ROOT = 'https://dtn2.pnl.gov/drpower'
+
+    def download(self, src, dst):
+        """
+        Download resource data from src URL to dst file path
+
+        Parameters
+        ----------
+        src : 'str'
+            URL of resource data to be downloaded
+        dst : 'str'
+            Destination path of resource data (including file name)
+        """
+        urlretrieve(src, dst)
+
+    def download_resource(self, dataset, site_id, resource_type):
+        """
+        Download the resource site file from repo and add site to cache meta
+
+        Parameters
+        ----------
+        dataset : 'str'
+            'wind' or 'solar'
+        site_ids : 'list'
+            List of site ids to be downloaded
+        resource_type : 'str'
+            power or met or fcst
+        """
+        file_name = '{}_{}_{}.hdf5'.format(dataset, resource_type, site_id)
+        src = os.path.join(self.DATA_ROOT, dataset, file_name)
+        dst = os.path.join(self._local_cache._cache_root, dataset, file_name)
+
+        self.download(src, dst)

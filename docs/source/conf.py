@@ -25,7 +25,7 @@ copyright = '2017, Michael Rossol, Elaine Hale'
 author = 'Michael Rossol, Elaine Hale'
 
 # The short X.Y version
-version = ''
+version = '0.1.0'
 # The full version, including alpha/beta/rc tags
 release = '0.1.0'
 
