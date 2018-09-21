@@ -11,6 +11,14 @@ Subpackages
 Submodules
 ----------
 
+R2PD.Timeout module
+-------------------
+
+.. automodule:: R2PD.Timeout
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 R2PD.cli module
 ---------------
 
@@ -47,14 +55,6 @@ R2PD.resourcedata module
 ------------------------
 
 .. automodule:: R2PD.resourcedata
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-R2PD.timeout module
--------------------
-
-.. automodule:: R2PD.timeout
     :members:
     :undoc-members:
     :show-inheritance:

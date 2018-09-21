@@ -15,6 +15,7 @@ class Resource(object):
     def __init__(self, loc_meta, root_path, frac=None):
         """
         Initialize Resource instance
+
         Parameters
         ----------
         loc_meta : 'pandas.Series'

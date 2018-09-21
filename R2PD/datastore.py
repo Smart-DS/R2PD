@@ -39,7 +39,7 @@ class DataStore(object):
     @staticmethod
     def load_meta(meta_path):
         """
-        Load meta data from ./libray/*.json
+        Load meta data
 
         Parameters
         ----------

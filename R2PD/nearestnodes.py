@@ -16,11 +16,11 @@ def nearest_power_nodes(node_collection, resource_meta):
     Parameters
     ----------
     node_collection : 'pandas.DataFrame'|'GeneratorNodeCollection'
-        DataFrame of requested nodes
+        DataFrame of requested nodes:
             [node_id(index), latitude, longitude, capacity]
         or NodeCollection instance
     resource_meta : 'pandas.DataFrame'
-        DataFrame with resource node meta-data
+        DataFrame with resource node meta-data:
             [site_id(index), latitude, longitude, capacity]
 
     Returns
@@ -111,11 +111,11 @@ def nearest_met_nodes(node_collection, resource_meta):
     Parameters
     ----------
     node_collection : 'pandas.DataFrame'|'WeatherNodeCollection'
-        DataFrame of requested nodes
+        DataFrame of requested nodes:
             [node_id(index), latitude, longitude]
         or NodeCollection instance
     resource_meta : 'pandas.DataFrame'
-        DataFrame with resource node meta-data
+        DataFrame with resource node meta-data:
             [site_id(index), latitude, longitude]
 
     Returns

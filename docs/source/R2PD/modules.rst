@@ -5,4 +5,3 @@ R2PD
    :maxdepth: 4
 
    R2PD
-   setup
