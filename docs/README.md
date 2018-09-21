@@ -13,9 +13,9 @@ pip install sphinx
 ## Refreshing the API Documentation
 
 - Make sure R2PD is in your PYTHONPATH
-- Delete the contents of `source/api`.
-- Run `sphinx-apidoc -o source/api ..` from the `docs` folder.
-- Compare `source/api/modules.rst` to `source/api.rst`.
+- Delete the contents of `source/R2PD`.
+- Run `sphinx-apidoc -o source/R2PD ..` from the `docs` folder.
+- Compare `source/R2PD/modules.rst` to `source/R2PD.rst`.
 - 'git push' changes to the documentation source code as needed.
 - Make the documentation per below
 
