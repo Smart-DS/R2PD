@@ -1,0 +1,991 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>R2PD.datastore &mdash; Renewable Resource and Power Data tool (R2PD) 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Renewable Resource and Power Data tool (R2PD)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../R2PD/modules.html">R2PD</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../R2PD/R2PD.html">R2PD package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../R2PD/R2PD.library.html">R2PD.library package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.Timeout">R2PD.Timeout module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.cli">R2PD.cli module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.datastore">R2PD.datastore module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.nearestnodes">R2PD.nearestnodes module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.powerdata">R2PD.powerdata module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.resourcedata">R2PD.resourcedata module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.tshelpers">R2PD.tshelpers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Renewable Resource and Power Data tool (R2PD)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>R2PD.datastore</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for R2PD.datastore</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides classes for accessing site-level wind and solar data</span>
+<span class="sd">from internal and external data stores.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">concurrent.futures</span> <span class="k">as</span> <span class="nn">cf</span>
+<span class="kn">from</span> <span class="nn">configparser</span> <span class="k">import</span> <span class="n">ConfigParser</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pds</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="k">import</span> <span class="n">urlretrieve</span>
+<span class="kn">from</span> <span class="nn">.powerdata</span> <span class="k">import</span> <span class="n">GeneratorNodeCollection</span>
+<span class="kn">from</span> <span class="nn">.nearestnodes</span> <span class="k">import</span> <span class="n">nearest_power_nodes</span><span class="p">,</span> <span class="n">nearest_met_nodes</span>
+<span class="kn">from</span> <span class="nn">.resourcedata</span> <span class="k">import</span> <span class="n">WindResource</span><span class="p">,</span> <span class="n">SolarResource</span><span class="p">,</span> <span class="n">ResourceList</span>
+
+
+<div class="viewcode-block" id="DataStore"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.DataStore">[docs]</a><span class="k">class</span> <span class="nc">DataStore</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract class to define interface for accessing stores of resource data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">META_ROOT</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+    <span class="n">META_ROOT</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">META_ROOT</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wind_meta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solar_meta</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print the type of datastore and its ROOT_PATH</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;str&#39;</span>
+<span class="sd">            type of DataStore</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+
+<div class="viewcode-block" id="DataStore.load_meta"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.DataStore.load_meta">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">load_meta</span><span class="p">(</span><span class="n">meta_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load meta data</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        meta_path : &#39;str&#39;</span>
+<span class="sd">            Path to meta data .json</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        meta : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            DataFrame of resource meta data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">pds</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">meta_path</span><span class="p">)</span>
+        <span class="n">meta</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;site_id&#39;</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">meta</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">wind_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return wind meta data</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        self._wind_meta : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            DataFrame of wind resource meta data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wind_meta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">META_ROOT</span><span class="p">,</span> <span class="s1">&#39;wind_site_meta.json&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wind_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_meta</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wind_meta</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">solar_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return solar meta data</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        self._wind_meta : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            DataFrame of solar resource meta data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solar_meta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">META_ROOT</span><span class="p">,</span> <span class="s1">&#39;solar_site_meta.json&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_solar_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_meta</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solar_meta</span>
+
+<div class="viewcode-block" id="DataStore.decode_config_entry"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.DataStore.decode_config_entry">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">decode_config_entry</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decode config entry converting missing or &#39;None&#39; entires to None</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        entry : &#39;str&#39;</span>
+<span class="sd">            entry from ConfigParser call</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        entry : &#39;str&#39; or None</span>
+<span class="sd">            if config entry is not &#39;None&#39; or empty the entry is returned</span>
+<span class="sd">            else None is returned</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">entry</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">entry</span></div></div>
+
+
+<div class="viewcode-block" id="InternalDataStore"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.InternalDataStore">[docs]</a><span class="k">class</span> <span class="nc">InternalDataStore</span><span class="p">(</span><span class="n">DataStore</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class manages an internal cache of already downloaded resource data,</span>
+<span class="sd">    and other Resource Data Tool information that should persist.</span>
+
+<span class="sd">    The default location for the internal cache will be in the current \</span>
+<span class="sd">    working diretory, but the user can set a different location by passing</span>
+<span class="sd">    in a configuration file.</span>
+
+<span class="sd">    A configuration file can also be used to set user library locations, for</span>
+<span class="sd">    pointing to externally provided shapers and formatters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">PKG_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+    <span class="n">PKG_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">PKG_DIR</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache_root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize InternalDataStore object</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cache_root : &#39;str&#39;</span>
+<span class="sd">            Path to root directory in which local cache should be created</span>
+<span class="sd">            Default is ./R2PD/R2PD_Cache</span>
+<span class="sd">        size : &#39;float&#39;</span>
+<span class="sd">            Maximum local cache size in GB</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">InternalDataStore</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">cache_root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cache_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PKG_DIR</span><span class="p">,</span> <span class="s1">&#39;R2PD_Cache&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache_root</span> <span class="o">=</span> <span class="n">cache_root</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wind_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_root</span><span class="p">,</span> <span class="s1">&#39;wind&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wind_root</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wind_root</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solar_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_root</span><span class="p">,</span> <span class="s1">&#39;solar&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_solar_root</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_solar_root</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_size</span> <span class="o">=</span> <span class="n">size</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_cache_meta</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print the type of datastore and its ROOT_PATH</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;str&#39;</span>
+<span class="sd">            type of DataStore and its ROOT_PATH</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{n}</span><span class="s1"> at </span><span class="si">{i}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                                   <span class="n">i</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_root</span><span class="p">)</span>
+
+<div class="viewcode-block" id="InternalDataStore.connect"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.InternalDataStore.connect">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads the configuration. From configuration and defaults,</span>
+<span class="sd">        determines initializes InternalDataStore object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        config : &#39;str&#39;</span>
+<span class="sd">            Path to .ini configuration file.</span>
+<span class="sd">            See library/config.ini for an example</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;InternalDataStore&#39;</span>
+<span class="sd">            Initialized InternalDataStore object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">config_parser</span> <span class="o">=</span> <span class="n">ConfigParser</span><span class="p">()</span>
+            <span class="n">config_parser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+            <span class="n">root_path</span> <span class="o">=</span> <span class="n">config_parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;local_cache&#39;</span><span class="p">,</span> <span class="s1">&#39;root_path&#39;</span><span class="p">)</span>
+            <span class="n">root_path</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">decode_config_entry</span><span class="p">(</span><span class="n">root_path</span><span class="p">)</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">decode_config_entry</span><span class="p">(</span><span class="n">config_parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;local_cache&#39;</span><span class="p">,</span>
+                                                             <span class="s1">&#39;size&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">size</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">cache_root</span><span class="o">=</span><span class="n">root_path</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InternalDataStore.get_cache_size"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.InternalDataStore.get_cache_size">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_cache_size</span><span class="p">(</span><span class="n">cache_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Searches all sub directories in path for .hdf5 files</span>
+<span class="sd">        computes total size in GB</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cache_path : &#39;str&#39;</span>
+<span class="sd">            Path to cache directory</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        repo_size : &#39;float&#39;</span>
+<span class="sd">            Returns total size of .hdf5 files in cache in GB</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">repo_size</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span><span class="p">)</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">cache_path</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.hdf5&#39;</span><span class="p">):</span>
+                    <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                    <span class="n">repo_size</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">9</span>
+
+        <span class="k">return</span> <span class="n">repo_size</span></div>
+
+<div class="viewcode-block" id="InternalDataStore.get_cache_summary"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.InternalDataStore.get_cache_summary">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_cache_summary</span><span class="p">(</span><span class="n">cache_meta</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Summarize the data available in the local cache</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : &#39;str&#39;</span>
+<span class="sd">            Path to cache meta .csv</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        summary : &#39;pandas.Series&#39;</span>
+<span class="sd">            Summary table of number of sites, and corresponding resource types</span>
+<span class="sd">            in local cache</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="n">pds</span><span class="o">.</span><span class="n">Series</span><span class="p">()</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s1">&#39;sites&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cache_meta</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cache_meta</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">summary</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">cache_meta</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">summary</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">cache_size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate size of local cache and dataset caches in GB</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;tuple&#39;</span>
+<span class="sd">            total, wind, and solar cache sizes in GB (floats)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">total_cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cache_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_root</span><span class="p">)</span>
+        <span class="n">wind_cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cache_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wind_root</span><span class="p">)</span>
+        <span class="n">solar_cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cache_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_solar_root</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">total_cache</span><span class="p">,</span> <span class="n">wind_cache</span><span class="p">,</span> <span class="n">solar_cache</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">cache_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Summarize sites and resource types in cache</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            Summary of Wind and Solar caches</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wind_summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cache_summary</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wind_cache</span><span class="p">)</span>
+        <span class="n">wind_summary</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;wind&#39;</span>
+
+        <span class="n">solar_summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cache_summary</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_solar_cache</span><span class="p">)</span>
+        <span class="n">solar_summary</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;solar&#39;</span>
+
+        <span class="k">return</span> <span class="n">pds</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">wind_summary</span><span class="p">,</span> <span class="n">solar_summary</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">wind_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Scan wind cache and update cache meta</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        cache_meta : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            DataFrame of files in wind cache</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;met&#39;</span><span class="p">,</span> <span class="s1">&#39;power&#39;</span><span class="p">,</span> <span class="s1">&#39;fcst&#39;</span><span class="p">,</span> <span class="s1">&#39;fcst-prob&#39;</span><span class="p">]</span>
+        <span class="n">cache_meta</span> <span class="o">=</span> <span class="n">pds</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">cache_meta</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;site_id&#39;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_cache</span><span class="p">(</span><span class="n">cache_meta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wind_cache</span><span class="p">)</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">wind_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Scan solar cache and update cache meta</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            ---------</span>
+<span class="sd">            cache_meta : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">                DataFrame of files in solar cache</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;met&#39;</span><span class="p">,</span> <span class="s1">&#39;power&#39;</span><span class="p">]</span>
+            <span class="n">cache_meta</span> <span class="o">=</span> <span class="n">pds</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+            <span class="n">cache_meta</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;site_id&#39;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_cache</span><span class="p">(</span><span class="n">cache_meta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solar_cache</span><span class="p">)</span>
+
+<div class="viewcode-block" id="InternalDataStore.scan_cache"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.InternalDataStore.scan_cache">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">scan_cache</span><span class="p">(</span><span class="n">cache_path</span><span class="p">,</span> <span class="n">cache_meta</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Scan cache_path and update cache_meta</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cache_path : &#39;str&#39;</span>
+<span class="sd">            Root directory to be scanned for .hdf5 files</span>
+<span class="sd">        cache_meta : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            DataFrame of resource files in cache</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        cache_meta : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            Updated DataFrame of resource files in cache</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cache_sites</span> <span class="o">=</span> <span class="n">cache_meta</span><span class="o">.</span><span class="n">index</span>
+
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">cache_path</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.hdf5&#39;</span><span class="p">):</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">file</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">site_id</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
+                <span class="n">site_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">site_id</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">site_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cache_sites</span><span class="p">:</span>
+                    <span class="n">cache_meta</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">site_id</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+                <span class="n">cache_meta</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">site_id</span><span class="p">,</span> <span class="n">resource</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">cache_sites</span> <span class="o">=</span> <span class="n">cache_meta</span><span class="o">.</span><span class="n">index</span>
+
+        <span class="k">return</span> <span class="n">cache_meta</span></div>
+
+<div class="viewcode-block" id="InternalDataStore.update_cache_meta"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.InternalDataStore.update_cache_meta">[docs]</a>    <span class="k">def</span> <span class="nf">update_cache_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Refresh cache metadata by rescanning cache directory</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset : &#39;str&#39;</span>
+<span class="sd">            &#39;wind&#39; or &#39;solar&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dataset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wind_cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wind_cache</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_solar_cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solar_cache</span>
+        <span class="k">elif</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;wind&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wind_cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wind_cache</span>
+        <span class="k">elif</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;solar&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_solar_cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solar_cache</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Invalid dataset type, must be &#39;wind&#39; or &#39;solar&#39;&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InternalDataStore.check_cache"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.InternalDataStore.check_cache">[docs]</a>    <span class="k">def</span> <span class="nf">check_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">site_id</span><span class="p">,</span> <span class="n">resource_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check cache for presence of resource.</span>
+<span class="sd">        If resource_type is None check for any resource_type of site_id</span>
+<span class="sd">        else check for specific resource_type for site_id</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset : &#39;str&#39;</span>
+<span class="sd">            &#39;wind&#39; or &#39;solar&#39;</span>
+<span class="sd">        site_id : &#39;int&#39;</span>
+<span class="sd">            Site id number</span>
+<span class="sd">        resource_type : &#39;str&#39;</span>
+<span class="sd">            type of resource</span>
+<span class="sd">            wind -&gt; (&#39;power&#39;, &#39;fcst&#39;, &#39;met&#39;)</span>
+<span class="sd">            solar -&gt; (&#39;power&#39;, &#39;fcst&#39;, &#39;met&#39;, &#39;irradiance&#39;)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;bool&#39;</span>
+<span class="sd">            Is site/resource present in cache</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;wind&#39;</span><span class="p">:</span>
+            <span class="n">cache_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wind_cache</span>
+        <span class="k">elif</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;solar&#39;</span><span class="p">:</span>
+            <span class="n">cache_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solar_cache</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Invalid dataset type, must be &#39;wind&#39; or &#39;solar&#39;&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">cache_sites</span> <span class="o">=</span> <span class="n">cache_meta</span><span class="o">.</span><span class="n">index</span>
+
+        <span class="k">if</span> <span class="n">site_id</span> <span class="ow">in</span> <span class="n">cache_sites</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">resource_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">cached</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">cache_meta</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">site_id</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cached</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cached</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="n">cached</span></div>
+
+<div class="viewcode-block" id="InternalDataStore.test_cache_size"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.InternalDataStore.test_cache_size">[docs]</a>    <span class="k">def</span> <span class="nf">test_cache_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">download_size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test to see if download will fit in cache</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        download_size : &#39;float&#39;</span>
+<span class="sd">            Size of requested download in GB</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cache_size</span><span class="p">,</span> <span class="n">wind_size</span><span class="p">,</span> <span class="n">solar_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_size</span>
+            <span class="n">open_cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_size</span> <span class="o">-</span> <span class="n">cache_size</span>
+            <span class="k">if</span> <span class="n">open_cache</span> <span class="o">&lt;</span> <span class="n">download_size</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Not enough space available in local cache:&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Download size = </span><span class="si">{:.2f}</span><span class="s1">GB&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">download_size</span><span class="p">),</span>
+                       <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Local cache = </span><span class="si">{:.2f}</span><span class="s1">GB of&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cache_size</span><span class="p">),</span>
+                       <span class="s1">&#39; </span><span class="si">{:.2f}</span><span class="s1">GB in use&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_size</span><span class="p">),</span>
+                       <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1">Cached wind data = </span><span class="si">{:.2f}</span><span class="s1">GB&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">wind_size</span><span class="p">),</span>
+                       <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1">Cached solar data = </span><span class="si">{:.2f}</span><span class="s1">GB&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solar_size</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="ExternalDataStore"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.ExternalDataStore">[docs]</a><span class="k">class</span> <span class="nc">ExternalDataStore</span><span class="p">(</span><span class="n">DataStore</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract class to define interface for accessing external stores</span>
+<span class="sd">    of resource data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Average File size in MB currently estimates</span>
+    <span class="n">WIND_FILE_SIZES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;met&#39;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span> <span class="s1">&#39;power&#39;</span><span class="p">:</span> <span class="mf">4.1</span><span class="p">,</span> <span class="s1">&#39;fcst&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+    <span class="n">SOLAR_FILE_SIZES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;met&#39;</span><span class="p">:</span> <span class="mi">31</span><span class="p">,</span> <span class="s1">&#39;power&#39;</span><span class="p">:</span> <span class="mf">8.4</span><span class="p">,</span> <span class="s1">&#39;fcst&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">threads</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize ExternalDataStore object</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        local_cache : &#39;InternalDataStore&#39;</span>
+<span class="sd">            InternalDataStore object represening internal data cache</span>
+<span class="sd">        threads : &#39;int&#39;</span>
+<span class="sd">            Number of threads to use during downloads</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExternalDataStore</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">local_cache</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">local_cache</span> <span class="o">=</span> <span class="n">InternalDataStore</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">local_cache</span><span class="p">,</span> <span class="n">InternalDataStore</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Expecting local_cache to be instance of&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;InternalDataStore,&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;but is </span><span class="si">{:}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">local_cache</span><span class="p">)))</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local_cache</span> <span class="o">=</span> <span class="n">local_cache</span>
+
+        <span class="k">if</span> <span class="n">threads</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">threads</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">threads</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">threads</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_threads</span> <span class="o">=</span> <span class="n">threads</span>
+
+<div class="viewcode-block" id="ExternalDataStore.connect"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.ExternalDataStore.connect">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads the configuration. From configuration and defaults,</span>
+<span class="sd">        determines initializes ExternalDataStore object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        config : &#39;str&#39;</span>
+<span class="sd">            Path to .ini configuration file.</span>
+<span class="sd">            See library/config.ini for an example</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;ExternalDataStore&#39;</span>
+<span class="sd">            Initialized ExternalDataStore object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config_parser</span> <span class="o">=</span> <span class="n">ConfigParser</span><span class="p">()</span>
+        <span class="n">config_parser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">config_parser</span><span class="o">.</span><span class="n">has_section</span><span class="p">(</span><span class="s1">&#39;local_cache&#39;</span><span class="p">):</span>
+            <span class="n">local_cache</span> <span class="o">=</span> <span class="n">InternalDataStore</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">local_cache</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">threads</span> <span class="o">=</span> <span class="n">config_parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;local_cache&#39;</span><span class="p">,</span> <span class="s1">&#39;threads&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">local_cache</span><span class="o">=</span><span class="n">local_cache</span><span class="p">,</span> <span class="n">threads</span><span class="o">=</span><span class="n">threads</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExternalDataStore.get_meta"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.ExternalDataStore.get_meta">[docs]</a>    <span class="k">def</span> <span class="nf">get_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get meta associated with given dataset</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset : &#39;str&#39;</span>
+<span class="sd">            &#39;wind&#39; or &#39;solar&#39;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        meta : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            DataFrame of resource meta</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;wind&#39;</span><span class="p">:</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wind_meta</span>
+        <span class="k">elif</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;solar&#39;</span><span class="p">:</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solar_meta</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid dataset type, must be &#39;wind&#39; or &#39;solar&#39;&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">meta</span></div>
+
+<div class="viewcode-block" id="ExternalDataStore.get_download_size"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.ExternalDataStore.get_download_size">[docs]</a>    <span class="k">def</span> <span class="nf">get_download_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">numb_sites</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span>
+                          <span class="n">forecasts</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate download size</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset : &#39;str&#39;</span>
+<span class="sd">            &#39;wind&#39; or &#39;solar&#39;</span>
+<span class="sd">        num_sites : &#39;int&#39;</span>
+<span class="sd">            Number of sites to be downloaded</span>
+<span class="sd">        resource_type : &#39;str&#39;</span>
+<span class="sd">            type of resource</span>
+<span class="sd">            wind -&gt; (&#39;power&#39;, &#39;fcst&#39;, &#39;met&#39;)</span>
+<span class="sd">            solar -&gt; (&#39;power&#39;, &#39;fcst&#39;, &#39;met&#39;, &#39;irradiance&#39;)</span>
+<span class="sd">        forecasts : &#39;bool&#39;</span>
+<span class="sd">            Boolean flag as to whether forecasts will be included in the</span>
+<span class="sd">            download or not</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        download_size : &#39;float&#39;</span>
+<span class="sd">            Estimated download size in GB</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;wind&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">resource_type</span> <span class="o">==</span> <span class="s1">&#39;power&#39;</span><span class="p">:</span>
+                <span class="n">download_size</span> <span class="o">=</span> <span class="n">numb_sites</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">WIND_FILE_SIZES</span><span class="p">[</span><span class="s1">&#39;power&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">forecasts</span><span class="p">:</span>
+                    <span class="n">download_size</span> <span class="o">+=</span> <span class="n">numb_sites</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">WIND_FILE_SIZES</span><span class="p">[</span><span class="s1">&#39;fcst&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">download_size</span> <span class="o">=</span> <span class="n">numb_sites</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">WIND_FILE_SIZES</span><span class="p">[</span><span class="s1">&#39;met&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;solar&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">resource_type</span> <span class="o">==</span> <span class="s1">&#39;power&#39;</span><span class="p">:</span>
+                <span class="n">download_size</span> <span class="o">=</span> <span class="n">numb_sites</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">SOLAR_FILE_SIZES</span><span class="p">[</span><span class="s1">&#39;power&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">forecasts</span><span class="p">:</span>
+                    <span class="n">download_size</span> <span class="o">+=</span> <span class="n">numb_sites</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">SOLAR_FILE_SIZES</span><span class="p">[</span><span class="s1">&#39;fcst&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">download_size</span> <span class="o">=</span> <span class="n">numb_sites</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">SOLAR_FILE_SIZES</span><span class="p">[</span><span class="s1">&#39;met&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">download_size</span> <span class="o">/</span> <span class="mi">1000</span></div>
+
+<div class="viewcode-block" id="ExternalDataStore.download"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.ExternalDataStore.download">[docs]</a>    <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Abstract method to download src to dst</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        src : &#39;str&#39;</span>
+<span class="sd">            Path or URL to src file</span>
+<span class="sd">        dst : &#39;str&#39;</span>
+<span class="sd">            Path to which file should be downloaded</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="ExternalDataStore.nearest_neighbors"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.ExternalDataStore.nearest_neighbors">[docs]</a>    <span class="k">def</span> <span class="nf">nearest_neighbors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_collection</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find the nearest neighbor resource sites for all nodes in</span>
+<span class="sd">        Node_collection</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        node_collection : &#39;NodeCollection&#39;</span>
+<span class="sd">            Collection of nodes for which resource sites are to be identified</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        nearest_nodes : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            Dataframe with the nearest neighbor resource sites for each node</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">node_collection</span><span class="o">.</span><span class="n">_dataset</span>
+        <span class="n">resource_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_meta</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node_collection</span><span class="p">,</span> <span class="n">GeneratorNodeCollection</span><span class="p">):</span>
+            <span class="n">nearest_nodes</span> <span class="o">=</span> <span class="n">nearest_power_nodes</span><span class="p">(</span><span class="n">node_collection</span><span class="p">,</span>
+                                                <span class="n">resource_meta</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nearest_nodes</span> <span class="o">=</span> <span class="n">nearest_met_nodes</span><span class="p">(</span><span class="n">node_collection</span><span class="p">,</span>
+                                              <span class="n">resource_meta</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">nearest_nodes</span></div>
+
+<div class="viewcode-block" id="ExternalDataStore.download_resource"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.ExternalDataStore.download_resource">[docs]</a>    <span class="k">def</span> <span class="nf">download_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">site_id</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download the resource site file from repository</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset : &#39;str&#39;</span>
+<span class="sd">            &#39;wind&#39; or &#39;solar&#39;</span>
+<span class="sd">        site_ids : &#39;list&#39;</span>
+<span class="sd">            List of site ids to be downloaded</span>
+<span class="sd">        resource_type : &#39;str&#39;</span>
+<span class="sd">            power or met or fcst</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="ExternalDataStore.download_resource_data"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.ExternalDataStore.download_resource_data">[docs]</a>    <span class="k">def</span> <span class="nf">download_resource_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">site_ids</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download resource files from repository</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset : &#39;str&#39;</span>
+<span class="sd">            &#39;wind&#39; or &#39;solar&#39;</span>
+<span class="sd">        site_ids : &#39;list&#39;</span>
+<span class="sd">            List of site ids to be downloaded</span>
+<span class="sd">        resource_type : &#39;str&#39;</span>
+<span class="sd">            power or met</span>
+<span class="sd">        threads : &#39;int&#39;</span>
+<span class="sd">            Number of threads to use for downloading</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_threads</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">site_ids</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">download_resource</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">site</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">cf</span><span class="o">.</span><span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_threads</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">site_ids</span><span class="p">:</span>
+                    <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">download_resource</span><span class="p">,</span>
+                                    <span class="n">dataset</span><span class="p">,</span> <span class="n">site</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExternalDataStore.get_node_resource"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.ExternalDataStore.get_node_resource">[docs]</a>    <span class="k">def</span> <span class="nf">get_node_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">site_id</span><span class="p">,</span> <span class="n">frac</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize and return Resource class object for specified resource site</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset : &#39;str&#39;</span>
+<span class="sd">            &#39;wind&#39; or &#39;solar&#39;</span>
+<span class="sd">        site_id : int</span>
+<span class="sd">            Resource site_id</span>
+<span class="sd">        frac : &#39;float&#39;</span>
+<span class="sd">            Fraction of resource to use from resource site</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;Resource&#39;</span>
+<span class="sd">            Wind or Solar Resource class instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_cache</span><span class="o">.</span><span class="n">check_cache</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">site_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;wind&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">WindResource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wind_meta</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">site_id</span><span class="p">],</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_local_cache</span><span class="o">.</span><span class="n">_wind_root</span><span class="p">,</span> <span class="n">frac</span><span class="o">=</span><span class="n">frac</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;solar&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">SolarResource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solar_meta</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">site_id</span><span class="p">],</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">_local_cache</span><span class="o">.</span><span class="n">_solar_root</span><span class="p">,</span> <span class="n">frac</span><span class="o">=</span><span class="n">frac</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Invalid dataset type, must be &#39;wind&#39; or &#39;solar&#39;&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{d}</span><span class="s1"> site </span><span class="si">{s}</span><span class="s1"> is not in local cache!&#39;</span>
+                               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">site_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ExternalDataStore.get_resource"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.ExternalDataStore.get_resource">[docs]</a>    <span class="k">def</span> <span class="nf">get_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_collection</span><span class="p">,</span> <span class="n">forecasts</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds nearest nodes, caches files to local datastore and assigns</span>
+<span class="sd">        resource to node_collection</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        node_collection : &#39;NodeCollection&#39;</span>
+<span class="sd">            Collection of either weather of generator nodes</span>
+<span class="sd">        forecasts : &#39;bool&#39;</span>
+<span class="sd">            Whether to download forecasts along with power data</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        node_collection : &#39;NodeCollection&#39;</span>
+<span class="sd">            Node collection with resources assigned to nodes</span>
+<span class="sd">        nearest_nodes : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            DataFrame of the nearest neighbor matching between nodes</span>
+<span class="sd">            and resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nearest_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nearest_neighbors</span><span class="p">(</span><span class="n">node_collection</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node_collection</span><span class="p">,</span> <span class="n">GeneratorNodeCollection</span><span class="p">):</span>
+            <span class="n">resource_type</span> <span class="o">=</span> <span class="s1">&#39;power&#39;</span>
+            <span class="n">site_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">nearest_nodes</span><span class="p">[</span><span class="s1">&#39;site_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">site_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">site_ids</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">resource_type</span> <span class="o">=</span> <span class="s1">&#39;met&#39;</span>
+            <span class="n">site_ids</span> <span class="o">=</span> <span class="n">nearest_nodes</span><span class="p">[</span><span class="s1">&#39;site_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">node_collection</span><span class="o">.</span><span class="n">_dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">download_resource_data</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">site_ids</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resource_type</span> <span class="o">==</span> <span class="s1">&#39;power&#39;</span> <span class="o">&amp;</span> <span class="n">forecasts</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">download_resource_data</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">site_ids</span><span class="p">,</span> <span class="s1">&#39;fcst&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local_cache</span><span class="o">.</span><span class="n">update_cache_meta</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+
+        <span class="n">resources</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">meta</span> <span class="ow">in</span> <span class="n">nearest_nodes</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">site_id</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;site_id&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">site_id</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">fracs</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;site_fracs&#39;</span><span class="p">]</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">ResourceList</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_node_resource</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">site</span><span class="p">,</span> <span class="n">frac</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+                                  <span class="k">for</span> <span class="n">site</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">site_id</span><span class="p">,</span> <span class="n">fracs</span><span class="p">)])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node_resource</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">site_id</span><span class="p">)</span>
+
+            <span class="n">resources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">forecasts</span><span class="p">:</span>
+            <span class="n">node_collection</span><span class="o">.</span><span class="n">assign_resource</span><span class="p">(</span><span class="n">resources</span><span class="p">,</span> <span class="n">forecasts</span><span class="o">=</span><span class="n">forecasts</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">node_collection</span><span class="o">.</span><span class="n">assign_resource</span><span class="p">(</span><span class="n">resources</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">node_collection</span><span class="p">,</span> <span class="n">nearest_nodes</span></div></div>
+
+
+<div class="viewcode-block" id="DRPower"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.DRPower">[docs]</a><span class="k">class</span> <span class="nc">DRPower</span><span class="p">(</span><span class="n">ExternalDataStore</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class object for External DataStore at DR Power (egrid.org)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">DATA_ROOT</span> <span class="o">=</span> <span class="s1">&#39;https://dtn2.pnl.gov/drpower&#39;</span>
+
+<div class="viewcode-block" id="DRPower.download"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.DRPower.download">[docs]</a>    <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download resource data from src URL to dst file path</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        src : &#39;str&#39;</span>
+<span class="sd">            URL of resource data to be downloaded</span>
+<span class="sd">        dst : &#39;str&#39;</span>
+<span class="sd">            Destination path of resource data (including file name)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">urlretrieve</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DRPower.download_resource"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.datastore.DRPower.download_resource">[docs]</a>    <span class="k">def</span> <span class="nf">download_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">site_id</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download the resource site file from repo and add site to cache meta</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset : &#39;str&#39;</span>
+<span class="sd">            &#39;wind&#39; or &#39;solar&#39;</span>
+<span class="sd">        site_ids : &#39;list&#39;</span>
+<span class="sd">            List of site ids to be downloaded</span>
+<span class="sd">        resource_type : &#39;str&#39;</span>
+<span class="sd">            power or met or fcst</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">.hdf5&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">site_id</span><span class="p">)</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_ROOT</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+        <span class="n">dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_cache</span><span class="o">.</span><span class="n">_cache_root</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Michael Rossol, Elaine Hale.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,648 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>R2PD.tshelpers &mdash; Renewable Resource and Power Data tool (R2PD) 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Renewable Resource and Power Data tool (R2PD)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../R2PD/modules.html">R2PD</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../R2PD/R2PD.html">R2PD package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../R2PD/R2PD.library.html">R2PD.library package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.Timeout">R2PD.Timeout module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.cli">R2PD.cli module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.datastore">R2PD.datastore module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.nearestnodes">R2PD.nearestnodes module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.powerdata">R2PD.powerdata module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.resourcedata">R2PD.resourcedata module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD.tshelpers">R2PD.tshelpers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../R2PD/R2PD.html#module-R2PD">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Renewable Resource and Power Data tool (R2PD)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>R2PD.tshelpers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for R2PD.tshelpers</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module defines time conventions for basic timeseries and for forecasts,</span>
+<span class="sd">as well as abstract function calls for converting between them.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pds</span>
+
+
+<div class="viewcode-block" id="TemporalParameters"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.tshelpers.TemporalParameters">[docs]</a><span class="k">class</span> <span class="nc">TemporalParameters</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to specify temporal parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">POINT_INTERPRETATIONS</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s1">&#39;POINT_INTERPRETATIONS&#39;</span><span class="p">,</span>
+                                 <span class="p">[</span><span class="s1">&#39;instantaneous&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;average_next&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;average_prev&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;average_midpt&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;integrated_next&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;integrated_prev&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;integrated_midpt&#39;</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extent</span><span class="p">,</span> <span class="n">point_interp</span><span class="o">=</span><span class="s1">&#39;instantaneous&#39;</span><span class="p">,</span> <span class="n">timezone</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">,</span>
+                 <span class="n">resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize TemporalParameters</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        extent : &#39;list&#39;|&#39;tuple&#39;</span>
+<span class="sd">            Start and end datetime</span>
+<span class="sd">        point_interp : &#39;POINT_INTERPRETATIONS&#39;</span>
+<span class="sd">            element of POINT_INTERPRETATIONS representing data</span>
+<span class="sd">        timezone : &#39;str&#39;</span>
+<span class="sd">            timezone for timeseries</span>
+<span class="sd">        resolution : &#39;str&#39;</span>
+<span class="sd">            resolution for timeseries, if None use data&#39;s native resolution</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">pds</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">extent</span><span class="p">)</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="n">timezone</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">point_interp</span> <span class="o">=</span> <span class="n">get_enum_instance</span><span class="p">(</span><span class="n">point_interp</span><span class="p">,</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">POINT_INTERPRETATIONS</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timezone</span> <span class="o">=</span> <span class="n">timezone</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">pds</span><span class="o">.</span><span class="n">to_timedelta</span><span class="p">(</span><span class="n">resolution</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TemporalParameters.infer_params"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.tshelpers.TemporalParameters.infer_params">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">infer_params</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">timezone</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Infer time-series temporal parameters</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ts : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            Timeseries DataFrame</span>
+<span class="sd">        timezone : &#39;str&#39;</span>
+<span class="sd">            Timezone of time-series, if None, infer</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            kwargs for TemporalParameters</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ts_params : &#39;TemporalParameters&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time_index</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span>
+        <span class="n">extent</span> <span class="o">=</span> <span class="n">time_index</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">ts_params</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">extent</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">ts_params</span><span class="o">.</span><span class="n">infer_resolution</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">timezone</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ts_params</span><span class="o">.</span><span class="n">infer_timezone</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ts_params</span></div>
+
+<div class="viewcode-block" id="TemporalParameters.infer_resolution"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.tshelpers.TemporalParameters.infer_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">infer_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Infer time-series temporal resolution</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ts : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            Timeseries DataFrame</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time_index</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span>
+        <span class="n">resolution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">time_index</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">time_index</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">resolution</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;time resolution is not constant!&#39;</span>
+        <span class="n">resolution</span> <span class="o">=</span> <span class="n">pds</span><span class="o">.</span><span class="n">to_timedelta</span><span class="p">(</span><span class="n">resolution</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">resolution</span></div>
+
+<div class="viewcode-block" id="TemporalParameters.infer_timezone"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.tshelpers.TemporalParameters.infer_timezone">[docs]</a>    <span class="k">def</span> <span class="nf">infer_timezone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Infer time-series timezone</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ts : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            Timeseries DataFrame</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">timezone</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tz</span>
+        <span class="k">if</span> <span class="n">timezone</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">timezone</span> <span class="o">=</span> <span class="s1">&#39;UTC&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">timezone</span> <span class="o">=</span> <span class="n">timezone</span></div></div>
+
+
+<div class="viewcode-block" id="TimeseriesShaper"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.tshelpers.TimeseriesShaper">[docs]</a><span class="k">class</span> <span class="nc">TimeseriesShaper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract class defining the call signature for reshaping timeseries to</span>
+<span class="sd">    conform to the desired temporal parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">out_tempparams</span><span class="p">,</span> <span class="n">ts_tempparams</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accepts a timeseries ts that has TemporalParameters ts_tempparams, and</span>
+<span class="sd">        returns a re-shaped timeseries conforming to out_tempparams.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ts : &#39;pandas.Series&#39;|&#39;pandas.DataFrame&#39;</span>
+<span class="sd">            timeseries to be reshaped</span>
+<span class="sd">        out_tempparams : &#39;TemporalParameters&#39;</span>
+<span class="sd">            the desired temporal parameters for the output timeseries</span>
+<span class="sd">        ts_tempparams : &#39;TemporalParameters&#39;</span>
+<span class="sd">            description of ts&#39;s temporal parameters</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;pandas.Series&#39;|&#39;pandas.DataFrame&#39;</span>
+<span class="sd">            Returns reshaped timeseries data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="ForecastParameters"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.tshelpers.ForecastParameters">[docs]</a><span class="k">class</span> <span class="nc">ForecastParameters</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Describes different shapes of forecast data.</span>
+
+<span class="sd">    *Discrete leadtimes* datasets are repeated timeseries where the different</span>
+<span class="sd">    values given for the same timestamp are the value predicted for that time</span>
+<span class="sd">    various amounts of time in advance. For example, the WindToolkit forecast</span>
+<span class="sd">    data, for every hour lists the amount of output power predicted for that</span>
+<span class="sd">    hour 1-hour ahead, 4-hours ahead, 6-hours ahead, and 24-hours ahead.</span>
+
+<span class="sd">    *Dispatch lookahead* datasets mimic actual power system operations.</span>
+<span class="sd">    For example, every day a day-ahead unit commitment model is run using</span>
+<span class="sd">    forecasts for the next 1 to 2 days, with the simulation typically</span>
+<span class="sd">    kicked-off 6 to 12 hours ahead of the modeled time.</span>
+<span class="sd">    These forecasts happen at a certain frequency, cover a certain amount of</span>
+<span class="sd">    lookahead time, and are computed a certain amount of time ahead of the</span>
+<span class="sd">    modeled time.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">FORECAST_TYPES</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s1">&#39;FORECAST_TYPES&#39;</span><span class="p">,</span>
+                          <span class="p">[</span><span class="s1">&#39;discrete_leadtimes&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;dispatch_lookahead&#39;</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forecast_type</span><span class="p">,</span> <span class="n">temporal_params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize ForecastParameters</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        forecast_type : &#39;FORECAST_TYPES&#39;</span>
+<span class="sd">            Element of FORECAST_TYPES representing type of forecast</span>
+<span class="sd">        temporal_params : &#39;TemporalParameters&#39;</span>
+<span class="sd">            TemporalParameters instance describing timeseries parameters</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            kwargs specific to forecast type</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_forecast_type</span> <span class="o">=</span> <span class="n">get_enum_instance</span><span class="p">(</span><span class="n">forecast_type</span><span class="p">,</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">FORECAST_TYPES</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">temporal_params</span><span class="p">,</span> <span class="n">TemporalParameters</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Expecting temporal_params to be instance of&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;TemporalParameters, but is </span><span class="si">{}</span><span class="s2">.&quot;</span>
+                   <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">temporal_params</span><span class="p">)))</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_temporal_params</span> <span class="o">=</span> <span class="n">temporal_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_leadtimes</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frequency</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lookahead</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_leadtime</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_time</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># store type-specific parameters</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">forecast_type</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">FORECAST_TYPES</span><span class="o">.</span><span class="n">discrete_leadtimes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_leadtimes</span> <span class="o">=</span> <span class="n">pds</span><span class="o">.</span><span class="n">to_timedelta</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;leadtimes&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">forecast_type</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">FORECAST_TYPES</span><span class="o">.</span><span class="n">dispatch_lookahead</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_frequency</span> <span class="o">=</span> <span class="n">pds</span><span class="o">.</span><span class="n">to_timedelta</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_lookahead</span> <span class="o">=</span> <span class="n">pds</span><span class="o">.</span><span class="n">to_timedelta</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;lookahead&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_leadtime</span> <span class="o">=</span> <span class="n">pds</span><span class="o">.</span><span class="n">to_timedelta</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;leadtime&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_time</span> <span class="o">=</span> <span class="n">pds</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dispatch_time&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_leadtimes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispatch_leadtimes</span>
+
+<div class="viewcode-block" id="ForecastParameters.infer_params"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.tshelpers.ForecastParameters.infer_params">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">infer_params</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Infer time-series temporal parameters and discrete lead time</span>
+<span class="sd">        parameters</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ts : &#39;pandas.DataFrame&#39;</span>
+<span class="sd">            Timeseries DataFrame</span>
+<span class="sd">        timezone : &#39;str&#39;</span>
+<span class="sd">            Timezone of time-series, if None, infer</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            kwargs for TemporalParameters</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ts_params : &#39;TemporalParameters&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ts_params</span> <span class="o">=</span> <span class="n">TemporalParameters</span><span class="o">.</span><span class="n">infer_params</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">fcst_type</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">FORECAST_TYPES</span><span class="o">.</span><span class="n">discrete_leadtimes</span>
+        <span class="n">leadtimes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">fcst_params</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">fcst_type</span><span class="p">,</span> <span class="n">ts_params</span><span class="p">,</span> <span class="n">leadtimes</span><span class="o">=</span><span class="n">leadtimes</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fcst_params</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">forecast_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Type of forecast</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;FORECAST_TYPES&#39;</span>
+<span class="sd">            element of FORECAST_TYPES</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forecast_type</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">temporal_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Temporal Parameters for forecast timeseries</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;TemporalParameters&#39;</span>
+<span class="sd">            Timeseries temporal parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_temporal_params</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">leadtimes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A list of the amounts of time ahead at which forecasts are available,</span>
+<span class="sd">        e.g. [datetime.timedelta(hours=1), datetime.timedelta(hours=4),</span>
+<span class="sd">        datetime.timedelta(hours=6), datetime.timedelta(hours=24)].</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;list&#39;</span>
+<span class="sd">            List of forecast leadtimes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leadtimes</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For &#39;dispatch_lookahead&#39; data, the frequency at which forecasts are</span>
+<span class="sd">        needed.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;datetime.timedelta&#39;</span>
+<span class="sd">            Frequency of lookahead forecasts</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frequency</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">lookahead</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For &#39;dispatch_lookahead&#39; data, the amount of time covered by each</span>
+<span class="sd">        forecast.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &#39;datetime.timedelta&#39;</span>
+<span class="sd">            Amount of time covered by each forecast</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lookahead</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">leadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For &#39;dispatch_lookahead&#39; data, the amount of time ahead of the start of</span>
+<span class="sd">        the modeled time that the forecast data would need to be provided.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        &#39;datetime.timedelta&#39;</span>
+<span class="sd">            Amount of leadtime for lookahead forecast</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leadtime</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dispatch_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For &#39;dispatch_lookahead&#39; data, the time of day that the forecast model</span>
+<span class="sd">        is run.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        &#39;datetime.time&#39;</span>
+<span class="sd">            Time of day forecast is run</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_time</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dispatch_leadtimes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all leadtimes needed to create dispatch_lookahead forecast</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        &#39;list&#39;</span>
+<span class="sd">            List of forecast leadtimes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leadtimes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leadtime</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lookahead</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leadtime</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_temporal_params</span><span class="o">.</span><span class="n">resolution</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_leadtimes</span> <span class="o">=</span> <span class="n">pds</span><span class="o">.</span><span class="n">to_timedelta</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">dt</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leadtimes</span>
+
+<div class="viewcode-block" id="ForecastParameters.discrete_leadtime"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.tshelpers.ForecastParameters.discrete_leadtime">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">discrete_leadtime</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">temporal_params</span><span class="p">,</span> <span class="n">leadtimes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs ForecastParameters for leadtime forecasts</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        temporal_params : &#39;TemporalParameters&#39;</span>
+<span class="sd">            Timeseries temporal parameters for leadtime forecasts</span>
+<span class="sd">        leadtimes : &#39;list&#39;</span>
+<span class="sd">            List of forecast leadtimes</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        &#39;ForecastParameters&#39;</span>
+<span class="sd">            Forecast parameters for leadtime forecasts</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ForecastParameters</span><span class="p">(</span><span class="s1">&#39;discrete_leadtimes&#39;</span><span class="p">,</span> <span class="n">temporal_params</span><span class="p">,</span>
+                                  <span class="n">leadtimes</span><span class="o">=</span><span class="n">leadtimes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ForecastParameters.dispatch_lookahead"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.tshelpers.ForecastParameters.dispatch_lookahead">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">dispatch_lookahead</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">temporal_params</span><span class="p">,</span> <span class="n">dispatch_time</span><span class="p">,</span>
+                           <span class="n">frequency</span><span class="p">,</span> <span class="n">lookahead</span><span class="p">,</span> <span class="n">leadtime</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs ForecastParameters for lookahead forecasts</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        temporal_params : &#39;TemporalParameters&#39;</span>
+<span class="sd">            Timeseries temporal parameters for lookahead forecast</span>
+<span class="sd">        dispatch_time : &#39;str&#39;</span>
+<span class="sd">            Time of day forecast is dispatched</span>
+<span class="sd">        frequency : &#39;datetime.timedelta&#39;</span>
+<span class="sd">            frequency of lookahead forecasts</span>
+<span class="sd">        lookahead : &#39;datetime.timedelta&#39;</span>
+<span class="sd">            amount of lookahead for forecast</span>
+<span class="sd">        leadtime : &#39;datetime.timedelta&#39;</span>
+<span class="sd">            leadtime for lookahead forcast</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        &#39;ForecastParameters&#39;</span>
+<span class="sd">            Forecast parameters for lookahead forecast</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ForecastParameters</span><span class="p">(</span><span class="s1">&#39;dispatch_lookahead&#39;</span><span class="p">,</span> <span class="n">temporal_params</span><span class="p">,</span>
+                                  <span class="n">dispatch_time</span><span class="o">=</span><span class="n">dispatch_time</span><span class="p">,</span>
+                                  <span class="n">frequency</span><span class="o">=</span><span class="n">frequency</span><span class="p">,</span> <span class="n">lookahead</span><span class="o">=</span><span class="n">lookahead</span><span class="p">,</span>
+                                  <span class="n">leadtime</span><span class="o">=</span><span class="n">leadtime</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ForecastShaper"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.tshelpers.ForecastShaper">[docs]</a><span class="k">class</span> <span class="nc">ForecastShaper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract class defining the call signature for reshaping timeseries to</span>
+<span class="sd">    conform to the desired temporal parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forecast_data</span><span class="p">,</span> <span class="n">out_forecast_params</span><span class="p">,</span>
+                 <span class="n">forecast_data_params</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accepts a timeseries of forecast_data that has ForecastParameters</span>
+<span class="sd">        forecast_data_params</span>
+<span class="sd">        returns a re-shaped timeseries conforming to out_forecast_params</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        forecast_data : &#39;pandas.Series&#39;|&#39;pandas.DataFrame&#39;</span>
+<span class="sd">            timeseries to be reshaped</span>
+<span class="sd">        forecast_data_params : &#39;TemporalParameters&#39;</span>
+<span class="sd">            description of forecast_data parameters</span>
+<span class="sd">        out_forecast_params : &#39;TemporalParameters&#39;</span>
+<span class="sd">            the desired forecast parameters for the output timeseries</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        &#39;pandas.Series&#39;|&#39;pandas.DataFrame&#39;</span>
+<span class="sd">            Returns reshaped forecast data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="get_enum_instance"><a class="viewcode-back" href="../../R2PD/R2PD.html#R2PD.tshelpers.get_enum_instance">[docs]</a><span class="k">def</span> <span class="nf">get_enum_instance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">enum_class</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extracts value from enum_class if needed</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value : &#39;str&#39;|&#39;enum_class&#39;</span>
+<span class="sd">        Either enum_class value or string for value</span>
+<span class="sd">    enum_class : &#39;Enum&#39;</span>
+<span class="sd">        enum class object for which value belongs</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    &#39;enum_class&#39;</span>
+<span class="sd">        enum_class value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">enum_class</span><span class="p">)</span> <span class="k">else</span> <span class="n">enum_class</span><span class="p">[</span><span class="n">value</span><span class="p">]</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Michael Rossol, Elaine Hale.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,2268 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>R2PD package &mdash; Renewable Resource and Power Data tool (R2PD) 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="Renewable Resource and Power Data tool (R2PD) 0.1.0 documentation" href="../index.html"/>
+        <link rel="up" title="R2PD" href="modules.html"/>
+        <link rel="next" title="R2PD.library package" href="R2PD.library.html"/>
+        <link rel="prev" title="R2PD" href="modules.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Renewable Resource and Power Data tool (R2PD)
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="modules.html">R2PD</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">R2PD package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-R2PD.cli">R2PD.cli module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-R2PD.datastore">R2PD.datastore module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-R2PD.powerdata">R2PD.powerdata module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-R2PD.queue">R2PD.queue module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-R2PD.resourcedata">R2PD.resourcedata module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-R2PD.timeout">R2PD.timeout module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-R2PD.tshelpers">R2PD.tshelpers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-R2PD">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Renewable Resource and Power Data tool (R2PD)</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../api.html">API</a> &raquo;</li>
+        
+          <li><a href="modules.html">R2PD</a> &raquo;</li>
+        
+      <li>R2PD package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/R2PD.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="r2pd-package">
+<h1>R2PD package<a class="headerlink" href="#r2pd-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="R2PD.library.html">R2PD.library package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="R2PD.library.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="R2PD.library.html#module-R2PD.library.formatters">R2PD.library.formatters module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="R2PD.library.html#module-R2PD.library.shapers">R2PD.library.shapers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="R2PD.library.html#module-R2PD.library">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-R2PD.cli">
+<span id="r2pd-cli-module"></span><h2>R2PD.cli module<a class="headerlink" href="#module-R2PD.cli" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="R2PD.cli.cli_parser">
+<code class="descclassname">R2PD.cli.</code><code class="descname">cli_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/cli.html#cli_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.cli.cli_parser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="R2PD.cli.cli_main">
+<code class="descclassname">R2PD.cli.</code><code class="descname">cli_main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/cli.html#cli_main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.cli.cli_main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-R2PD.datastore">
+<span id="r2pd-datastore-module"></span><h2>R2PD.datastore module<a class="headerlink" href="#module-R2PD.datastore" title="Permalink to this headline">¶</a></h2>
+<p>This module provides classes for accessing site-level wind and solar data
+from internal and external data stores.</p>
+<dl class="class">
+<dt id="R2PD.datastore.DataStore">
+<em class="property">class </em><code class="descclassname">R2PD.datastore.</code><code class="descname">DataStore</code><span class="sig-paren">(</span><em>wind_dir=None</em>, <em>solar_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#DataStore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.DataStore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract class to define interface for accessing stores of resource data.</p>
+<p>Initialize generic DataStore object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>wind_dir</strong> (<em>'str'</em>) – Name of directory in which wind data is/will be stored
+if None set to ‘wind’</li>
+<li><strong>solar_dir</strong> (<em>'str'</em>) – Name of directory in which solar data is/will be stored
+if None set to ‘solar’</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="R2PD.datastore.DataStore.ROOT_PATH">
+<code class="descname">ROOT_PATH</code><em class="property"> = None</em><a class="headerlink" href="#R2PD.datastore.DataStore.ROOT_PATH" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="R2PD.datastore.DataStore.decode_config_entry">
+<em class="property">classmethod </em><code class="descname">decode_config_entry</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#DataStore.decode_config_entry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.DataStore.decode_config_entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode config entry converting missing or ‘None’ entires to None</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<em>'str'</em>) – entry from ConfigParser call</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>entry</strong> – if config entry is not ‘None’ or empty the entry is returned
+else None is returned</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">‘str’ or None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.datastore.ExternalDataStore">
+<em class="property">class </em><code class="descclassname">R2PD.datastore.</code><code class="descname">ExternalDataStore</code><span class="sig-paren">(</span><em>local_cache=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#ExternalDataStore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.ExternalDataStore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.datastore.DataStore" title="R2PD.datastore.DataStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.datastore.DataStore</span></code></a></p>
+<p>Abstract class to define interface for accessing external stores
+of resource data.</p>
+<p>Initialize ExternalDataStore object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>local_cache</strong> (<em>'InternalDataStore'</em>) – InternalDataStore object represening internal data cache</li>
+<li><strong>**kwargs</strong> – kwargs for DataStore</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="R2PD.datastore.ExternalDataStore.WIND_FILE_SIZES">
+<code class="descname">WIND_FILE_SIZES</code><em class="property"> = {'fcst': 2, 'met': 14, 'power': 5}</em><a class="headerlink" href="#R2PD.datastore.ExternalDataStore.WIND_FILE_SIZES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.datastore.ExternalDataStore.SOLAR_FILE_SIZES">
+<code class="descname">SOLAR_FILE_SIZES</code><em class="property"> = {'fcst': 1, 'irradiance': 20, 'met': 10, 'power': 1}</em><a class="headerlink" href="#R2PD.datastore.ExternalDataStore.SOLAR_FILE_SIZES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="R2PD.datastore.ExternalDataStore.connect">
+<em class="property">classmethod </em><code class="descname">connect</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#ExternalDataStore.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.ExternalDataStore.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the configuration. From configuration and defaults,
+determines initializes ExternalDataStore object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>config</strong> (<em>'str'</em>) – Path to .ini configuration file.
+See library/config.ini for an example</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Initialized ExternalDataStore object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">‘ExternalDataStore’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.datastore.ExternalDataStore.download">
+<code class="descname">download</code><span class="sig-paren">(</span><em>src</em>, <em>dst</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#ExternalDataStore.download"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.ExternalDataStore.download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract method to download src to dst</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>src</strong> (<em>'str'</em>) – Path to source file to be downloaded</li>
+<li><strong>dst</strong> (<em>'str'</em>) – Path to destination directory of file path</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.datastore.ExternalDataStore.nearest_neighbors">
+<code class="descname">nearest_neighbors</code><span class="sig-paren">(</span><em>node_collection</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#ExternalDataStore.nearest_neighbors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.ExternalDataStore.nearest_neighbors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the nearest neighbor resource sites for all nodes in
+Node_collection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>node_collection</strong> (<em>'NodeCollection'</em>) – Collection of nodes for which resource sites are to be identified</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>nearest_nodes</strong> – Dataframe with the nearest neighbor resource sites for each node</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.DataFrame’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.datastore.ExternalDataStore.cache_resource">
+<code class="descname">cache_resource</code><span class="sig-paren">(</span><em>site_file</em>, <em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#ExternalDataStore.cache_resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.ExternalDataStore.cache_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download the resource site file from repo and add site to cache meta</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>site_file</strong> (<em>'str'</em>) – Path to resource file for site</li>
+<li><strong>dataste</strong> (<em>'str'</em>) – ‘wind’ or ‘solar’</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.datastore.ExternalDataStore.get_resource">
+<code class="descname">get_resource</code><span class="sig-paren">(</span><em>dataset</em>, <em>site_id</em>, <em>frac=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#ExternalDataStore.get_resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.ExternalDataStore.get_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize and return Resource class object for specified resource site</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dataset</strong> (<em>'str'</em>) – ‘wind’ or ‘solar’</li>
+<li><strong>site_id</strong> (<em>int</em>) – Resource site_id</li>
+<li><strong>frac</strong> (<em>'float'</em>) – Fraction of resource to use from resource site</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Wind or Solar Resource class instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">‘Resource’</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.datastore.Peregrine">
+<em class="property">class </em><code class="descclassname">R2PD.datastore.</code><code class="descname">Peregrine</code><span class="sig-paren">(</span><em>username</em>, <em>password</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#Peregrine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.Peregrine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.datastore.ExternalDataStore" title="R2PD.datastore.ExternalDataStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.datastore.ExternalDataStore</span></code></a></p>
+<p>Class object for External DataStore on Peregrine</p>
+<p>Initialize Peregrine object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>username</strong> (<em>'str'</em>) – Peregrine username</li>
+<li><strong>password</strong> (<em>'str'</em>) – Peregrine password</li>
+<li><strong>**kwargs</strong> – kwargs for ExternalDataStore</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="R2PD.datastore.Peregrine.ROOT_PATH">
+<code class="descname">ROOT_PATH</code><em class="property"> = '/scratch/mrossol/Resource_Repo'</em><a class="headerlink" href="#R2PD.datastore.Peregrine.ROOT_PATH" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="R2PD.datastore.Peregrine.download">
+<code class="descname">download</code><span class="sig-paren">(</span><em>src</em>, <em>dst</em>, <em>timeout=30</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#Peregrine.download"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.Peregrine.download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to download src file from Peregrine to local dst</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>src</strong> (<em>'str'</em>) – Path to source file to be downloaded</li>
+<li><strong>dst</strong> (<em>'str'</em>) – Path to destination directory of file path</li>
+<li><strong>timeout</strong> (<em>'int'</em>) – Timeout in seconds</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="R2PD.datastore.Peregrine.connect">
+<em class="property">classmethod </em><code class="descname">connect</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#Peregrine.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.Peregrine.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the configuration. From configuration and defaults,
+determines initializes Peregine DataStore object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>config</strong> (<em>'str'</em>) – Path to .ini configuration file.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Initialized Peregrine object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">‘Peregrine’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.datastore.Peregrine.download_resource_data">
+<code class="descname">download_resource_data</code><span class="sig-paren">(</span><em>site_ids</em>, <em>dataset</em>, <em>resource_type</em>, <em>forecasts=False</em>, <em>cores=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#Peregrine.download_resource_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.Peregrine.download_resource_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download resources from repo</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>site_ids</strong> (<em>'list'</em>) – List of site ids to be downloaded</li>
+<li><strong>dataset</strong> (<em>'str'</em>) – ‘wind’ or ‘solar’</li>
+<li><strong>resource_type</strong> (<em>'str'</em>) – power or met</li>
+<li><strong>repo</strong> (<em>'ExternalDataStore'</em>) – ExternalDataStore instance</li>
+<li><strong>forecasts</strong> (<em>'bool'</em>) – Download forecast along with power</li>
+<li><strong>cores</strong> (<em>'int'</em>) – Number of cores to use for parallel downloads
+If None download in series</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.datastore.Scratch">
+<em class="property">class </em><code class="descclassname">R2PD.datastore.</code><code class="descname">Scratch</code><span class="sig-paren">(</span><em>local_cache=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#Scratch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.Scratch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.datastore.ExternalDataStore" title="R2PD.datastore.ExternalDataStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.datastore.ExternalDataStore</span></code></a></p>
+<p>Class object for External DataStore on Peregrine
+to be used within Peregrine</p>
+<p>Initialize ExternalDataStore object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>local_cache</strong> (<em>'InternalDataStore'</em>) – InternalDataStore object represening internal data cache</li>
+<li><strong>**kwargs</strong> – kwargs for DataStore</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="R2PD.datastore.Scratch.ROOT_PATH">
+<code class="descname">ROOT_PATH</code><em class="property"> = '/scratch/mrossol/Resource_Repo'</em><a class="headerlink" href="#R2PD.datastore.Scratch.ROOT_PATH" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="R2PD.datastore.Scratch.download">
+<code class="descname">download</code><span class="sig-paren">(</span><em>src</em>, <em>dst</em>, <em>timeout=30</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#Scratch.download"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.Scratch.download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to download src file to dst internally to Peregrine</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>src</strong> (<em>'str'</em>) – Path to source file to be downloaded</li>
+<li><strong>dst</strong> (<em>'str'</em>) – Path to destination directory of file path</li>
+<li><strong>timeout</strong> (<em>'int'</em>) – Timeout in seconds</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.datastore.DRPower">
+<em class="property">class </em><code class="descclassname">R2PD.datastore.</code><code class="descname">DRPower</code><span class="sig-paren">(</span><em>local_cache=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#DRPower"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.DRPower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.datastore.ExternalDataStore" title="R2PD.datastore.ExternalDataStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.datastore.ExternalDataStore</span></code></a></p>
+<p>Class object for External DataStore at DR Power (egrid.org)</p>
+<p>Initialize ExternalDataStore object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>local_cache</strong> (<em>'InternalDataStore'</em>) – InternalDataStore object represening internal data cache</li>
+<li><strong>**kwargs</strong> – kwargs for DataStore</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.datastore.InternalDataStore">
+<em class="property">class </em><code class="descclassname">R2PD.datastore.</code><code class="descname">InternalDataStore</code><span class="sig-paren">(</span><em>size=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#InternalDataStore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.InternalDataStore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.datastore.DataStore" title="R2PD.datastore.DataStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.datastore.DataStore</span></code></a></p>
+<p>This class manages an internal cache of already downloaded resource data,
+and other Resource Data Tool information that should persist.</p>
+<p>The default location for the internal cache will be in the current     working diretory, but the user can set a different location by passing
+in a configuration file.</p>
+<p>A configuration file can also be used to set user library locations, for
+pointing to externally provided shapers and formatters.</p>
+<p>Initialize InternalDataStore object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>size</strong> (<em>'float'</em>) – Maximum local cache size in GB</li>
+<li><strong>**kwargs</strong> – kwargs for DataStore</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="R2PD.datastore.InternalDataStore.ROOT_PATH">
+<code class="descname">ROOT_PATH</code><em class="property"> = '/Users/mrossol/Documents/Python_Packages/R2PD/docs/R2PD_Cache'</em><a class="headerlink" href="#R2PD.datastore.InternalDataStore.ROOT_PATH" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="R2PD.datastore.InternalDataStore.connect">
+<em class="property">classmethod </em><code class="descname">connect</code><span class="sig-paren">(</span><em>config=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#InternalDataStore.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.InternalDataStore.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the configuration. From configuration and defaults,
+determines initializes InternalDataStore object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>config</strong> (<em>'str'</em>) – Path to .ini configuration file.
+See library/config.ini for an example</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Initialized InternalDataStore object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">‘InternalDataStore’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="R2PD.datastore.InternalDataStore.get_cache_size">
+<em class="property">classmethod </em><code class="descname">get_cache_size</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#InternalDataStore.get_cache_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.InternalDataStore.get_cache_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches all sub directories in path for .hdf5 files
+computes total size in GB</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>'str'</em>) – Path to cache directory</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>repo_size</strong> – Returns total size of .hdf5 files in cache in GB</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">‘float’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="R2PD.datastore.InternalDataStore.get_cache_summary">
+<em class="property">classmethod </em><code class="descname">get_cache_summary</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#InternalDataStore.get_cache_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.InternalDataStore.get_cache_summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Summarize the data available in the local cache</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>'str'</em>) – Path to cache meta .csv</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>summary</strong> – Summary table of number of sites, and corresponding resource types
+in local cache</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.Series’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.datastore.InternalDataStore.initialize_cache_metas">
+<code class="descname">initialize_cache_metas</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#InternalDataStore.initialize_cache_metas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.InternalDataStore.initialize_cache_metas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize cache meta .csv files by scanning cache directories</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.datastore.InternalDataStore.refresh_cache_meta">
+<code class="descname">refresh_cache_meta</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#InternalDataStore.refresh_cache_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.InternalDataStore.refresh_cache_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Refresh cache metadata by rescanning cache directory</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dataset</strong> (<em>'str'</em>) – ‘wind’ or ‘solar’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.datastore.InternalDataStore.cache_site">
+<code class="descname">cache_site</code><span class="sig-paren">(</span><em>dataset</em>, <em>site_file</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#InternalDataStore.cache_site"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.InternalDataStore.cache_site" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches all sub directories in path for .hdf5 files
+computes total size in GB</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dataset</strong> (<em>'str'</em>) – ‘wind’ or ‘solar’</li>
+<li><strong>site_file</strong> (<em>'str'</em>) – Path to resource file for site</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.datastore.InternalDataStore.check_cache">
+<code class="descname">check_cache</code><span class="sig-paren">(</span><em>dataset</em>, <em>site_id</em>, <em>resource_type=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#InternalDataStore.check_cache"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.InternalDataStore.check_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check cache for presence of resource.
+If resource_type is None check for any resource_type of site_id
+else check for specific resource_type for site_id</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dataset</strong> (<em>'str'</em>) – ‘wind’ or ‘solar’</li>
+<li><strong>site_id</strong> (<em>'int'</em>) – Site id number</li>
+<li><strong>resource_type</strong> (<em>'str'</em>) – type of resource
+wind -&gt; (‘power’, ‘fcst’, ‘met’)
+solar -&gt; (‘power’, ‘fcst’, ‘met’, ‘irradiance’)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Is site/resource present in cache</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">‘bool’</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.datastore.InternalDataStore.cache_data">
+<code class="descname">cache_data</code><span class="sig-paren">(</span><em>dataset</em>, <em>site_files</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/datastore.html#InternalDataStore.cache_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.datastore.InternalDataStore.cache_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add site to cache meta</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dataset</strong> (<em>'str'</em>) – ‘wind’ or ‘solar’</li>
+<li><strong>site_files</strong> (<em>'list'</em>) – List of paths to resource files for sites</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.datastore.InternalDataStore.cache_size">
+<code class="descname">cache_size</code><a class="headerlink" href="#R2PD.datastore.InternalDataStore.cache_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate size of local cache and dataset caches in GB</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">total, wind, and solar cache sizes in GB (floats)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘tuple’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.datastore.InternalDataStore.cache_summary">
+<code class="descname">cache_summary</code><a class="headerlink" href="#R2PD.datastore.InternalDataStore.cache_summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Summarize sites and resource types in cache</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Summary of Wind and Solar caches</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.DataFrame’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-R2PD.powerdata">
+<span id="r2pd-powerdata-module"></span><h2>R2PD.powerdata module<a class="headerlink" href="#module-R2PD.powerdata" title="Permalink to this headline">¶</a></h2>
+<p>This module transforms wind and solar PV resource data into forms usable by
+power system modelers. Functionalities needed include:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Select raw resource data (wind speeds, irradiance) or power outputs</li>
+<li>Scale power timeseries to the desired capacity</li>
+<li>Provide data for the temporal extents and resolutions desired,
+expressed in units of a user-chosen standard-time timezone</li>
+<li>Blend multiple resource data timeseries into composite curves for
+distributed PV based on a default or user-supplied distribution of
+orientations</li>
+<li>Reshape forecast data into forms usable by operation simulators</li>
+<li>Sum multiple timeseries to represent the combined output over larger
+areas all tied into the same node</li>
+</ul>
+</div></blockquote>
+<dl class="class">
+<dt id="R2PD.powerdata.Node">
+<em class="property">class </em><code class="descclassname">R2PD.powerdata.</code><code class="descname">Node</code><span class="sig-paren">(</span><em>node_id</em>, <em>latitude</em>, <em>longitude</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#Node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.Node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract class for a single Node</p>
+<p>Initialize generic Node object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>node_id</strong> (<em>'str'|'int'</em>) – Node id, must be an integer</li>
+<li><strong>latitude</strong> (<em>'float'</em>) – Latitude of node</li>
+<li><strong>longitude</strong> (<em>'float'</em>) – Longitude of node</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="R2PD.powerdata.Node.assign_resource">
+<code class="descname">assign_resource</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#Node.assign_resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.Node.assign_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign resource to Node</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resource</strong> (<em>'Resource'|'ResourceList'</em>) – Resource or ResourceList instance with resource site(s) for node</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.powerdata.GeneratorNode">
+<em class="property">class </em><code class="descclassname">R2PD.powerdata.</code><code class="descname">GeneratorNode</code><span class="sig-paren">(</span><em>node_id</em>, <em>latitude</em>, <em>longitude</em>, <em>capacity</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#GeneratorNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.GeneratorNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.powerdata.Node" title="R2PD.powerdata.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.powerdata.Node</span></code></a></p>
+<p>Abstract class for GeneratorNode</p>
+<p>Initialize generic GeneratorNode object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>node_id</strong> (<em>'str'|'int'</em>) – Node id, must be an integer</li>
+<li><strong>latitude</strong> (<em>'float'</em>) – Latitude of node</li>
+<li><strong>longitude</strong> (<em>'float'</em>) – Longitude of node</li>
+<li><strong>capacity</strong> (<em>'float'</em>) – Capacity of generator in MW</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="R2PD.powerdata.GeneratorNode.assign_resource">
+<code class="descname">assign_resource</code><span class="sig-paren">(</span><em>resource</em>, <em>forecasts=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#GeneratorNode.assign_resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.GeneratorNode.assign_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign resource to Node</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>resource</strong> (<em>'Resource'|'ResourceList'</em>) – Resource or ResourceList instance with resource site(s) for node</li>
+<li><strong>forecasts</strong> (<em>'bool'</em>) – Are forecasts included in generator resource</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.powerdata.GeneratorNode.get_power">
+<code class="descname">get_power</code><span class="sig-paren">(</span><em>temporal_params</em>, <em>shaper=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#GeneratorNode.get_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.GeneratorNode.get_power" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts and processes power data for Node</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>temporal_params</strong> (<em>'TemporalParameters'</em>) – Requiements for timeseries output</li>
+<li><strong>shaper</strong> (<em>'TimeseriesShaper'|'function'</em>) – Method to convert Resource data into required output</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.powerdata.GeneratorNode.get_forecasts">
+<code class="descname">get_forecasts</code><span class="sig-paren">(</span><em>forecast_params</em>, <em>shaper=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#GeneratorNode.get_forecasts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.GeneratorNode.get_forecasts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts and processes forecast data for Node</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>forecast_params</strong> (<em>'ForecastParameters'</em>) – Requiements for forecast output</li>
+<li><strong>shaper</strong> (<em>'ForecastShaper'|'function'</em>) – Method to convert forecast data into required output</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.powerdata.GeneratorNode.save_power">
+<code class="descname">save_power</code><span class="sig-paren">(</span><em>file_path</em>, <em>formatter=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#GeneratorNode.save_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.GeneratorNode.save_power" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save power data to disc</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>file_path</strong> (<em>'str'</em>) – Output file path</li>
+<li><strong>formatter</strong> – Method to save powerdata to desired format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.powerdata.GeneratorNode.save_forecasts">
+<code class="descname">save_forecasts</code><span class="sig-paren">(</span><em>file_path</em>, <em>formatter=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#GeneratorNode.save_forecasts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.GeneratorNode.save_forecasts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save forecast data to disc</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>file_path</strong> (<em>'str'</em>) – Output file path</li>
+<li><strong>formatter</strong> – Method to save powerdata to desired format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.powerdata.WindGeneratorNode">
+<em class="property">class </em><code class="descclassname">R2PD.powerdata.</code><code class="descname">WindGeneratorNode</code><span class="sig-paren">(</span><em>node_id</em>, <em>latitude</em>, <em>longitude</em>, <em>capacity</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#WindGeneratorNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.WindGeneratorNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.powerdata.GeneratorNode" title="R2PD.powerdata.GeneratorNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.powerdata.GeneratorNode</span></code></a></p>
+<p>Class for Wind Generator Nodes</p>
+<p>Initialize generic GeneratorNode object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>node_id</strong> (<em>'str'|'int'</em>) – Node id, must be an integer</li>
+<li><strong>latitude</strong> (<em>'float'</em>) – Latitude of node</li>
+<li><strong>longitude</strong> (<em>'float'</em>) – Longitude of node</li>
+<li><strong>capacity</strong> (<em>'float'</em>) – Capacity of generator in MW</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.powerdata.SolarGeneratorNode">
+<em class="property">class </em><code class="descclassname">R2PD.powerdata.</code><code class="descname">SolarGeneratorNode</code><span class="sig-paren">(</span><em>node_id</em>, <em>latitude</em>, <em>longitude</em>, <em>capacity</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#SolarGeneratorNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.SolarGeneratorNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.powerdata.GeneratorNode" title="R2PD.powerdata.GeneratorNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.powerdata.GeneratorNode</span></code></a></p>
+<p>Class for Solar Generator Nodes</p>
+<p>Initialize generic GeneratorNode object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>node_id</strong> (<em>'str'|'int'</em>) – Node id, must be an integer</li>
+<li><strong>latitude</strong> (<em>'float'</em>) – Latitude of node</li>
+<li><strong>longitude</strong> (<em>'float'</em>) – Longitude of node</li>
+<li><strong>capacity</strong> (<em>'float'</em>) – Capacity of generator in MW</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.powerdata.WeatherNode">
+<em class="property">class </em><code class="descclassname">R2PD.powerdata.</code><code class="descname">WeatherNode</code><span class="sig-paren">(</span><em>node_id</em>, <em>latitude</em>, <em>longitude</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#WeatherNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.WeatherNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.powerdata.Node" title="R2PD.powerdata.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.powerdata.Node</span></code></a></p>
+<p>Abstract Class for Weather Nodes</p>
+<p>Initialize generic Node object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>node_id</strong> (<em>'str'|'int'</em>) – Node id, must be an integer</li>
+<li><strong>latitude</strong> (<em>'float'</em>) – Latitude of node</li>
+<li><strong>longitude</strong> (<em>'float'</em>) – Longitude of node</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="R2PD.powerdata.WeatherNode.get_weather">
+<code class="descname">get_weather</code><span class="sig-paren">(</span><em>temporal_params</em>, <em>shaper=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#WeatherNode.get_weather"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.WeatherNode.get_weather" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts and processes weather data for Node</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>temporal_params</strong> (<em>'TemporalParameters'</em>) – Requiements for timeseries output</li>
+<li><strong>shaper</strong> (<em>'TimeseriesShaper'|'function'</em>) – Method to convert Resource data into required output</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.powerdata.WeatherNode.save_weather">
+<code class="descname">save_weather</code><span class="sig-paren">(</span><em>file_path</em>, <em>formatter=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#WeatherNode.save_weather"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.WeatherNode.save_weather" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save weather data to disc</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>file_path</strong> (<em>'str'</em>) – Output file path</li>
+<li><strong>formatter</strong> – Method to save powerdata to desired format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.powerdata.WindMetNode">
+<em class="property">class </em><code class="descclassname">R2PD.powerdata.</code><code class="descname">WindMetNode</code><span class="sig-paren">(</span><em>node_id</em>, <em>latitude</em>, <em>longitude</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#WindMetNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.WindMetNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.powerdata.WeatherNode" title="R2PD.powerdata.WeatherNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.powerdata.WeatherNode</span></code></a></p>
+<p>Class for Wind Weather Nodes</p>
+<p>Initialize generic Node object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>node_id</strong> (<em>'str'|'int'</em>) – Node id, must be an integer</li>
+<li><strong>latitude</strong> (<em>'float'</em>) – Latitude of node</li>
+<li><strong>longitude</strong> (<em>'float'</em>) – Longitude of node</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.powerdata.SolarMetNode">
+<em class="property">class </em><code class="descclassname">R2PD.powerdata.</code><code class="descname">SolarMetNode</code><span class="sig-paren">(</span><em>node_id</em>, <em>latitude</em>, <em>longitude</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#SolarMetNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.SolarMetNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.powerdata.WeatherNode" title="R2PD.powerdata.WeatherNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.powerdata.WeatherNode</span></code></a></p>
+<p>Class for Solar Weather Nodes</p>
+<p>Initialize generic Node object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>node_id</strong> (<em>'str'|'int'</em>) – Node id, must be an integer</li>
+<li><strong>latitude</strong> (<em>'float'</em>) – Latitude of node</li>
+<li><strong>longitude</strong> (<em>'float'</em>) – Longitude of node</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="R2PD.powerdata.SolarMetNode.get_irradiance">
+<code class="descname">get_irradiance</code><span class="sig-paren">(</span><em>temporal_params</em>, <em>shaper=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#SolarMetNode.get_irradiance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.SolarMetNode.get_irradiance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts and processes irradiance data for Node</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>temporal_params</strong> (<em>'TemporalParameters'</em>) – Requiements for timeseries output</li>
+<li><strong>shaper</strong> (<em>'TimeseriesShaper'|'function'</em>) – Method to convert Resource data into required output</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.powerdata.SolarMetNode.save_irradiance">
+<code class="descname">save_irradiance</code><span class="sig-paren">(</span><em>filename</em>, <em>formatter=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#SolarMetNode.save_irradiance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.SolarMetNode.save_irradiance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save weather data to disc</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>file_path</strong> (<em>'str'</em>) – Output file path</li>
+<li><strong>formatter</strong> – Method to save powerdata to desired format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.powerdata.NodeCollection">
+<em class="property">class </em><code class="descclassname">R2PD.powerdata.</code><code class="descname">NodeCollection</code><span class="sig-paren">(</span><em>nodes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#NodeCollection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.NodeCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract Class of list of nodes of the same type.
+This class is provided to interface w/ Pandas for processing timeseries
+data in bulk. (TODO)</p>
+<p>Initialize generic NodeCollection object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nodes</strong> (<em>'list'</em>) – List of Node objects</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="R2PD.powerdata.NodeCollection.assign_resource">
+<code class="descname">assign_resource</code><span class="sig-paren">(</span><em>resources</em>, <em>node_ids=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#NodeCollection.assign_resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.NodeCollection.assign_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign resource to nodes in NodeCollection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>resources</strong> (<em>'list'</em>) – List of Resource or ResourceList objects</li>
+<li><strong>node_ids</strong> (<em>'list'</em>) – node ids that correspond to Resource in resources list</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="R2PD.powerdata.NodeCollection.factory">
+<em class="property">classmethod </em><code class="descname">factory</code><span class="sig-paren">(</span><em>nodes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#NodeCollection.factory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.NodeCollection.factory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs the right type of NodeCollection based on the type of nodes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nodes</strong> (<em>'list'</em>) – List of Node objects</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Proper type of node collection based on type of Nodes</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">‘NodeCollection’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.powerdata.NodeCollection.locations">
+<code class="descname">locations</code><a class="headerlink" href="#R2PD.powerdata.NodeCollection.locations" title="Permalink to this definition">¶</a></dt>
+<dd><p>DataFrame of (latitude, longitude) coordinates for nodes in
+NodeCollection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Latitude and longitude for each node in NodeCollection</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.DataFrame’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.powerdata.GeneratorNodeCollection">
+<em class="property">class </em><code class="descclassname">R2PD.powerdata.</code><code class="descname">GeneratorNodeCollection</code><span class="sig-paren">(</span><em>nodes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#GeneratorNodeCollection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.GeneratorNodeCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.powerdata.NodeCollection" title="R2PD.powerdata.NodeCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.powerdata.NodeCollection</span></code></a></p>
+<p>Collection of GeneratorNodes</p>
+<p>Initialize GeneratorNodeCollection object
+Determines if the nodes are wind or solar nodes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nodes</strong> (<em>'list'</em>) – List of Node objects</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="R2PD.powerdata.GeneratorNodeCollection.assign_resource">
+<code class="descname">assign_resource</code><span class="sig-paren">(</span><em>resources</em>, <em>node_ids=None</em>, <em>forecasts=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#GeneratorNodeCollection.assign_resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.GeneratorNodeCollection.assign_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign resource to nodes in GeneratorNodeCollection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>resources</strong> (<em>'list'</em>) – List of Resource or ResourceList objects</li>
+<li><strong>node_ids</strong> (<em>'list'</em>) – node ids that correspond to Resource in resources list</li>
+<li><strong>forecasts</strong> (<em>'bool'</em>) – If forecasts are included in resources or not</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.powerdata.GeneratorNodeCollection.node_data">
+<code class="descname">node_data</code><a class="headerlink" href="#R2PD.powerdata.GeneratorNodeCollection.node_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of node data [id, latitude, longitude, capacity (MW)]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Meta data for all nodes in GeneratorNodeCollection
+[id, latitude, longitude, capacity (MW)]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘nd.array’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.powerdata.GeneratorNodeCollection.get_power">
+<code class="descname">get_power</code><span class="sig-paren">(</span><em>temporal_params</em>, <em>shaper=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#GeneratorNodeCollection.get_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.GeneratorNodeCollection.get_power" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts and processes power data for all Nodes in
+GeneratorNodeCollection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>temporal_params</strong> (<em>'TemporalParameters'</em>) – Requiements for timeseries output</li>
+<li><strong>shaper</strong> (<em>'TimeseriesShaper'|'function'</em>) – Method to convert Resource data into required output</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.powerdata.GeneratorNodeCollection.get_forecasts">
+<code class="descname">get_forecasts</code><span class="sig-paren">(</span><em>forecast_params</em>, <em>shaper=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#GeneratorNodeCollection.get_forecasts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.GeneratorNodeCollection.get_forecasts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts and processes forecast data for all nodes in
+GeneratorNodeCollection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>forecast_params</strong> (<em>'ForecastParameters'</em>) – Requiements for forecast output</li>
+<li><strong>shaper</strong> (<em>'ForecastShaper'|'function'</em>) – Method to convert forecast data into required output</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.powerdata.GeneratorNodeCollection.save_power">
+<code class="descname">save_power</code><span class="sig-paren">(</span><em>out_dir</em>, <em>file_prefix=None</em>, <em>formatter=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#GeneratorNodeCollection.save_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.GeneratorNodeCollection.save_power" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save power data to disc</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>out_dir</strong> (<em>'str'</em>) – Path to root directory to save power data</li>
+<li><strong>file_prefix</strong> (<em>'str'</em>) – Prefix for files to be save after appending node id and extension</li>
+<li><strong>formatter</strong> – Method to save powerdata to desired format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.powerdata.GeneratorNodeCollection.save_forecasts">
+<code class="descname">save_forecasts</code><span class="sig-paren">(</span><em>out_dir</em>, <em>file_prefix=None</em>, <em>formatter=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#GeneratorNodeCollection.save_forecasts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.GeneratorNodeCollection.save_forecasts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save forecast data to disc</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>out_dir</strong> (<em>'str'</em>) – Path to root directory to save power data</li>
+<li><strong>file_prefix</strong> (<em>'str'</em>) – Prefix for files to be save after appending node id and extension</li>
+<li><strong>formatter</strong> – Method to save powerdata to desired format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.powerdata.WeatherNodeCollection">
+<em class="property">class </em><code class="descclassname">R2PD.powerdata.</code><code class="descname">WeatherNodeCollection</code><span class="sig-paren">(</span><em>nodes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#WeatherNodeCollection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.WeatherNodeCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.powerdata.NodeCollection" title="R2PD.powerdata.NodeCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.powerdata.NodeCollection</span></code></a></p>
+<p>Initialize WeatherNodeCollection object
+Determines if the nodes are wind or solar nodes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nodes</strong> (<em>'list'</em>) – List of Node objects</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="R2PD.powerdata.WeatherNodeCollection.node_data">
+<code class="descname">node_data</code><a class="headerlink" href="#R2PD.powerdata.WeatherNodeCollection.node_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of node data [id, latitude, longitude]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Meta data for all nodes in WeatherNodeCollection
+[id, latitude, longitude]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘nd.array’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.powerdata.WeatherNodeCollection.get_weather">
+<code class="descname">get_weather</code><span class="sig-paren">(</span><em>temporal_params</em>, <em>shaper=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#WeatherNodeCollection.get_weather"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.WeatherNodeCollection.get_weather" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts and processes weather data for all nodes in
+WeatherNodeCollection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>temporal_params</strong> (<em>'TemporalParameters'</em>) – Requiements for timeseries output</li>
+<li><strong>shaper</strong> (<em>'TimeseriesShaper'|'function'</em>) – Method to convert Resource data into required output</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.powerdata.WeatherNodeCollection.save_weather">
+<code class="descname">save_weather</code><span class="sig-paren">(</span><em>out_dir</em>, <em>file_prefix=None</em>, <em>formatter=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/powerdata.html#WeatherNodeCollection.save_weather"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.powerdata.WeatherNodeCollection.save_weather" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save weather data to disc</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>out_dir</strong> (<em>'str'</em>) – Path to root directory to save power data</li>
+<li><strong>file_prefix</strong> (<em>'str'</em>) – Prefix for files to be save after appending node id and extension</li>
+<li><strong>formatter</strong> – Method to save powerdata to desired format</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-R2PD.queue">
+<span id="r2pd-queue-module"></span><h2>R2PD.queue module<a class="headerlink" href="#module-R2PD.queue" title="Permalink to this headline">¶</a></h2>
+<p>This module provides classes for facilitating the transfer of data between
+the external and internal store as well as processing the data using a queue.</p>
+<dl class="function">
+<dt id="R2PD.queue.nearest_power_nodes">
+<code class="descclassname">R2PD.queue.</code><code class="descname">nearest_power_nodes</code><span class="sig-paren">(</span><em>node_collection</em>, <em>resource_meta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/queue.html#nearest_power_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.queue.nearest_power_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fill requested power nodes in node_collection with resource sites in
+resource_meta</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>node_collection</strong> (<em>'pandas.DataFrame'|'GeneratorNodeCollection'</em>) – <dl class="docutils">
+<dt>DataFrame of requested nodes</dt>
+<dd>[node_id(index), latitude, longitude, capacity]</dd>
+</dl>
+<p>or NodeCollection instance</p>
+</li>
+<li><strong>resource_meta</strong> (<em>'pandas.DataFrame'</em>) – <dl class="docutils">
+<dt>DataFrame with resource node meta-data</dt>
+<dd>[site_id(index), latitude, longitude, capacity]</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>nodes</strong> – Requested nodes with site_ids and fractions of resource for each node</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">‘pandas.DataFrame’</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="R2PD.queue.nearest_met_nodes">
+<code class="descclassname">R2PD.queue.</code><code class="descname">nearest_met_nodes</code><span class="sig-paren">(</span><em>node_collection</em>, <em>resource_meta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/queue.html#nearest_met_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.queue.nearest_met_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fill requested weather nodes in node_collection with resource sites in
+resource_meta</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>node_collection</strong> (<em>'pandas.DataFrame'|'WeatherNodeCollection'</em>) – <dl class="docutils">
+<dt>DataFrame of requested nodes</dt>
+<dd>[node_id(index), latitude, longitude]</dd>
+</dl>
+<p>or NodeCollection instance</p>
+</li>
+<li><strong>resource_meta</strong> (<em>'pandas.DataFrame'</em>) – <dl class="docutils">
+<dt>DataFrame with resource node meta-data</dt>
+<dd>[site_id(index), latitude, longitude]</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>nodes</strong> – Requested nodes with site_id of resource for each node</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">‘pandas.DataFrame’</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="R2PD.queue.get_resource_data">
+<code class="descclassname">R2PD.queue.</code><code class="descname">get_resource_data</code><span class="sig-paren">(</span><em>node_collection</em>, <em>repo</em>, <em>forecasts=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/queue.html#get_resource_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.queue.get_resource_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds nearest nodes, caches files to local datastore and assigns resource
+to node_collection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>node_collection</strong> (<em>'NodeCollection'</em>) – Collection of either weather of generator nodes</li>
+<li><strong>repo</strong> (<em>'ExternalDataStore'</em>) – External datastore from which to get resouce data</li>
+<li><strong>forecasts</strong> (<em>'bool'</em>) – Whether to download forecasts along with power data</li>
+<li><strong>**kwargs</strong> – Internal kwargs</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>node_collection</strong> (<em>‘NodeCollection’</em>) – Node collection with resources assigned to nodes</li>
+<li><strong>nearest_nodes</strong> (<em>‘pandas.DataFrame’</em>) – DataFrame of the nearest neighbor matching between nodes and resources</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-R2PD.resourcedata">
+<span id="r2pd-resourcedata-module"></span><h2>R2PD.resourcedata module<a class="headerlink" href="#module-R2PD.resourcedata" title="Permalink to this headline">¶</a></h2>
+<p>This module provides an API to the raw resource data and meta-data.</p>
+<dl class="class">
+<dt id="R2PD.resourcedata.Resource">
+<em class="property">class </em><code class="descclassname">R2PD.resourcedata.</code><code class="descname">Resource</code><span class="sig-paren">(</span><em>loc_meta</em>, <em>root_path</em>, <em>frac=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/resourcedata.html#Resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.resourcedata.Resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract Resource class containing resource site information</p>
+<p>Initialize Resource instance
+:param loc_meta: meta data for resource location
+:type loc_meta: ‘pandas.Series’
+:param root_path: path to internal repository
+:type root_path: ‘str’
+:param frac: fraction of site’s capacity to be used</p>
+<blockquote>
+<div>Is None for weather nodes</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="R2PD.resourcedata.Resource.DATASET">
+<code class="descname">DATASET</code><em class="property"> = None</em><a class="headerlink" href="#R2PD.resourcedata.Resource.DATASET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.resourcedata.Resource.site_id">
+<code class="descname">site_id</code><a class="headerlink" href="#R2PD.resourcedata.Resource.site_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>resource site id</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">resource site id</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘int’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.resourcedata.Resource.latitude">
+<code class="descname">latitude</code><a class="headerlink" href="#R2PD.resourcedata.Resource.latitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>resource site latitude</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">resource site latitude</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘float’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.resourcedata.Resource.longitude">
+<code class="descname">longitude</code><a class="headerlink" href="#R2PD.resourcedata.Resource.longitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>resource site longitude</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">resource site longitude</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘float’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.resourcedata.Resource.capacity">
+<code class="descname">capacity</code><a class="headerlink" href="#R2PD.resourcedata.Resource.capacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>resource site capacity in MW</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">resource site capacity in MW</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘float’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.resourcedata.Resource.extract_data">
+<code class="descname">extract_data</code><span class="sig-paren">(</span><em>data_type</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/resourcedata.html#Resource.extract_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.resourcedata.Resource.extract_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract method to extract time series data from resource .hdf5 file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_type</strong> (<em>'str'</em>) – type of data (‘met’, ‘power’, ‘fcst’)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>data</strong> – Time series DataFrame of resource data</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.DataFrame’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.resourcedata.Resource.power_data">
+<code class="descname">power_data</code><a class="headerlink" href="#R2PD.resourcedata.Resource.power_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract power data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>power_data</strong> – Time series dataframe of power data</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.DataFrame’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.resourcedata.Resource.meteorological_data">
+<code class="descname">meteorological_data</code><a class="headerlink" href="#R2PD.resourcedata.Resource.meteorological_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract weather (met) data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>met_data</strong> – Time series DataFrame of weather (met)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.DataFrame’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.resourcedata.Resource.forecast_data">
+<code class="descname">forecast_data</code><a class="headerlink" href="#R2PD.resourcedata.Resource.forecast_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract forecast data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>fcst_data</strong> – Time series DataFrame of forecast data</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.DataFrame’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.resourcedata.Resource.forecast_probabilities">
+<code class="descname">forecast_probabilities</code><a class="headerlink" href="#R2PD.resourcedata.Resource.forecast_probabilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract forecast probabilities data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>fcst_prob</strong> – Time series DataFrame of forecast probabilities</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.DataFrame’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.resourcedata.WindResource">
+<em class="property">class </em><code class="descclassname">R2PD.resourcedata.</code><code class="descname">WindResource</code><span class="sig-paren">(</span><em>loc_meta</em>, <em>root_path</em>, <em>frac=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/resourcedata.html#WindResource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.resourcedata.WindResource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.resourcedata.Resource" title="R2PD.resourcedata.Resource"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.resourcedata.Resource</span></code></a></p>
+<p>Class for wind Resource data</p>
+<p>Initialize Resource instance
+:param loc_meta: meta data for resource location
+:type loc_meta: ‘pandas.Series’
+:param root_path: path to internal repository
+:type root_path: ‘str’
+:param frac: fraction of site’s capacity to be used</p>
+<blockquote>
+<div>Is None for weather nodes</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="R2PD.resourcedata.WindResource.DATASET">
+<code class="descname">DATASET</code><em class="property"> = 'wind'</em><a class="headerlink" href="#R2PD.resourcedata.WindResource.DATASET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.resourcedata.SolarResource">
+<em class="property">class </em><code class="descclassname">R2PD.resourcedata.</code><code class="descname">SolarResource</code><span class="sig-paren">(</span><em>loc_meta</em>, <em>root_path</em>, <em>frac=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/resourcedata.html#SolarResource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.resourcedata.SolarResource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#R2PD.resourcedata.Resource" title="R2PD.resourcedata.Resource"><code class="xref py py-class docutils literal notranslate"><span class="pre">R2PD.resourcedata.Resource</span></code></a></p>
+<p>Class for solar Resource data</p>
+<p>Initialize Resource instance
+:param loc_meta: meta data for resource location
+:type loc_meta: ‘pandas.Series’
+:param root_path: path to internal repository
+:type root_path: ‘str’
+:param frac: fraction of site’s capacity to be used</p>
+<blockquote>
+<div>Is None for weather nodes</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="R2PD.resourcedata.SolarResource.DATASET">
+<code class="descname">DATASET</code><em class="property"> = 'solar'</em><a class="headerlink" href="#R2PD.resourcedata.SolarResource.DATASET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.resourcedata.SolarResource.irradiance_data">
+<code class="descname">irradiance_data</code><a class="headerlink" href="#R2PD.resourcedata.SolarResource.irradiance_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract irradiance data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>power_data</strong> – Time series DataFrame of irradiance data</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.DataFrame’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.resourcedata.ResourceList">
+<em class="property">class </em><code class="descclassname">R2PD.resourcedata.</code><code class="descname">ResourceList</code><span class="sig-paren">(</span><em>resources</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/resourcedata.html#ResourceList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.resourcedata.ResourceList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Handles the aggregation of power and forecast data</p>
+<p>Initialize ResourceList instance
+:param resources: List of Resource objects
+:type resources: ‘list’</p>
+<dl class="attribute">
+<dt id="R2PD.resourcedata.ResourceList.locations">
+<code class="descname">locations</code><a class="headerlink" href="#R2PD.resourcedata.ResourceList.locations" title="Permalink to this definition">¶</a></dt>
+<dd><p>DataFrame of (latitude, longitude) coordinates for nodes in
+NodeCollection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Latitude and longitude for each node in NodeCollection</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.DataFrame’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.resourcedata.ResourceList.power_data">
+<code class="descname">power_data</code><a class="headerlink" href="#R2PD.resourcedata.ResourceList.power_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract and aggragate power data for all sites in ResourceList</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>power_data</strong> – Time series DataFrame of aggragated power data</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.DataFrame’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.resourcedata.ResourceList.forecast_data">
+<code class="descname">forecast_data</code><a class="headerlink" href="#R2PD.resourcedata.ResourceList.forecast_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract and aggragate forecast data for all sites in ResourceList</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>fcst_data</strong> – Time series DataFrame of aggragated forecast data</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.DataFrame’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.resourcedata.ResourceList.forecast_probabilities">
+<code class="descname">forecast_probabilities</code><a class="headerlink" href="#R2PD.resourcedata.ResourceList.forecast_probabilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract and aggragate forecast probabilities for all sites in
+ResourceList</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>fcst_prob</strong> – Time series DataFrame of aggragated forecast probabilities</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘pandas.DataFrame’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-R2PD.timeout">
+<span id="r2pd-timeout-module"></span><h2>R2PD.timeout module<a class="headerlink" href="#module-R2PD.timeout" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="R2PD.timeout.TimeoutError">
+<em class="property">exception </em><code class="descclassname">R2PD.timeout.</code><code class="descname">TimeoutError</code><a class="reference internal" href="../_modules/R2PD/timeout.html#TimeoutError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.timeout.TimeoutError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Custom Error for Timeout</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.timeout.Timeout">
+<em class="property">class </em><code class="descclassname">R2PD.timeout.</code><code class="descname">Timeout</code><span class="sig-paren">(</span><em>sec</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/timeout.html#Timeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.timeout.Timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Timeout wrapper for signal.alarm
+Currently only compatible with linux systems, need to update for windows</p>
+<p>Initialize timeout</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sec</strong> (<em>'float'</em>) – seconds before raising TimeoutError</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="R2PD.timeout.Timeout.raise_timeout">
+<code class="descname">raise_timeout</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/timeout.html#Timeout.raise_timeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.timeout.Timeout.raise_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes event_loop on exit from with</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> (<em>'signal.signal handler args'</em>) – signal number and frame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-R2PD.tshelpers">
+<span id="r2pd-tshelpers-module"></span><h2>R2PD.tshelpers module<a class="headerlink" href="#module-R2PD.tshelpers" title="Permalink to this headline">¶</a></h2>
+<p>This module defines time conventions for basic timeseries and for forecasts,
+as well as abstract function calls for converting between them.</p>
+<dl class="class">
+<dt id="R2PD.tshelpers.TemporalParameters">
+<em class="property">class </em><code class="descclassname">R2PD.tshelpers.</code><code class="descname">TemporalParameters</code><span class="sig-paren">(</span><em>extent</em>, <em>point_interp='instantaneous'</em>, <em>timezone='UTC'</em>, <em>resolution=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/tshelpers.html#TemporalParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.tshelpers.TemporalParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to specify temporal parameters</p>
+<p>Initialize TemporalParameters</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>extent</strong> (<em>'list'|'tuple'</em>) – Start and end datetime</li>
+<li><strong>point_interp</strong> (<em>'POINT_INTERPRETATIONS'</em>) – element of POINT_INTERPRETATIONS representing data</li>
+<li><strong>timezone</strong> (<em>'str'</em>) – timezone for timeseries</li>
+<li><strong>resolution</strong> (<em>'str'</em>) – resolution for timeseries, if None use data’s native resolution</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS">
+<em class="property">class </em><code class="descname">POINT_INTERPRETATIONS</code><a class="headerlink" href="#R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="attribute">
+<dt id="R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.average_midpt">
+<code class="descname">average_midpt</code><em class="property"> = 4</em><a class="headerlink" href="#R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.average_midpt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.average_next">
+<code class="descname">average_next</code><em class="property"> = 2</em><a class="headerlink" href="#R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.average_next" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.average_prev">
+<code class="descname">average_prev</code><em class="property"> = 3</em><a class="headerlink" href="#R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.average_prev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.instantaneous">
+<code class="descname">instantaneous</code><em class="property"> = 1</em><a class="headerlink" href="#R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.instantaneous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.integrated_midpt">
+<code class="descname">integrated_midpt</code><em class="property"> = 7</em><a class="headerlink" href="#R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.integrated_midpt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.integrated_next">
+<code class="descname">integrated_next</code><em class="property"> = 5</em><a class="headerlink" href="#R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.integrated_next" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.integrated_prev">
+<code class="descname">integrated_prev</code><em class="property"> = 6</em><a class="headerlink" href="#R2PD.tshelpers.TemporalParameters.POINT_INTERPRETATIONS.integrated_prev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="R2PD.tshelpers.TemporalParameters.infer_params">
+<em class="property">classmethod </em><code class="descname">infer_params</code><span class="sig-paren">(</span><em>ts</em>, <em>timezone=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/tshelpers.html#TemporalParameters.infer_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.tshelpers.TemporalParameters.infer_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infer time-series temporal parameters</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ts</strong> (<em>'pandas.DataFrame'</em>) – Timeseries DataFrame</li>
+<li><strong>timezone</strong> (<em>'str'</em>) – Timezone of time-series, if None, infer</li>
+<li><strong>**kwargs</strong> – kwargs for TemporalParameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>ts_params</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">‘TemporalParameters’</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.tshelpers.TemporalParameters.infer_resolution">
+<code class="descname">infer_resolution</code><span class="sig-paren">(</span><em>ts</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/tshelpers.html#TemporalParameters.infer_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.tshelpers.TemporalParameters.infer_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infer time-series temporal resolution</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ts</strong> (<em>'pandas.DataFrame'</em>) – Timeseries DataFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="R2PD.tshelpers.TemporalParameters.infer_timezone">
+<code class="descname">infer_timezone</code><span class="sig-paren">(</span><em>ts</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/tshelpers.html#TemporalParameters.infer_timezone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.tshelpers.TemporalParameters.infer_timezone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infer time-series timezone</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ts</strong> (<em>'pandas.DataFrame'</em>) – Timeseries DataFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.tshelpers.TimeseriesShaper">
+<em class="property">class </em><code class="descclassname">R2PD.tshelpers.</code><code class="descname">TimeseriesShaper</code><a class="reference internal" href="../_modules/R2PD/tshelpers.html#TimeseriesShaper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.tshelpers.TimeseriesShaper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract class defining the call signature for reshaping timeseries to
+conform to the desired temporal parameters.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.tshelpers.ForecastParameters">
+<em class="property">class </em><code class="descclassname">R2PD.tshelpers.</code><code class="descname">ForecastParameters</code><span class="sig-paren">(</span><em>forecast_type</em>, <em>temporal_params</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/tshelpers.html#ForecastParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.tshelpers.ForecastParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Describes different shapes of forecast data.</p>
+<p><em>Discrete leadtimes</em> datasets are repeated timeseries where the different
+values given for the same timestamp are the value predicted for that time
+various amounts of time in advance. For example, the WindToolkit forecast
+data, for every hour lists the amount of output power predicted for that
+hour 1-hour ahead, 4-hours ahead, 6-hours ahead, and 24-hours ahead.</p>
+<p><em>Dispatch lookahead</em> datasets mimic actual power system operations.
+For example, every day a day-ahead unit commitment model is run using
+forecasts for the next 1 to 2 days, with the simulation typically
+kicked-off 6 to 12 hours ahead of the modeled time.
+These forecasts happen at a certain frequency, cover a certain amount of
+lookahead time, and are computed a certain amount of time ahead of the
+modeled time.</p>
+<p>Initialize ForecastParameters</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>forecast_type</strong> (<em>'FORECAST_TYPES</em>) – element of FORECAST_TYPES representing type of forecast</li>
+<li><strong>temporal_params</strong> (<em>'TemporalParameters'</em>) – TemporalParameters instance describing timeseries parameters</li>
+<li><strong>**kwargs</strong> – kwargs specific to forecast type</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="R2PD.tshelpers.ForecastParameters.FORECAST_TYPES">
+<em class="property">class </em><code class="descname">FORECAST_TYPES</code><a class="headerlink" href="#R2PD.tshelpers.ForecastParameters.FORECAST_TYPES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="attribute">
+<dt id="R2PD.tshelpers.ForecastParameters.FORECAST_TYPES.discrete_leadtimes">
+<code class="descname">discrete_leadtimes</code><em class="property"> = 1</em><a class="headerlink" href="#R2PD.tshelpers.ForecastParameters.FORECAST_TYPES.discrete_leadtimes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.tshelpers.ForecastParameters.FORECAST_TYPES.dispatch_lookahead">
+<code class="descname">dispatch_lookahead</code><em class="property"> = 2</em><a class="headerlink" href="#R2PD.tshelpers.ForecastParameters.FORECAST_TYPES.dispatch_lookahead" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.tshelpers.ForecastParameters.forecast_type">
+<code class="descname">forecast_type</code><a class="headerlink" href="#R2PD.tshelpers.ForecastParameters.forecast_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type of forecast</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">element of FORECAST_TYPES</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘FORECAST_TYPES’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.tshelpers.ForecastParameters.temporal_params">
+<code class="descname">temporal_params</code><a class="headerlink" href="#R2PD.tshelpers.ForecastParameters.temporal_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Temporal Parameters for forecast timeseries</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Timeseries temporal parameters</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘TemporalParameters’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.tshelpers.ForecastParameters.leadtimes">
+<code class="descname">leadtimes</code><a class="headerlink" href="#R2PD.tshelpers.ForecastParameters.leadtimes" title="Permalink to this definition">¶</a></dt>
+<dd><p>For ‘discrete_leadtimes’ data, a list of the amounts of time ahead at
+which forecasts are available, e.g. [datetime.timedelta(hours=1),
+datetime.timedelta(hours=4), datetime.timedelta(hours=6),
+datetime.timedelta(hours=24)].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of forecast leadtimes</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘list’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.tshelpers.ForecastParameters.frequency">
+<code class="descname">frequency</code><a class="headerlink" href="#R2PD.tshelpers.ForecastParameters.frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>For ‘dispatch_lookahead’ data, the frequency at which forecasts are
+needed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Frequency of lookahead forecasts</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘datetime.timedelta’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.tshelpers.ForecastParameters.lookahead">
+<code class="descname">lookahead</code><a class="headerlink" href="#R2PD.tshelpers.ForecastParameters.lookahead" title="Permalink to this definition">¶</a></dt>
+<dd><p>For ‘dispatch_lookahead’ data, the amount of time covered by each
+forecast.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Amount of time covered by each forecast</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘datetime.timedelta’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="R2PD.tshelpers.ForecastParameters.leadtime">
+<code class="descname">leadtime</code><a class="headerlink" href="#R2PD.tshelpers.ForecastParameters.leadtime" title="Permalink to this definition">¶</a></dt>
+<dd><p>For ‘dispatch_lookahead’ data, the amount of time ahead of the start of
+the modeled time that the forecast data would need to be provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Amount of leadtime for lookahead forecast</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">‘datetime.timedelta’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="R2PD.tshelpers.ForecastParameters.define_discrete_leadtime_params">
+<em class="property">classmethod </em><code class="descname">define_discrete_leadtime_params</code><span class="sig-paren">(</span><em>temporal_params</em>, <em>leadtimes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/tshelpers.html#ForecastParameters.define_discrete_leadtime_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.tshelpers.ForecastParameters.define_discrete_leadtime_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs ForecastParameters for leadtime forecasts</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>temporal_params</strong> (<em>'TemporalParameters'</em>) – Timeseries temporal parameters for leadtime forecasts</li>
+<li><strong>leadtimes</strong> (<em>'list'</em>) – List of forecast leadtimes</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Forecast parameters for leadtime forecasts</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">‘ForecastParameters’</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="R2PD.tshelpers.ForecastParameters.define_dispatch_lookahead_params">
+<em class="property">classmethod </em><code class="descname">define_dispatch_lookahead_params</code><span class="sig-paren">(</span><em>temporal_params</em>, <em>frequency</em>, <em>lookahead</em>, <em>leadtime</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/tshelpers.html#ForecastParameters.define_dispatch_lookahead_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.tshelpers.ForecastParameters.define_dispatch_lookahead_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs ForecastParameters for lookahead forecasts</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>temporal_params</strong> (<em>'TemporalParameters'</em>) – Timeseries temporal parameters for lookahead forecast</li>
+<li><strong>frequency</strong> (<em>'datetime.timedelta'</em>) – frequency of lookahead forecasts</li>
+<li><strong>lookahead</strong> (<em>'datetime.timedelta'</em>) – amount of lookahead for forecast</li>
+<li><strong>leadtime</strong> (<em>'datetime.timedelta'</em>) – leadtime for lookahead forcast</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Forecast parameters for lookahead forecast</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">‘ForecastParameters’</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="R2PD.tshelpers.ForecastShaper">
+<em class="property">class </em><code class="descclassname">R2PD.tshelpers.</code><code class="descname">ForecastShaper</code><a class="reference internal" href="../_modules/R2PD/tshelpers.html#ForecastShaper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.tshelpers.ForecastShaper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract class defining the call signature for reshaping timeseries to
+conform to the desired temporal parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="R2PD.tshelpers.get_enum_instance">
+<code class="descclassname">R2PD.tshelpers.</code><code class="descname">get_enum_instance</code><span class="sig-paren">(</span><em>value</em>, <em>enum_class</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/R2PD/tshelpers.html#get_enum_instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#R2PD.tshelpers.get_enum_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts value from enum_class if needed</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>value</strong> (<em>'str'|'enum_class'</em>) – Either enum_class value or string for value</li>
+<li><strong>enum_class</strong> (<em>'Enum'</em>) – enum class object for which value belongs</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">enum_class value</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">‘enum_class’</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-R2PD">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-R2PD" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="R2PD.library.html" class="btn btn-neutral float-right" title="R2PD.library package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="modules.html" class="btn btn-neutral" title="R2PD" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Michael Rossol, Elaine Hale.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
