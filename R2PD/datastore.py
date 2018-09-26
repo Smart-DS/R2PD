@@ -186,6 +186,7 @@ class InternalDataStore(DataStore):
         """
         if config is None:
             size = None
+            root_path = os.path.join(cls.PKG_DIR, 'R2PD_Cache')
         else:
             config_parser = ConfigParser()
             config_parser.read(config)
@@ -294,22 +295,22 @@ class InternalDataStore(DataStore):
         cache_meta = pds.DataFrame(columns=columns)
         cache_meta.index.name = 'site_id'
 
-        return self.scan_cache(cache_meta, self._wind_cache)
+        return self.scan_cache(self._wind_root, cache_meta)
 
-        @property
-        def wind_cache(self):
-            """
-            Scan solar cache and update cache meta
+    @property
+    def solar_cache(self):
+        """
+        Scan solar cache and update cache meta
 
-            Returns
-            ---------
-            cache_meta : 'pandas.DataFrame'
-                DataFrame of files in solar cache
-            """
-            columns = ['met', 'power']
-            cache_meta = pds.DataFrame(columns=columns)
-            cache_meta.index.name = 'site_id'
-            return self.scan_cache(cache_meta, self._solar_cache)
+        Returns
+        ---------
+        cache_meta : 'pandas.DataFrame'
+            DataFrame of files in solar cache
+        """
+        columns = ['met', 'power']
+        cache_meta = pds.DataFrame(columns=columns)
+        cache_meta.index.name = 'site_id'
+        return self.scan_cache(self._solar_root, cache_meta)
 
     @staticmethod
     def scan_cache(cache_path, cache_meta):
@@ -762,7 +763,7 @@ class DRPower(ExternalDataStore):
             power or met or fcst
         """
         file_name = '{}_{}_{}.hdf5'.format(dataset, resource_type, site_id)
-        src = os.path.join(self.DATA_ROOT, dataset, file_name)
+        src = os.path.join(self.DATA_ROOT, dataset, str(site_id), file_name)
         dst = os.path.join(self._local_cache._cache_root, dataset, file_name)
 
         self.download(src, dst)
