@@ -520,8 +520,7 @@ class ExternalDataStore(DataStore):
 
         return meta
 
-    def get_download_size(self, dataset, numb_sites, resource_type,
-                          forecasts=False):
+    def get_download_size(self, dataset, numb_sites, resource_type):
         """
         Estimate download size
 
@@ -545,19 +544,9 @@ class ExternalDataStore(DataStore):
             Estimated download size in GB
         """
         if dataset == 'wind':
-            if resource_type == 'power':
-                download_size = numb_sites * self.WIND_FILE_SIZES['power']
-                if forecasts:
-                    download_size += numb_sites * self.WIND_FILE_SIZES['fcst']
-            else:
-                download_size = numb_sites * self.WIND_FILE_SIZES['met']
+            download_size = numb_sites * self.WIND_FILE_SIZES[resource_type]
         elif dataset == 'solar':
-            if resource_type == 'power':
-                download_size = numb_sites * self.SOLAR_FILE_SIZES['power']
-                if forecasts:
-                    download_size += numb_sites * self.SOLAR_FILE_SIZES['fcst']
-            else:
-                download_size = numb_sites * self.SOLAR_FILE_SIZES['met']
+            download_size = numb_sites * self.SOLAR_FILE_SIZES[resource_type]
 
         return download_size / 1000
 
@@ -631,6 +620,10 @@ class ExternalDataStore(DataStore):
         threads : 'int'
             Number of threads to use for downloading
         """
+        download_size = self.get_download_size(dataset, len(site_ids),
+                                               resource_type)
+        self._local_cache.test_cache(download_size)
+
         if self._threads is None:
             for site in site_ids:
                 self.download_resource(dataset, site, resource_type)
@@ -696,7 +689,11 @@ class ExternalDataStore(DataStore):
         nearest_nodes = self.nearest_neighbors(node_collection)
 
         if isinstance(node_collection, GeneratorNodeCollection):
-            resource_type = 'power'
+            if forecasts:
+                resource_type = 'fcst'
+            else:
+                resource_type = 'power'
+
             site_ids = np.concatenate(nearest_nodes['site_id'].values)
             site_ids = np.unique(site_ids)
         else:
@@ -705,8 +702,6 @@ class ExternalDataStore(DataStore):
 
         dataset = node_collection._dataset
         self.download_resource_data(dataset, site_ids, resource_type)
-        if resource_type == 'power' & forecasts:
-            self.download_resource_data(dataset, site_ids, 'fcst')
 
         self._local_cache.update_cache_meta(dataset)
 

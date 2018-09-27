@@ -245,9 +245,8 @@ class ForecastParameters(object):
     @property
     def leadtimes(self):
         """
-        A list of the amounts of time ahead at which forecasts are available,
-        e.g. [datetime.timedelta(hours=1), datetime.timedelta(hours=4),
-        datetime.timedelta(hours=6), datetime.timedelta(hours=24)].
+        For 'discrete_leadtimes' the list of times in advance that each
+        forecast represents.
 
         Returns
         ---------

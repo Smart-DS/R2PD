@@ -270,43 +270,7 @@ class SolarMetNode(WeatherNode):
     """
     Class for Solar Weather Nodes
     """
-    def get_irradiance(self, temporal_params, shaper=None):
-        """
-        Extracts and processes irradiance data for Node
-
-        Parameters
-        ----------
-        temporal_params : 'TemporalParameters'
-            Requiements for timeseries output
-        shaper : 'TimeseriesShaper'|'function'
-            Method to convert Resource data into required output
-        """
-        self._require_resource()
-        irradiance_data = self._resource.irradiance_data
-
-        if temporal_params is None:
-            self.irradiance = irradiance_data
-        else:
-            if shaper is None:
-                shaper = DefaultTimeseriesShaper()
-
-            self.irradiance = shaper(irradiance_data, temporal_params)
-
-    def save_irradiance(self, filename, formatter=None):
-        """
-        Save weather data to disc
-
-        Parameters
-        ----------
-        file_path : 'str'
-            Output file path
-        formatter : ''
-            Method to save powerdata to desired format
-        """
-        if formatter is None:
-            self._save_csv(self.irradiance, filename)
-        else:
-            pass
+    pass
 
 
 class NodeCollection(object):

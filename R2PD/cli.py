@@ -1,242 +1,225 @@
 """
 R2PD Command Line Interface (CLI)
 """
-import argparse
-import datetime as dt
-import dateutil
+import ast
+import click
 import logging
-import numpy as np
+import os
 import pandas as pds
-import time
 
 from .datastore import DRPower
 from .powerdata import (NodeCollection, WindGeneratorNode, SolarGeneratorNode,
                         WindMetNode, SolarMetNode)
 from .tshelpers import TemporalParameters, ForecastParameters
+from .library import DefaultTimeseriesShaper, DefaultForecastShaper
 
 
 logger = logging.getLogger(__name__)
 
 POINT_INTERPS = TemporalParameters.POINT_INTERPRETATIONS
+FCST_TYPES = ForecastParameters.FORECAST_TYPES
 
 
-def cli_parser():
-    parser = argparse.ArgumentParser(description='''Get wind, solar, or weather
-                 data for power system modeling.''')
+class ListParamType(click.ParamType):
+    name = 'list'
 
-    parser.add_argument('-e', '--external-datastore',
-                        choices=['DRPower', 'Peregrine'],
-                        default='DRPower',
-                        help='''Name of the external datastore to query for
-                        resource data not yet cached locally.''')
-    parser.add_argument('-ds', '--ds-config', help=''''Path to
-        datastore configuration file.''')
+    def convert(self, value, param, ctx):
+        try:
+            if value is None:
+                out = None
+            else:
+                out = ast.literal_eval(value)
 
-    subparsers = parser.add_subparsers(dest='mode')
-    actual_parser = subparsers.add_parser('actual-power')
-    forecast_parser = subparsers.add_parser('forecast-power')
-    weather_parser = subparsers.add_parser('weather')
-
-    def append_common_data_args(parser):
-        parser.add_argument('outdir', help='Directory for output data.')
-        parser.add_argument('nodes',
-                            help='''Path to csv file describing nodes, or list
-                            of tuples describing nodes. Each tuple or each row
-                            of the csv file should contain (node_id, latitude,
-                            longitude).''')
-        parser.add_argument('temporal_extent',
-                            help='''Start and end datetimes for output
-                            data.''', nargs=2, type=dateutil.parser.parse)
-        parser.add_argument('point_interpretation',
-                            help='''Interpretation that will be assumed for
-                            output timeseries values. Can affect exactly which
-                            raw data points are pulled, and any upscaling or
-                            downscaling that is applied.''',
-                            choices=[interp.name for interp in POINT_INTERPS])
-        parser.add_argument('-tz', '--timezone',
-                            help='''Timezone for all output data. Also used in
-                            interpreting temporal-extent if no explicit
-                            timezone is provided for those inputs.''',
-                            choices=['UTC'], default='UTC')
-        parser.add_argument('-r', '--temporal-resolution',
-                            help='''Resolution for output timeseries data.
-                            Default is to retain the native resolution.''')
-        parser.add_argument('-f', '--formatter',
-                            help='''Name of function to use in formatting
-                            output data for disk.''')
-        return
-
-    for p in [actual_parser, forecast_parser, weather_parser]:
-        append_common_data_args(p)
-
-    # todo: split back up into wind versus solar. solar needs generator types
-    #       and datasource for residential and commercial blends
-    def append_generator_args(parser, forecasts=False):
-        parser.add_argument('generators', help='''Path to csv file describing
-                            generators, or list of tuples. Each tuple or each
-                            row of the csv file should contain (node_id,
-                            generator_capacity), where generator_capacity
-                            is in MW.''')
-        and_forecast = ''
-        if forecasts:
-            and_forecast = 'and forecast '
-            subparsers = parser.add_subparsers(dest='forecast_type')
-            # todo: set default forecast_type?
-
-            disc_leads_parser = subparsers.add_parser('discrete_leadtimes')
-            disc_leads_parser.add_argument('leadtimes', nargs='*',
-                                           help='''List of leadtimes at which
-                                           forecasts are desired for each
-                                           timestamp.''')
-
-            dispatch_parser = subparsers.add_parser('dispatch_lookahead')
-            dispatch_parser.add_argument('frequency',
-                                         help='''Frequency at which forecasts
-                                         are needed.''', type=dt.timedelta)
-            dispatch_parser.add_argument('lookahead',
-                                         help='''Amount of time being modeled
-                                         in each forecast/dispatch model
-                                         run.''', type=dt.timedelta)
-            dispatch_parser.add_argument('-l', '--leadtime',
-                                         help='''Amount of time before modeled
-                                         time that forecast data would need to
-                                         be supplied.''', type=dt.timedelta)
-        parser.add_argument('-s', '--shaper',
-                            help='''Name of function or other callable to use
-                            in shaping the timeseries data to conform to the
-                            temporal {:} parameters'''.format(and_forecast))
-        return
-
-    def append_weather_args(parser):
-        # todo: Implement downselect of weather variables if needed
-        parser.add_argument('-s', '--shaper',
-                            help='''Name of function or other callable to use
-                            in shaping the weather timeseries data to conform
-                            to the temporal parameters''')
-        return
-
-    resource_types = ['wind', 'solar']
-
-    def append_generator_subparsers(parser, forecasts=False):
-        subparsers = parser.add_subparsers(dest='type')
-        for resource_type in resource_types:
-            parser = subparsers.add_parser(resource_type)
-            append_generator_args(parser, forecasts=forecasts)
-
-    def append_weather_subparsers(parser):
-        subparsers = parser.add_subparsers(dest='type')
-        for resource_type in resource_types:
-            parser = subparsers.add_parser(resource_type)
-            append_weather_args(parser)
-
-    append_generator_subparsers(actual_parser)
-    append_generator_subparsers(forecast_parser, forecasts=True)
-    append_weather_subparsers(weather_parser)
-
-    parser.add_argument('-d', '--debug', action='store_true', default=False,
-                        help="Option to output debug information.")
-
-    return parser
+            return out
+        except ValueError:
+            self.fail('{:} is not a valid integer'.format(value), param, ctx)
 
 
-def cli_main():
-    parser = cli_parser()
-    args = parser.parse_args()
+LIST = ListParamType()
 
-    log_level = logging.DEBUG if args.debug else logging.WARN
-    fmt = '%(asctime)s|%(levelname)s|%(name)s|\n    %(message)s'
-    logging.basicConfig(format=fmt, level=log_level)  # to console
 
-    # 0. Set up logging, connect to data stores, and make output directory
-    assert args.external_datastore == 'DRPower'
-    # todo: Implmement library mechanism for finding external datastore options
-    #       and matching string description to class.
-    # 1 connect to external datastore
-    ext_store = DRPower.connect(config=args.ds_config)
-    total_size, wind_size, solar_size = ext_store._local_cache.cache_size
-    max_size = ext_store._local_cache._size
-    print('''Local Cache Initialized:
+@click.group()
+@click.option('-ds', '--ds_config', default=None,
+              type=click.Path(exists=True),
+              help='Path to datastore configuration file.')
+@click.option('-n', '--nodes', required=True, type=click.Path(exists=True),
+              help='''Path to csv file describing nodes, or list
+              of tuples describing nodes. Each tuple or each row
+              of the csv file should contain (node_id, latitude,
+              longitude).''')
+@click.option('-t', '--resource_type', required=True,
+              type=click.Choice(['solar', 'wind']),
+              help="Resource type, 'solar' or 'wind'")
+@click.option('-te', '--temporal_extent', required=True, nargs=2,
+              help='Start and end datetimes for output data.')
+@click.option('-pi', '--point_interpretation', default='instantaneous',
+              type=click.Choice([interp.name for interp in POINT_INTERPS]),
+              help="""Interpretation that will be assumed for
+              output timeseries values. Can affect exactly which
+              raw data points are pulled, and any upscaling or
+              downscaling that is applied.""")
+@click.option('-tz', '--timezone', default='UTC',
+              help="""Timezone for all output data. Also used in
+              interpreting temporal-extent if no explicit
+              timezone is provided for those inputs. See
+              https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568
+              for valid timezones.""")
+@click.option('-tr', '--temporal_resolution', default=None,
+              help="""Resolution for output timeseries data.
+              Default is to retain the native resolution.""")
+@click.option('-o', '-out_dir', required=True, type=click.Path(),
+              help='Directory for output data.')
+@click.option('-f', '--formatter', default=None,
+              help="""Name of function to use in formatting
+              output data for disk.""")
+@click.pass_context
+def main(ctx, ds_config, nodes, resource_type, temporal_extent,
+         point_interpretation, timezone, temporal_resolution, out_dir,
+         formatter):
+    """
+    Get wind or solar weather or power data for power system modeling.
+    """
+    repo = DRPower.connect(config=ds_config)
+    total_size, wind_size, solar_size = repo._local_cache.cache_size
+    max_size = repo._local_cache._size
+    print("""Local Cache Initialized:
         Maximum size = {m:.2f} GB
         Current size = {t:.2f} GB
         Cached wind data = {w:.2f} GB
         Cached solar data = {s:.2f} GB
-    '''.format(m=max_size, t=total_size, w=wind_size, s=solar_size))
+        """.format(m=max_size, t=total_size, w=wind_size, s=solar_size))
 
-    # 2. Load node data and initialize NodeCollections
-    nodes = None
-    NodeClass = None
-    if args.mode == 'weather':
-        NodeClass = WindMetNode if args.type == 'wind' else SolarMetNode
-        if isinstance(args.nodes, (list, tuple)):
-            nodes = pds.DataFrame(args.nodes,
-                                  columns=['node_id', 'lat', 'long'])
-        else:
-            nodes = pds.read_csv(args.nodes)
-    else:
-        arg_type = args.type == 'wind'
-        NodeClass = WindGeneratorNode if arg_type else SolarGeneratorNode
-        if isinstance(args.nodes, (list, tuple)):
-            nodes = pds.DataFrame(args.nodes,
-                                  columns=['node_id', 'lat', 'long'])
-        else:
-            nodes = pds.read_csv(args.nodes)
+    nodes = pds.read_csv(nodes)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
 
-        if isinstance(args.generators, (list, tuple)):
-            generators = pds.DataFrame(args.generators,
-                                       columns=['node_id', 'capacity'])
-        else:
-            generators = pds.read_csv(args.generators)
+    out_ts_params = TemporalParameters(temporal_extent,
+                                       point_interp=point_interpretation,
+                                       timezone=timezone,
+                                       resolution=temporal_resolution)
 
+    ctx.obj = {'repo': repo,
+               'nodes': nodes,
+               'resource_type': resource_type,
+               'out_ts_params': out_ts_params,
+               'out_dir': out_dir,
+               'formatter': formatter}
+
+
+@main.command()
+@click.option('-g', '--generators', default=None,
+              type=click.Path(exists=True),
+              help="""Path to csv file describing
+              generators, or list of tuples. Each tuple or each
+              row of the csv file should contain (node_id,
+              generator_capacity), where generator_capacity
+              is in MW.""")
+@click.option('-s', '--shaper', default=None,
+              help="""Name of the function to use in re-shaping the
+              timeseries data.""")
+@click.pass_context
+def actual_power(ctx, generators, shaper):
+    """
+    Get real time wind or solar power data aggregated to the desired capacity
+    at each node.
+    """
+    nodes = ctx.obj['nodes']
+    if generators:
+        generators = pds.read_csv(generators)
         nodes = pds.merge(nodes, generators, on='node_id', how='inner')
 
+    re_type = ctx.obj['resource_type']
+    NodeClass = WindGeneratorNode if re_type == 'wind' else SolarGeneratorNode
     nodes = [NodeClass(*tuple(node_info))
              for ind, node_info in nodes.iterrows()]
     nodes = NodeCollection.factory(nodes)
 
-    print('Finding resource for {l} {c}s'
-          .format(l=len(nodes), c=NodeClass.__name__))
+    nodes, _ = ctx.obj['repo'].get_resource(nodes)
+    nodes.get_power(ctx.obj['out_ts_params'], shaper=shaper)
+    nodes.save_power(ctx.obj['out_dir'], formatter=ctx.obj['formatter'])
 
-    # 3 Download, cache, and apply resource to nodes
-    ts = time.time()
-    print('Identifying resource sites and downloading if necessary')
-    nodes, nearest = ext_store.get_resource(nodes)
-    t_run = (time.time() - ts) / 60
 
-    if args.mode == 'weather':
-        sites = len(nearest['site_id'].values)
-    else:
-        sites = len(np.unique(np.concatenate(nearest['site_id'].values)))
+@main.command()
+@click.option('-g', '--generators', default=None,
+              type=click.Path(exists=True),
+              help="""Path to csv file describing
+              generators, or list of tuples. Each tuple or each
+              row of the csv file should contain (node_id,
+              generator_capacity), where generator_capacity
+              is in MW.""")
+@click.option('-ft', '--forecast_type', default='discrete_leadtimes',
+              type=click.Choice([fcst.name for fcst in FCST_TYPES]),
+              help="Type of forecasts to be created for output data.")
+@click.option('-lts', '--leadtimes', type=LIST,
+              help="""For 'discrete_leadtimes' the list of times in advance
+              that each forecast represents.""")
+@click.option('-lt', '--leadtime',
+              help="""For 'dispatch_lookahead' data, the amount of time ahead
+              of the start of the modeled time that the forecast data would
+              need to be provided.""")
+@click.option('-f', '--frequency',
+              help=""" for 'dispatch_lookahead' data, the frequency at which
+              forcasts are run""")
+@click.option('-la', '--lookahead',
+              help="""For 'dispatch_lookahead' data, the amount of time
+              covered by each forecast.""")
+@click.option('-dt', '--dispatch_time',
+              help="""For 'dispatch_lookahead' data, the time of day that the
+              forecast model is run.""")
+@click.option('-s', '--shaper', default=None,
+              help="""Name of the function to use in re-shaping the
+              timeseries data.""")
+@click.pass_context
+def forecast_power(ctx, generators, forecast_type, leadtimes, leadtime,
+                   frequency, lookahead, dispatch_time, shaper):
+    """
+    Get forecast wind or solar power data aggregated to the desired capacity
+    at each node.
+    """
+    nodes = ctx.obj['nodes']
+    if generators:
+        generators = pds.read_csv(generators)
+        nodes = pds.merge(nodes, generators, on='node_id', how='inner')
 
-    print('{n} resource sites extracted in {t:.4f} minutes'
-          .format(n=sites, t=t_run))
+    re_type = ctx.obj['resource_type']
+    NodeClass = WindGeneratorNode if re_type == 'wind' else SolarGeneratorNode
+    nodes = [NodeClass(*tuple(node_info))
+             for ind, node_info in nodes.iterrows()]
+    nodes = NodeCollection.factory(nodes)
 
-    # 4. Format and save to disk
+    nodes, _ = ctx.obj['repo'].get_resource(nodes)
 
-    temporal_params = TemporalParameters(args.temporal_extent,
-                                         args.point_interpretation,
-                                         timezone=args.timezone,
-                                         resolution=args.temporal_resolution)
+    out_ts_params = ctx.obj['out_ts_params']
+    if forecast_type == 'discrete_leadtimes':
+        fcst_params = ForecastParameters.discrete_leadtime(out_ts_params,
+                                                           leadtimes)
+    elif forecast_type == 'dispatch_lookahead':
+        fcst_params = ForecastParameters.dispatch_lookahead(out_ts_params,
+                                                            dispatch_time,
+                                                            frequency,
+                                                            lookahead,
+                                                            leadtime)
 
-    # todo: Set up library and match shaper and formatter arguments to objects
-    shaper = args.shaper
-    formatter = args.formatter
-    print('Saving processed resource data to {:}'.format(args.outdir))
+    nodes.get_forecasts(fcst_params, shaper=shaper)
+    nodes.save_forecasts(ctx.obj['out_dir'], formatter=ctx.obj['formatter'])
 
-    if args.mode == 'weather':
-        nodes.get_weather(temporal_params, shaper=shaper)
-        nodes.save_weather(args.outdir, formatter=formatter)
-    elif args.mode == 'actual-power':
-        nodes.get_power(temporal_params, shaper=shaper)
-        nodes.save_power(args.outdir, formatter=formatter)
-    else:  # TODO how to handle getting power and forecast in one call?
-        assert args.mode == 'forecast-power'
-        forecast_params = None
-        if args.forecast_type == 'discrete_leadtimes':
-            forecast_params = ForecastParameters.discrete_leadtime(
-                temporal_params, args.leadtimes)
-        else:
-            assert args.forecast_type == 'dispatch_lookahead'
-            forecast_params = ForecastParameters.dispatch_lookahead(
-                temporal_params, args.frequency, args.lookahead, args.leadtime)
-        nodes.get_forecasts(temporal_params, forecast_params, shaper=shaper)
-        nodes.save_forecasts(args.outdir, formatter=formatter)
+
+@main.command()
+@click.option('-s', '--shaper', default=None,
+              help="""Name of the function to use in re-shaping the
+              timeseries data.""")
+@click.pass_context
+def weather(ctx, shaper):
+    """
+    Get source wind or solar weather data for the nearest site to each node.
+    """
+    nodes = ctx.obj['nodes']
+    re_type = ctx.obj['resource_type']
+    NodeClass = WindMetNode if re_type == 'wind' else SolarMetNode
+    nodes = [NodeClass(*tuple(node_info))
+             for ind, node_info in nodes.iterrows()]
+    nodes = NodeCollection.factory(nodes)
+
+    nodes, _ = ctx.obj['repo'].get_resource(nodes)
+    nodes.get_weather(ctx.obj['out_ts_params'], shaper=shaper)
+    nodes.save_weather(ctx.obj['out_dir'], formatter=ctx.obj['formatter'])

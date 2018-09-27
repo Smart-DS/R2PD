@@ -1,4 +1,4 @@
-from R2PD.cli import cli_main
+from R2PD.cli import main
 
 if __name__ == "__main__":
-    cli_main()
+    main()
