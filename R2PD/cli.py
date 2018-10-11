@@ -223,3 +223,7 @@ def weather(ctx, shaper):
     nodes, _ = ctx.obj['repo'].get_resource(nodes)
     nodes.get_weather(ctx.obj['out_ts_params'], shaper=shaper)
     nodes.save_weather(ctx.obj['out_dir'], formatter=ctx.obj['formatter'])
+
+
+if __name__ == '__main__':
+    main()

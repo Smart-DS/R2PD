@@ -1,13 +1,89 @@
-from distutils.core import setup
+#!/usr/bin/env python
+import os
+import logging
+from codecs import open
+from setuptools import setup, find_packages
+from setuptools.command.develop import develop
+from subprocess import check_call
+import shlex
+
+logger = logging.getLogger(__name__)
+
+try:
+    from pypandoc import convert_text
+except ImportError:
+    convert_text = lambda string, *args, **kwargs: string
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+with open("README.md", encoding="utf-8") as readme_file:
+    readme = convert_text(readme_file.read(), "rst", format="md")
+
+with open(os.path.join(here, "R2PD", "version.py"), encoding="utf-8") as f:
+    version = f.read()
+
+version = version.split()[2].strip('"').strip("'")
+
+test_requires = [
+    "backports.tempfile",
+    "pytest",
+    "pytest-cov",
+    "sphinx-rtd-theme",
+    "nbsphinx",
+    "sphinxcontrib-napoleon",
+    "ghp-import",
+]
+
+
+class PostDevelopCommand(develop):
+
+    def run(self):
+        try:
+            check_call(shlex.split("pre-commit install"))
+        except Exception:
+            logger.warning("Unable to run 'pre-commit install'")
+        develop.run(self)
+
 
 setup(
-    name='R2PD',
-    version='0.1.0',
-    author='Michael Rossol',
-    author_email='michael.rossol@nrel.gov',
-    packages=['R2PD', ],
-    scripts=['bin/r2pd.py', ],
-    url='https://github.com/Smart-DS/R2PD',
-    description='Power system modeler-friendly tool for downloading and \
-formatting wind and solar weather, power and forecast data.',
+    name="R2PD",
+    version=version,
+    description="Renewable Resource and Power Data tool",
+    long_description=readme,
+    author="Michael Rossol, Elaine Hale",
+    author_email="michael.rossol@nrel.gov",
+    url="https://github.com/Smart-DS/R2PD",
+    packages=find_packages(),
+    package_dir={"R2PD": "R2PD"},
+    entry_points={
+        "console_scripts": ["R2PD=R2PD.cli:main", ],
+        "shapers": [
+            "timeseries=R2PD.library.shapers:DefaultTimeseriesShaper",
+            "forecast=R2PD.library.shapers:DefaultForecastShaper",
+        ],
+        "formatters": [
+            "csv=R2PD.library.formatters:ToCSV",
+            "hdf=ditto.writers.opendss:ToHDF",
+        ],
+    },
+    include_package_data=True,
+    license="MIT license",
+    zip_safe=False,
+    keywords="R2PD",
+    classifiers=[
+        "Development Status :: Beta",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+    ],
+    test_suite="tests",
+    install_requires=["click", "future", "pandas", "numpy", "h5py", "scipy"],
+    extras_require={
+        "test": test_requires,
+        "dev": test_requires + ["pypandoc", "pre-commit"],
+    },
+    cmdclass={"develop": PostDevelopCommand},
 )
