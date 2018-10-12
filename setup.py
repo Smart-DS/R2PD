@@ -61,10 +61,10 @@ setup(
             "timeseries=R2PD.library.shapers:DefaultTimeseriesShaper",
             "forecast=R2PD.library.shapers:DefaultForecastShaper",
         ],
-        "formatters": [
-            "csv=R2PD.library.formatters:ToCSV",
-            "hdf=ditto.writers.opendss:ToHDF",
-        ],
+        # "formatters": [
+        #     "csv=R2PD.library.formatters:ToCSV",
+        #     "hdf=ditto.writers.opendss:ToHDF",
+        # ],
     },
     include_package_data=True,
     license="MIT license",
