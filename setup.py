@@ -56,7 +56,7 @@ setup(
     packages=find_packages(),
     package_dir={"R2PD": "R2PD"},
     entry_points={
-        "console_scripts": ["R2PD=R2PD.cli:main", ],
+        "console_scripts": ["R2PD=R2PD.cli:main", "R2PD-lite=R2PD.r2pd_lite:cli"],
         "shapers": [
             "timeseries=R2PD.library.shapers:DefaultTimeseriesShaper",
             "forecast=R2PD.library.shapers:DefaultForecastShaper",
