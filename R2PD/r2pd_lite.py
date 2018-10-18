@@ -26,6 +26,8 @@ def cli():
 @click.argument('h5_path', type=click.Path(exists=True))
 def extract_hdf5(h5_path):
     extract_h5(h5_path)
+    out_file = h5_path.replace('.hdf5', '.csv')
+    click.echo('{} converted to {}'.format(h5_path, out_file))
 
 
 if __name__ == '__main__':
