@@ -42,11 +42,12 @@ LIST = ListParamType()
 @click.option('-ds', '--ds_config', default=None,
               type=click.Path(exists=True),
               help='Path to datastore configuration file.')
-@click.option('-n', '--nodes', required=True, type=click.Path(exists=True),
-              help='''Path to csv file describing nodes, or list
-              of tuples describing nodes. Each tuple or each row
+@click.option('-n', '--node', type=float, nargs=2, default=None,
+              help="(latitude, longitude) of node of interest")
+@click.option('-ns', '--nodes', type=click.Path(exists=True), default=None,
+              help="""Path to csv file describing nodes, each row
               of the csv file should contain (node_id, latitude,
-              longitude).''')
+              longitude).""")
 @click.option('-t', '--resource_type', required=True,
               type=click.Choice(['solar', 'wind']),
               help="Resource type, 'solar' or 'wind'")
@@ -73,7 +74,7 @@ LIST = ListParamType()
               help="""Name of function to use in formatting
               output data for disk.""")
 @click.pass_context
-def main(ctx, ds_config, nodes, resource_type, temporal_extent,
+def main(ctx, ds_config, node, nodes, resource_type, temporal_extent,
          point_interpretation, timezone, temporal_resolution, out_dir,
          formatter):
     """
@@ -89,7 +90,14 @@ def main(ctx, ds_config, nodes, resource_type, temporal_extent,
         Cached solar data = {s:.2f} GB
         """.format(m=max_size, t=total_size, w=wind_size, s=solar_size))
 
-    nodes = pds.read_csv(nodes)
+    if node:
+        nodes_df = pds.DataFrame({'node_id': 0, 'latitude': node[0],
+                                 'longitude': node[1]}, index=[0])
+    elif nodes:
+        nodes_df = pds.read_csv(nodes)
+    else:
+        raise RuntimeError("Must supply a '--node/-n' or '--nodes/-ns'")
+
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
@@ -99,7 +107,7 @@ def main(ctx, ds_config, nodes, resource_type, temporal_extent,
                                        resolution=temporal_resolution)
 
     ctx.obj = {'repo': repo,
-               'nodes': nodes,
+               'nodes': nodes_df,
                'resource_type': resource_type,
                'out_ts_params': out_ts_params,
                'out_dir': out_dir,
