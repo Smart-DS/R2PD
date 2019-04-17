@@ -11,8 +11,6 @@ from .datastore import DRPower
 from .powerdata import (NodeCollection, WindGeneratorNode, SolarGeneratorNode,
                         WindMetNode, SolarMetNode)
 from .tshelpers import TemporalParameters, ForecastParameters
-from .library import DefaultTimeseriesShaper, DefaultForecastShaper
-
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +41,8 @@ LIST = ListParamType()
               type=click.Path(exists=True),
               help='Path to datastore configuration file.')
 @click.option('-n', '--node', type=float, nargs=2, default=None,
-              help="(latitude, longitude) of node of interest")
+              help="""(latitude, longitude) of node of interest,
+              node_id isset to 0""")
 @click.option('-ns', '--nodes', type=click.Path(exists=True), default=None,
               help="""Path to csv file describing nodes, each row
               of the csv file should contain (node_id, latitude,
@@ -68,15 +67,18 @@ LIST = ListParamType()
 @click.option('-tr', '--temporal_resolution', default=None,
               help="""Resolution for output timeseries data.
               Default is to retain the native resolution.""")
-@click.option('-o', '-out_dir', required=True, type=click.Path(),
+@click.option('-o', '--out_dir', required=True, type=click.Path(),
               help='Directory for output data.')
 @click.option('-f', '--formatter', default=None,
               help="""Name of function to use in formatting
               output data for disk.""")
+@click.option('-s', '--shaper', default=None,
+              help="""Name of the function to use in re-shaping the
+              timeseries data.""")
 @click.pass_context
 def main(ctx, ds_config, node, nodes, resource_type, temporal_extent,
          point_interpretation, timezone, temporal_resolution, out_dir,
-         formatter):
+         formatter, shaper):
     """
     Get wind or solar weather or power data for power system modeling.
     """
@@ -111,10 +113,31 @@ def main(ctx, ds_config, node, nodes, resource_type, temporal_extent,
                'resource_type': resource_type,
                'out_ts_params': out_ts_params,
                'out_dir': out_dir,
-               'formatter': formatter}
+               'formatter': formatter,
+               'shaper': shaper}
 
 
 @main.command()
+@click.pass_context
+def weather(ctx):
+    """
+    Get source wind or solar weather data for the nearest site to each node.
+    """
+    nodes = ctx.obj['nodes']
+    re_type = ctx.obj['resource_type']
+    NodeClass = WindMetNode if re_type == 'wind' else SolarMetNode
+    nodes = [NodeClass(*tuple(node_info))
+             for ind, node_info in nodes.iterrows()]
+    nodes = NodeCollection.factory(nodes)
+
+    nodes, _ = ctx.obj['repo'].get_resource(nodes)
+    nodes.get_weather(ctx.obj['out_ts_params'], shaper=ctx.obj['formatter'])
+    nodes.save_weather(ctx.obj['out_dir'], formatter=ctx.obj['formatter'])
+
+
+@main.group()
+@click.option('-c', '--capacity', default=None, type=float,
+              help="Capacity of generator(s) on each node in MW")
 @click.option('-g', '--generators', default=None,
               type=click.Path(exists=True),
               help="""Path to csv file describing
@@ -122,39 +145,39 @@ def main(ctx, ds_config, node, nodes, resource_type, temporal_extent,
               row of the csv file should contain (node_id,
               generator_capacity), where generator_capacity
               is in MW.""")
-@click.option('-s', '--shaper', default=None,
-              help="""Name of the function to use in re-shaping the
-              timeseries data.""")
 @click.pass_context
-def actual_power(ctx, generators, shaper):
+def power(ctx, capacity, generators):
     """
-    Get real time wind or solar power data aggregated to the desired capacity
-    at each node.
+    Subgroup to handle power requests, (actual or forecast)
     """
     nodes = ctx.obj['nodes']
     if generators:
         generators = pds.read_csv(generators)
         nodes = pds.merge(nodes, generators, on='node_id', how='inner')
+    else:
+        nodes['capacity'] = capacity
 
     re_type = ctx.obj['resource_type']
     NodeClass = WindGeneratorNode if re_type == 'wind' else SolarGeneratorNode
     nodes = [NodeClass(*tuple(node_info))
              for ind, node_info in nodes.iterrows()]
     nodes = NodeCollection.factory(nodes)
+    ctx.obj['nodes'] = nodes
 
-    nodes, _ = ctx.obj['repo'].get_resource(nodes)
-    nodes.get_power(ctx.obj['out_ts_params'], shaper=shaper)
+
+@power.command()
+@click.pass_context
+def actual(ctx):
+    """
+    Get real time wind or solar power data aggregated to the desired capacity
+    at each node.
+    """
+    nodes, _ = ctx.obj['repo'].get_resource(ctx.obj['nodes'])
+    nodes.get_power(ctx.obj['out_ts_params'], shaper=ctx.obj['shaper'])
     nodes.save_power(ctx.obj['out_dir'], formatter=ctx.obj['formatter'])
 
 
-@main.command()
-@click.option('-g', '--generators', default=None,
-              type=click.Path(exists=True),
-              help="""Path to csv file describing
-              generators, or list of tuples. Each tuple or each
-              row of the csv file should contain (node_id,
-              generator_capacity), where generator_capacity
-              is in MW.""")
+@power.command()
 @click.option('-ft', '--forecast_type', default='discrete_leadtimes',
               type=click.Choice([fcst.name for fcst in FCST_TYPES]),
               help="Type of forecasts to be created for output data.")
@@ -174,28 +197,14 @@ def actual_power(ctx, generators, shaper):
 @click.option('-dt', '--dispatch_time',
               help="""For 'dispatch_lookahead' data, the time of day that the
               forecast model is run.""")
-@click.option('-s', '--shaper', default=None,
-              help="""Name of the function to use in re-shaping the
-              timeseries data.""")
 @click.pass_context
-def forecast_power(ctx, generators, forecast_type, leadtimes, leadtime,
-                   frequency, lookahead, dispatch_time, shaper):
+def forecast(ctx, forecast_type, leadtimes, leadtime, frequency, lookahead,
+             dispatch_time):
     """
     Get forecast wind or solar power data aggregated to the desired capacity
     at each node.
     """
-    nodes = ctx.obj['nodes']
-    if generators:
-        generators = pds.read_csv(generators)
-        nodes = pds.merge(nodes, generators, on='node_id', how='inner')
-
-    re_type = ctx.obj['resource_type']
-    NodeClass = WindGeneratorNode if re_type == 'wind' else SolarGeneratorNode
-    nodes = [NodeClass(*tuple(node_info))
-             for ind, node_info in nodes.iterrows()]
-    nodes = NodeCollection.factory(nodes)
-
-    nodes, _ = ctx.obj['repo'].get_resource(nodes)
+    nodes, _ = ctx.obj['repo'].get_resource(ctx.obj['nodes'], forcasts=True)
 
     out_ts_params = ctx.obj['out_ts_params']
     if forecast_type == 'discrete_leadtimes':
@@ -208,29 +217,8 @@ def forecast_power(ctx, generators, forecast_type, leadtimes, leadtime,
                                                             lookahead,
                                                             leadtime)
 
-    nodes.get_forecasts(fcst_params, shaper=shaper)
+    nodes.get_forecasts(fcst_params, shaper=ctx.obj['formatter'])
     nodes.save_forecasts(ctx.obj['out_dir'], formatter=ctx.obj['formatter'])
-
-
-@main.command()
-@click.option('-s', '--shaper', default=None,
-              help="""Name of the function to use in re-shaping the
-              timeseries data.""")
-@click.pass_context
-def weather(ctx, shaper):
-    """
-    Get source wind or solar weather data for the nearest site to each node.
-    """
-    nodes = ctx.obj['nodes']
-    re_type = ctx.obj['resource_type']
-    NodeClass = WindMetNode if re_type == 'wind' else SolarMetNode
-    nodes = [NodeClass(*tuple(node_info))
-             for ind, node_info in nodes.iterrows()]
-    nodes = NodeCollection.factory(nodes)
-
-    nodes, _ = ctx.obj['repo'].get_resource(nodes)
-    nodes.get_weather(ctx.obj['out_ts_params'], shaper=shaper)
-    nodes.save_weather(ctx.obj['out_dir'], formatter=ctx.obj['formatter'])
 
 
 if __name__ == '__main__':

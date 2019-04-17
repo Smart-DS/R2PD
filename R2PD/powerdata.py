@@ -206,14 +206,54 @@ class WindGeneratorNode(GeneratorNode):
     """
     Class for Wind Generator Nodes
     """
-    pass
+    def __init__(self, node_id, latitude, longitude, capacity=None):
+        """
+        Initialize generic GeneratorNode object
+
+        Parameters
+        ----------
+        node_id : 'str'|'int'
+            Node id, must be an integer
+        latitude : 'float'
+            Latitude of node
+        longitude : 'float'
+            Longitude of node
+        capacity : 'float'
+            Capacity of generator in MW
+        """
+
+        if capacity is None:
+            capacity = 16
+
+        super(WindGeneratorNode, self).__init__(node_id, latitude, longitude,
+                                                capacity)
 
 
 class SolarGeneratorNode(GeneratorNode):
     """
     Class for Solar Generator Nodes
     """
-    pass
+    def __init__(self, node_id, latitude, longitude, capacity=None):
+        """
+        Initialize generic GeneratorNode object
+
+        Parameters
+        ----------
+        node_id : 'str'|'int'
+            Node id, must be an integer
+        latitude : 'float'
+            Latitude of node
+        longitude : 'float'
+            Longitude of node
+        capacity : 'float'
+            Capacity of generator in MW
+        """
+
+        if capacity is None:
+            capacity = 4
+
+        super(SolarGeneratorNode, self).__init__(node_id, latitude, longitude,
+                                                 capacity)
 
 
 class WeatherNode(Node):

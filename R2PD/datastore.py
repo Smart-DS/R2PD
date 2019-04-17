@@ -125,7 +125,7 @@ class InternalDataStore(DataStore):
     PKG_DIR = os.path.dirname(os.path.realpath(__file__))
     PKG_DIR = os.path.dirname(PKG_DIR)
 
-    def __init__(self, cache_root=None, size=None):
+    def __init__(self, cache_root=None, size=1):
         """
         Initialize InternalDataStore object
 
@@ -194,8 +194,10 @@ class InternalDataStore(DataStore):
             root_path = cls.decode_config_entry(root_path)
             size = cls.decode_config_entry(config_parser.get('local_cache',
                                                              'size'))
-            if size is not None:
-                size = float(size)
+        if size is not None:
+            size = float(size)
+        else:
+            size = 1
 
         return cls(cache_root=root_path, size=size)
 
@@ -469,7 +471,7 @@ class ExternalDataStore(DataStore):
         self._threads = threads
 
     @classmethod
-    def connect(cls, config):
+    def connect(cls, config=None):
         """
         Reads the configuration. From configuration and defaults,
         determines initializes ExternalDataStore object.
@@ -485,15 +487,20 @@ class ExternalDataStore(DataStore):
         'ExternalDataStore'
             Initialized ExternalDataStore object
         """
-        config_parser = ConfigParser()
-        config_parser.read(config)
-
-        if config_parser.has_section('local_cache'):
-            local_cache = InternalDataStore.connect(config=config)
-        else:
+        if config is None:
+            threads = None
             local_cache = None
+        else:
+            config_parser = ConfigParser()
+            config_parser.read(config)
 
-        threads = config_parser.get('local_cache', 'threads', fallback=None)
+            if config_parser.has_section('local_cache'):
+                local_cache = InternalDataStore.connect(config=config)
+            else:
+                local_cache = None
+
+            threads = config_parser.get('local_cache', 'threads',
+                                        fallback=None)
 
         return cls(local_cache=local_cache, threads=threads)
 
