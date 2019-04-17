@@ -493,7 +493,7 @@ class ExternalDataStore(DataStore):
         else:
             local_cache = None
 
-        threads = config_parser.get('local_cache', 'threads', None)
+        threads = config_parser.get('local_cache', 'threads', fallback=None)
 
         return cls(local_cache=local_cache, threads=threads)
 
