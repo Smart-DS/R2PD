@@ -24,11 +24,11 @@ by specifying the desired timeseries temporal parameters or forecast parameters.
 The resource data files are downloaded to a local data cache. The cache location and size
 can be specified by the user (see /library/config.ini).
 
-Once `R2PD` is installed, the CLI can be accessed with `r2pd.py` or
-`python /your/path/to/PythonXX/Scripts.r2pd.py`, and has a fully documented help
+Once `R2PD` is installed, the CLI can be accessed with `R2PD` and has a fully documented help
 menu. For a more detailed example, please see
-[demo_R2PD_applied_to_rts_gmlc.ipynb](https://github.com/Smart-DS/demos/blob/master/demo_R2PD_applied_to_rts_gmlc.ipynb).
-
+[demo_R2PD_applied_to_rts_gmlc.ipynb](https://github.com/Smart-DS/demos/blob/master/demo_R2PD_applied_to_rts_gmlc.ipynb).   
+`R2PD-lite` is a lite-weight cli that can be used to convert downloaded .hdf5 files from   
+[DRPOWER](egriddata.org) into .csv files.
 
 ## Install
 
