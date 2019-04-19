@@ -629,7 +629,7 @@ class ExternalDataStore(DataStore):
         """
         download_size = self.get_download_size(dataset, len(site_ids),
                                                resource_type)
-        self._local_cache.test_cache(download_size)
+        self._local_cache.test_cache_size(download_size)
 
         if self._threads is None:
             for site in site_ids:
