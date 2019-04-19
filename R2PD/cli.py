@@ -85,12 +85,12 @@ def main(ctx, ds_config, node, nodes, resource_type, temporal_extent,
     repo = DRPower.connect(config=ds_config)
     total_size, wind_size, solar_size = repo._local_cache.cache_size
     max_size = repo._local_cache._size
-    print("""Local Cache Initialized:
-        Maximum size = {m:.2f} GB
-        Current size = {t:.2f} GB
-        Cached wind data = {w:.2f} GB
-        Cached solar data = {s:.2f} GB
-        """.format(m=max_size, t=total_size, w=wind_size, s=solar_size))
+    click.echo("Local Cache Initialized: "
+               "Maximum size = {m:.2f} GB "
+               "Current size = {t:.2f} GB "
+               "Cached wind data = {w:.2f} GB "
+               "Cached solar data = {s:.2f} GB"
+               .format(m=max_size, t=total_size, w=wind_size, s=solar_size))
 
     if node:
         nodes_df = pds.DataFrame({'node_id': 0, 'latitude': node[0],
