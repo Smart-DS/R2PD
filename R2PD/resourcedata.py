@@ -119,8 +119,9 @@ class Resource(object):
             data = h5_file[data_type][...]
 
         data = pds.DataFrame(data)
-        data['time'] = pds.to_datetime(data['time'].str.decode('utf-8'))
-        data = data.set_index('time')
+        time_index = data['Timestamp'].str.decode('utf-8')
+        data['Timestamp'] = pds.to_datetime(time_index)
+        data = data.set_index('Timestamp')
 
         return data
 
