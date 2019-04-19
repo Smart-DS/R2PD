@@ -20,6 +20,9 @@ class DataStore(object):
     """
     META_ROOT = os.path.dirname(os.path.realpath(__file__))
     META_ROOT = os.path.join(META_ROOT, 'library')
+    # Average File size in MB currently estimates
+    WIND_FILE_SIZES = {'met': 12.1, 'power': 3.7, 'fcst': 1, 'fcst-prob': 1.8}
+    SOLAR_FILE_SIZES = {'met': 5.2, 'power': 3.3, 'fcst': 0}
 
     def __init__(self):
         self._wind_meta = None
@@ -153,6 +156,8 @@ class InternalDataStore(DataStore):
 
         self._size = size
 
+        self._wind_cache = None
+        self._solar_cache = None
         self.update_cache_meta()
 
     def __repr__(self):
@@ -202,7 +207,7 @@ class InternalDataStore(DataStore):
         return cls(cache_root=root_path, size=size)
 
     @staticmethod
-    def get_cache_size(cache_path):
+    def get_cache_size(cache_meta, file_sizes):
         """
         Searches all sub directories in path for .hdf5 files
         computes total size in GB
@@ -218,13 +223,10 @@ class InternalDataStore(DataStore):
             Returns total size of .hdf5 files in cache in GB
         """
         repo_size = 0
-        for (path, _, files) in os.walk(cache_path):
-            for file in files:
-                if file.endswith('.hdf5'):
-                    file_name = os.path.join(path, file)
-                    repo_size += os.path.getsize(file_name) * 10**-9
+        for resource_type, col in cache_meta.iteritems():
+            repo_size += file_sizes[resource_type] * col.sum()
 
-        return repo_size
+        return repo_size / 1000
 
     @staticmethod
     def get_cache_summary(cache_meta):
@@ -259,9 +261,11 @@ class InternalDataStore(DataStore):
         'tuple'
             total, wind, and solar cache sizes in GB (floats)
         """
-        total_cache = self.get_cache_size(self._cache_root)
-        wind_cache = self.get_cache_size(self._wind_root)
-        solar_cache = self.get_cache_size(self._solar_root)
+        wind_cache = self.get_cache_size(self.wind_cache,
+                                         self.WIND_FILE_SIZES)
+        solar_cache = self.get_cache_size(self.solar_cache,
+                                          self.SOLAR_FILE_SIZES)
+        total_cache = wind_cache + solar_cache
 
         return total_cache, wind_cache, solar_cache
 
@@ -275,10 +279,10 @@ class InternalDataStore(DataStore):
         'pandas.DataFrame'
             Summary of Wind and Solar caches
         """
-        wind_summary = self.get_cache_summary(self._wind_cache)
+        wind_summary = self.get_cache_summary(self.wind_cache)
         wind_summary.name = 'wind'
 
-        solar_summary = self.get_cache_summary(self._solar_cache)
+        solar_summary = self.get_cache_summary(self.solar_cache)
         solar_summary.name = 'solar'
 
         return pds.concat((wind_summary, solar_summary), axis=1).T
@@ -290,14 +294,16 @@ class InternalDataStore(DataStore):
 
         Returns
         ---------
-        cache_meta : 'pandas.DataFrame'
+        _wind_cache : 'pandas.DataFrame'
             DataFrame of files in wind cache
         """
-        columns = ['met', 'power', 'fcst', 'fcst-prob']
-        cache_meta = pds.DataFrame(columns=columns)
-        cache_meta.index.name = 'site_id'
+        if self._wind_cache is None:
+            columns = ['met', 'power', 'fcst', 'fcst-prob']
+            cache_meta = pds.DataFrame(columns=columns)
+            cache_meta.index.name = 'site_id'
+            self._wind_cache = self.scan_cache(self._wind_root, cache_meta)
 
-        return self.scan_cache(self._wind_root, cache_meta)
+        return self._wind_cache
 
     @property
     def solar_cache(self):
@@ -306,13 +312,16 @@ class InternalDataStore(DataStore):
 
         Returns
         ---------
-        cache_meta : 'pandas.DataFrame'
+        _solar_cache : 'pandas.DataFrame'
             DataFrame of files in solar cache
         """
-        columns = ['met', 'power']
-        cache_meta = pds.DataFrame(columns=columns)
-        cache_meta.index.name = 'site_id'
-        return self.scan_cache(self._solar_root, cache_meta)
+        if self._solar_cache is None:
+            columns = ['met', 'power']
+            cache_meta = pds.DataFrame(columns=columns)
+            cache_meta.index.name = 'site_id'
+            self._solar_cache = self.scan_cache(self._solar_root, cache_meta)
+
+        return self._solar_cache
 
     @staticmethod
     def scan_cache(cache_path, cache_meta):
@@ -343,7 +352,8 @@ class InternalDataStore(DataStore):
                     cache_meta.loc[site_id] = False
 
                 cache_meta.loc[site_id, resource] = True
-                cache_sites = cache_meta.index
+
+        cache_sites = cache_meta.index
 
         return cache_meta
 
@@ -357,12 +367,16 @@ class InternalDataStore(DataStore):
             'wind' or 'solar'
         """
         if dataset is None:
-            self._wind_cache = self.wind_cache
-            self._solar_cache = self.solar_cache
+            self._wind_cache = self.scan_cache(self._wind_root,
+                                               self.wind_cache)
+            self._solar_cache = self.scan_cache(self._solar_root,
+                                                self.solar_cache)
         elif dataset == 'wind':
-            self._wind_cache = self.wind_cache
+            self._wind_cache = self.scan_cache(self._wind_root,
+                                               self.wind_cache)
         elif dataset == 'solar':
-            self._solar_cache = self.solar_cache
+            self._solar_cache = self.scan_cache(self._solar_root,
+                                                self.solar_cache)
         else:
             msg = "Invalid dataset type, must be 'wind' or 'solar'"
             raise ValueError(msg)
@@ -390,9 +404,9 @@ class InternalDataStore(DataStore):
             Is site/resource present in cache
         """
         if dataset == 'wind':
-            cache_meta = self._wind_cache
+            cache_meta = self.wind_cache
         elif dataset == 'solar':
-            cache_meta = self._solar_cache
+            cache_meta = self.solar_cache
         else:
             msg = "Invalid dataset type, must be 'wind' or 'solar'"
             raise ValueError(msg)
@@ -435,10 +449,6 @@ class ExternalDataStore(DataStore):
     Abstract class to define interface for accessing external stores
     of resource data.
     """
-    # Average File size in MB currently estimates
-    WIND_FILE_SIZES = {'met': 14, 'power': 4.1, 'fcst': 1}
-    SOLAR_FILE_SIZES = {'met': 31, 'power': 8.4, 'fcst': 0}
-
     def __init__(self, local_cache=None, threads=None):
         """
         Initialize ExternalDataStore object
