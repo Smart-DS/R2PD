@@ -88,8 +88,8 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
         out_dt = self.out_params.resolution
         start = self.ts_params.extent[0] <= out_start
         end = self.ts_params.extent[1] >= out_end
-        if start and end:
-            time_index = ts.index
+        time_index = ts.index
+        if start and end:            
             ts_pos = (time_index >= out_start) & (time_index <= out_end)
             ts = ts.loc[ts_pos].asfreq(out_dt)
         else:
