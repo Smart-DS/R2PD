@@ -22,7 +22,7 @@ class TemporalParameters(object):
                                   'integrated_prev',
                                   'integrated_midpt'])
 
-    def __init__(self, extent, point_interp='instantaneous', timezone='UTC',
+    def __init__(self, extent, point_interp='instantaneous', timezone=None,
                  resolution=None):
         """
         Initialize TemporalParameters
@@ -65,7 +65,8 @@ class TemporalParameters(object):
         time_index = ts.index
         extent = time_index[[0, -1]]
         ts_params = cls(extent, **kwargs)
-        ts_params.infer_resolution(ts)
+        if ts_params.resolution is None:
+            ts_params.infer_resolution(ts)
 
         if timezone is None:
             ts_params.infer_timezone(ts)
@@ -82,9 +83,7 @@ class TemporalParameters(object):
             Timeseries DataFrame
         """
         time_index = ts.index
-        resolution = np.unique(time_index[1:] - time_index[:-1])
-        assert len(resolution) == 1, 'Time resolution is not constant! Found time resolutions:\n{}\nfrom timeseries:\n{}'.format(resolution, ts)
-        resolution = pds.to_timedelta(resolution[0])
+        resolution = pds.to_timedelta(time_index[1] - time_index[0])
         self.resolution = resolution
 
     def infer_timezone(self, ts):
