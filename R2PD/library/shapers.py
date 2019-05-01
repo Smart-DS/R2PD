@@ -14,7 +14,7 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
     """
     POINT_INTERPS = TemporalParameters.POINT_INTERPRETATIONS
 
-    def __call__(self, ts, out_tempparams, ts_tempparams=None):
+    def __call__(self, ts, out_tempparams, ts_tempparams=None, **kwargs):
         """
         Convert time series to conform with desired temporal parameters
 
@@ -34,7 +34,7 @@ class DefaultTimeseriesShaper(TimeseriesShaper):
             Reshaped timeseries
         """
         if ts_tempparams is None:
-            ts_tempparams = TemporalParameters.infer_params(ts)
+            ts_tempparams = TemporalParameters.infer_params(ts, **kwargs)
 
         self.ts_params = ts_tempparams
 
