@@ -7,10 +7,10 @@ import logging
 import os
 import pandas as pds
 
-from .datastore import DRPower
-from .powerdata import (NodeCollection, WindGeneratorNode, SolarGeneratorNode,
-                        WindMetNode, SolarMetNode)
-from .tshelpers import TemporalParameters, ForecastParameters
+from R2PD.datastore import DRPower
+from R2PD.powerdata import (NodeCollection, WindGeneratorNode, 
+    SolarGeneratorNode, WindMetNode, SolarMetNode)
+from R2PD.tshelpers import TemporalParameters, ForecastParameters
 
 logger = logging.getLogger(__name__)
 
