@@ -22,7 +22,7 @@ class TemporalParameters(object):
                                   'integrated_prev',
                                   'integrated_midpt'])
 
-    def __init__(self, extent, point_interp='instantaneous', timezone=None,
+    def __init__(self, extent, point_interp='instantaneous', timezone='UTC',
                  resolution=None):
         """
         Initialize TemporalParameters
@@ -41,7 +41,7 @@ class TemporalParameters(object):
         self.extent = list(pds.to_datetime(extent).tz_localize(timezone))
         self.point_interp = get_enum_instance(point_interp,
                                               self.POINT_INTERPRETATIONS)
-        self.timezone = timezone
+        self.timezone = timezone        
         self.resolution = pds.to_timedelta(resolution)
 
     @classmethod
