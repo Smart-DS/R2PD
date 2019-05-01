@@ -83,7 +83,7 @@ class TemporalParameters(object):
         """
         time_index = ts.index
         resolution = np.unique(time_index[1:] - time_index[:-1])
-        assert len(resolution) == 1, 'time resolution is not constant!'
+        assert len(resolution) == 1, 'Time resolution is not constant! Found time resolutions:\n{}\nfrom timeseries:\n{}'.format(resolution, ts)
         resolution = pds.to_timedelta(resolution[0])
         self.resolution = resolution
 
