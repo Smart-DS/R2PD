@@ -17,7 +17,7 @@ power system modelers. Functionalities needed include:
 import inspect
 import os
 import pandas as pds
-from .library import DefaultTimeseriesShaper, DefaultForecastShaper
+from R2PD.library import DefaultTimeseriesShaper, DefaultForecastShaper
 
 
 class Node(object):

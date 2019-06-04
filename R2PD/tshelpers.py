@@ -2,7 +2,6 @@
 This module defines time conventions for basic timeseries and for forecasts,
 as well as abstract function calls for converting between them.
 """
-
 import abc
 from enum import Enum
 import numpy as np
@@ -41,7 +40,7 @@ class TemporalParameters(object):
         self.extent = list(pds.to_datetime(extent).tz_localize(timezone))
         self.point_interp = get_enum_instance(point_interp,
                                               self.POINT_INTERPRETATIONS)
-        self.timezone = timezone        
+        self.timezone = timezone
         self.resolution = pds.to_timedelta(resolution)
 
     @classmethod

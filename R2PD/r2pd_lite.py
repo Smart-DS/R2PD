@@ -1,6 +1,6 @@
 import click
 import h5py
-import pandas as pd
+import pandas as pds
 
 
 def extract_h5(h5_path):
@@ -8,13 +8,19 @@ def extract_h5(h5_path):
         vars = list(f)
         data_ds = [ds for ds in vars if ds != 'loc_data'][0]
 
-        data = pd.DataFrame(f[data_ds][...])
+        data = pds.DataFrame(f[data_ds][...])
 
-    data['time'] = pd.to_datetime(data['time'].values.astype(str))
-    data = data.set_index('time')
+    cols = list(data.columns)
+    if 'Timestamp' in cols:
+        index_col = 'Timestamp'
+    elif 'time' in cols:
+        index_col = 'time'
+    else:
+        raise RuntimeError('Cannot determine time-index column')
 
-    out_path = h5_path.replace('.hdf5', '.csv')
-    data.to_csv(out_path)
+    time_index = data[index_col].str.decode('utf-8')
+    data[index_col] = pds.to_datetime(time_index)
+    data = data.set_index(index_col)
 
 
 @click.group()

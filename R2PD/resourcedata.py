@@ -119,9 +119,17 @@ class Resource(object):
             data = h5_file[data_type][...]
 
         data = pds.DataFrame(data)
-        time_index = data['Timestamp'].str.decode('utf-8')
-        data['Timestamp'] = pds.to_datetime(time_index)
-        data = data.set_index('Timestamp')
+        cols = list(data.columns)
+        if 'Timestamp' in cols:
+            index_col = 'Timestamp'
+        elif 'time' in cols:
+            index_col = 'time'
+        else:
+            raise RuntimeError('Cannot determine time-index column')
+
+        time_index = data[index_col].str.decode('utf-8')
+        data[index_col] = pds.to_datetime(time_index)
+        data = data.set_index(index_col)
 
         return data
 

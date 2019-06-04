@@ -9,9 +9,9 @@ import numpy as np
 import os
 import pandas as pds
 from urllib.request import urlretrieve
-from .powerdata import GeneratorNodeCollection
-from .nearestnodes import nearest_power_nodes, nearest_met_nodes
-from .resourcedata import WindResource, SolarResource, ResourceList
+from R2PD.powerdata import GeneratorNodeCollection
+from R2PD.nearestnodes import nearest_power_nodes, nearest_met_nodes
+from R2PD.resourcedata import WindResource, SolarResource, ResourceList
 
 
 class DataStore(object):

@@ -8,8 +8,8 @@ import os
 import pandas as pds
 
 from R2PD.datastore import DRPower
-from R2PD.powerdata import (NodeCollection, WindGeneratorNode, 
-    SolarGeneratorNode, WindMetNode, SolarMetNode)
+from R2PD.powerdata import (NodeCollection, WindGeneratorNode,
+                            SolarGeneratorNode, WindMetNode, SolarMetNode)
 from R2PD.tshelpers import TemporalParameters, ForecastParameters
 
 logger = logging.getLogger(__name__)
@@ -65,8 +65,8 @@ LIST = ListParamType()
               https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568
               for valid timezones.""")
 @click.option('-tr', '--temporal_resolution', default=None,
-              help="""Resolution for output timeseries data in str accecptable 
-              by pandas.to_timedelta. Default is to retain the native 
+              help="""Resolution for output timeseries data in str accecptable
+              by pandas.to_timedelta. Default is to retain the native
               resolution.""")
 @click.option('-o', '--out_dir', required=True, type=click.Path(),
               help='Directory for output data.')

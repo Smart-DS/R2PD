@@ -1,3 +1,6 @@
+"""
+Custom Timeout class
+"""
 import signal
 
 
