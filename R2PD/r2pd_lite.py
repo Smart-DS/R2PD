@@ -22,6 +22,9 @@ def extract_h5(h5_path):
     data[index_col] = pds.to_datetime(time_index)
     data = data.set_index(index_col)
 
+    out_path = h5_path.replace('.hdf5', '.csv')
+    data.to_csv(out_path)
+
 
 @click.group()
 def cli():
