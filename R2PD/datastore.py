@@ -408,6 +408,12 @@ class InternalDataStore(DataStore):
         'bool'
             Is site/resource present in cache
         """
+        # Check for DR Power sites directly
+        if resource_type is not None:
+            file_name = '{}_{}_{}.hdf5'.format(dataset, resource_type, site_id)
+            file_path = os.path.join(self._cache_root, dataset, file_name)
+            return os.path.exists(file_path)
+
         if dataset == 'wind':
             cache_meta = self.wind_cache
         elif dataset == 'solar':
@@ -724,9 +730,12 @@ class ExternalDataStore(DataStore):
             resource_type = 'met'
             site_ids = nearest_nodes['site_id'].values
 
+        # download sites not already in local cache
         dataset = node_collection._dataset
-        logger.debug("Trying to download {} site_ids from dataset {}, resource {}".format(len(site_ids), dataset, resource_type))
-        self.download_resource_data(dataset, site_ids, resource_type)
+        to_download = [site_id for site_id in site_ids if not self._local_cache.check_cache(dataset, site_id, resource_type=resource_type)]
+        logger.debug("Trying to download {} of the {} sites requested for dataset {}, resource {}".format(
+            len(to_download), len(site_ids), dataset, resource_type))
+        self.download_resource_data(dataset, to_download, resource_type)
 
         self._local_cache.update_cache_meta(dataset)
 
