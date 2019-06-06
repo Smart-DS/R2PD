@@ -223,4 +223,5 @@ def forecast(ctx, forecast_type, leadtimes, leadtime, frequency, lookahead,
 
 
 if __name__ == '__main__':
+    # logging.basicConfig(level=logging.DEBUG)
     main()

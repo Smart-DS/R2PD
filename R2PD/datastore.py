@@ -3,15 +3,20 @@ This module provides classes for accessing site-level wind and solar data
 from internal and external data stores.
 """
 import concurrent.futures as cf
-from configparser import ConfigParser
+import logging
 import multiprocessing
-import numpy as np
 import os
-import pandas as pds
 from urllib.request import urlretrieve
+
+from configparser import ConfigParser
+import numpy as np
+import pandas as pds
+
 from R2PD.powerdata import GeneratorNodeCollection
 from R2PD.nearestnodes import nearest_power_nodes, nearest_met_nodes
 from R2PD.resourcedata import WindResource, SolarResource, ResourceList
+
+logger = logging.getLogger(__name__)
 
 
 class DataStore(object):
@@ -642,9 +647,11 @@ class ExternalDataStore(DataStore):
         self._local_cache.test_cache_size(download_size)
 
         if self._threads is None:
+            logger.debug("Downloading sequentially")
             for site in site_ids:
                 self.download_resource(dataset, site, resource_type)
         else:
+            logger.debug("Downloading using {} threads".format(self._threads))
             with cf.ThreadPoolExecutor(max_workers=self._threads) as executor:
                 for site in site_ids:
                     executor.submit(self.download_resource,
@@ -718,6 +725,7 @@ class ExternalDataStore(DataStore):
             site_ids = nearest_nodes['site_id'].values
 
         dataset = node_collection._dataset
+        logger.debug("Trying to download {} site_ids from dataset {}, resource {}".format(len(site_ids), dataset, resource_type))
         self.download_resource_data(dataset, site_ids, resource_type)
 
         self._local_cache.update_cache_meta(dataset)
@@ -759,6 +767,7 @@ class DRPower(ExternalDataStore):
         dst : 'str'
             Destination path of resource data (including file name)
         """
+        logger.debug("Downloading to {} ...".format(dst))
         urlretrieve(src, dst)
 
     def download_resource(self, dataset, site_id, resource_type):
@@ -775,7 +784,8 @@ class DRPower(ExternalDataStore):
             power or met or fcst
         """
         file_name = '{}_{}_{}.hdf5'.format(dataset, resource_type, site_id)
-        src = os.path.join(self.DATA_ROOT, dataset, str(site_id), file_name)
+        src = '/'.join([self.DATA_ROOT, dataset, str(site_id), file_name])
         dst = os.path.join(self._local_cache._cache_root, dataset, file_name)
+        logger.debug("Prepared to download {} from DR Power".format(src))
 
         self.download(src, dst)
