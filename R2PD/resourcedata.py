@@ -292,6 +292,22 @@ class ResourceList(object):
         return lat_lon
 
     @property
+    def capacity(self):
+        """
+        resource site capacity in MW
+
+        Returns
+        ---------
+        'float'
+            resource site capacity in MW
+        """
+        cap = 0
+        for resource in self._resources:
+            cap += resource.capacity
+
+        return cap
+
+    @property
     def power_data(self):
         """
         Extract and aggragate power data for all sites in ResourceList
