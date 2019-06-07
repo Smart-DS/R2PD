@@ -54,8 +54,7 @@ class DataStore(object):
         meta : 'pandas.DataFrame'
             DataFrame of resource meta data
         """
-        meta = pds.read_json(meta_path)
-        meta.index.name = 'site_id'
+        meta = pds.read_csv(meta_path).set_index('site_id')
         meta = meta.sort_index()
         return meta
 
@@ -70,7 +69,7 @@ class DataStore(object):
             DataFrame of wind resource meta data
         """
         if self._wind_meta is None:
-            path = os.path.join(self.META_ROOT, 'wind_site_meta.json')
+            path = os.path.join(self.META_ROOT, 'wind_site_meta.csv')
             self._wind_meta = self.load_meta(path)
 
         return self._wind_meta
@@ -86,7 +85,7 @@ class DataStore(object):
             DataFrame of solar resource meta data
         """
         if self._solar_meta is None:
-            path = os.path.join(self.META_ROOT, 'solar_site_meta.json')
+            path = os.path.join(self.META_ROOT, 'solar_site_meta.csv')
             self._solar_meta = self.load_meta(path)
 
         return self._solar_meta
