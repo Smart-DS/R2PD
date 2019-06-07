@@ -320,7 +320,7 @@ class ResourceList(object):
         power_data = self._resources[0].power_data
         if len(self) > 1:
             for resource in self._resources[1:]:
-                power_data.add(resource.power_data)
+                power_data = power_data.add(resource.power_data)
 
         return power_data
 
@@ -337,7 +337,7 @@ class ResourceList(object):
         fcst_data = self._resources[0].forecast_data
         if len(self) > 1:
             for resource in self._resources[1:]:
-                fcst_data.add(resource.forecast_data)
+                fcst_data = fcst_data.add(resource.forecast_data)
 
         return fcst_data
 
