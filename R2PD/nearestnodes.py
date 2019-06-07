@@ -49,7 +49,11 @@ def nearest_power_nodes(node_collection, resource_meta):
         # Extract resource nodes w/ remaining capacity
         r_left = r_nodes[r_nodes['r_cap'] > 0]
         r_index = r_left.index
-        lat_lon = r_left.as_matrix(['latitude', 'longitude'])
+        try:
+            lat_lon = r_left[['latitude', 'longitude']].to_numpy()
+        except:
+            # To support pandas versions < 0.24.0
+            lat_lon = r_left[['latitude', 'longitude']].values
         # Create cKDTree of [lat, lon] for resource nodes
         # w/ available capacity
         tree = cKDTree(lat_lon)
@@ -57,7 +61,11 @@ def nearest_power_nodes(node_collection, resource_meta):
         # Extract nodes that still have capacity to be filled
         nodes_left = nodes[nodes['r_cap'] > 0]
         n_index = nodes_left.index
-        node_lat_lon = nodes_left.as_matrix(['latitude', 'longitude'])
+        try:
+            node_lat_lon = nodes_left[['latitude', 'longitude']].to_numpy()
+        except:
+            # To support pandas versions < 0.24.0
+            node_lat_lon = nodes_left[['latitude', 'longitude']].values
 
         # Find first nearest resource node to each requested node
         dist, pos = tree.query(node_lat_lon, k=1)

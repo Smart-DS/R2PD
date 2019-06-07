@@ -3,15 +3,20 @@ This module provides classes for accessing site-level wind and solar data
 from internal and external data stores.
 """
 import concurrent.futures as cf
-from configparser import ConfigParser
+import logging
 import multiprocessing
-import numpy as np
 import os
-import pandas as pds
 from urllib.request import urlretrieve
+
+from configparser import ConfigParser
+import numpy as np
+import pandas as pds
+
 from R2PD.powerdata import GeneratorNodeCollection
 from R2PD.nearestnodes import nearest_power_nodes, nearest_met_nodes
 from R2PD.resourcedata import WindResource, SolarResource, ResourceList
+
+logger = logging.getLogger(__name__)
 
 
 class DataStore(object):
@@ -402,6 +407,12 @@ class InternalDataStore(DataStore):
         'bool'
             Is site/resource present in cache
         """
+        # Check for DR Power sites directly
+        if resource_type is not None:
+            file_name = '{}_{}_{}.hdf5'.format(dataset, resource_type, site_id)
+            file_path = os.path.join(self._cache_root, dataset, file_name)
+            return os.path.exists(file_path)
+
         if dataset == 'wind':
             cache_meta = self.wind_cache
         elif dataset == 'solar':
@@ -641,9 +652,11 @@ class ExternalDataStore(DataStore):
         self._local_cache.test_cache_size(download_size)
 
         if self._threads is None:
+            logger.debug("Downloading sequentially")
             for site in site_ids:
                 self.download_resource(dataset, site, resource_type)
         else:
+            logger.debug("Downloading using {} threads".format(self._threads))
             with cf.ThreadPoolExecutor(max_workers=self._threads) as executor:
                 for site in site_ids:
                     executor.submit(self.download_resource,
@@ -716,8 +729,12 @@ class ExternalDataStore(DataStore):
             resource_type = 'met'
             site_ids = nearest_nodes['site_id'].values
 
+        # download sites not already in local cache
         dataset = node_collection._dataset
-        self.download_resource_data(dataset, site_ids, resource_type)
+        to_download = [site_id for site_id in site_ids if not self._local_cache.check_cache(dataset, site_id, resource_type=resource_type)]
+        logger.debug("Trying to download {} of the {} sites requested for dataset {}, resource {}".format(
+            len(to_download), len(site_ids), dataset, resource_type))
+        self.download_resource_data(dataset, to_download, resource_type)
 
         self._local_cache.update_cache_meta(dataset)
 
@@ -758,6 +775,7 @@ class DRPower(ExternalDataStore):
         dst : 'str'
             Destination path of resource data (including file name)
         """
+        logger.debug("Downloading to {} ...".format(dst))
         urlretrieve(src, dst)
 
     def download_resource(self, dataset, site_id, resource_type):
@@ -774,7 +792,8 @@ class DRPower(ExternalDataStore):
             power or met or fcst
         """
         file_name = '{}_{}_{}.hdf5'.format(dataset, resource_type, site_id)
-        src = os.path.join(self.DATA_ROOT, dataset, str(site_id), file_name)
+        src = '/'.join([self.DATA_ROOT, dataset, str(site_id), file_name])
         dst = os.path.join(self._local_cache._cache_root, dataset, file_name)
+        logger.debug("Prepared to download {} from DR Power".format(src))
 
         self.download(src, dst)
