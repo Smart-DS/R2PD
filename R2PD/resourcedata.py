@@ -262,6 +262,17 @@ class ResourceList(object):
         """
         return len(self._resources)
 
+    def __repr__(self):
+        """
+        Prints the type of Resource and the site id
+
+        Returns
+        ---------
+        'str'
+            type of Resource and site id
+        """
+        return '{} with {} sites'.format(self.__class__.__name__, len(self))
+
     @property
     def locations(self):
         """
