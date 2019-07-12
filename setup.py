@@ -22,7 +22,7 @@ with open("README.md", encoding="utf-8") as readme_file:
 with open(os.path.join(here, "R2PD", "version.py"), encoding="utf-8") as f:
     version = f.read()
 
-version = version.split()[2].strip('"').strip("'")
+version = version.split('=')[-1].strip().strip('"').strip("'")
 
 test_requires = [
     "backports.tempfile",
@@ -66,6 +66,9 @@ setup(
         #     "csv=R2PD.library.formatters:ToCSV",
         #     "hdf=ditto.writers.opendss:ToHDF",
         # ],
+    },
+    package_data={
+        "R2PD.library": ["solar_site_meta.csv", "wind_site_meta.csv"]
     },
     include_package_data=True,
     license="MIT license",
