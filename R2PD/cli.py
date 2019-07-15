@@ -76,13 +76,19 @@ LIST = ListParamType()
 @click.option('-s', '--shaper', default=None,
               help="""Name of the function to use in re-shaping the
               timeseries data.""")
+@click.option('-d', '--debug', is_flag=True, default=False)
 @click.pass_context
 def main(ctx, ds_config, node, nodes, resource_type, temporal_extent,
          point_interpretation, timezone, temporal_resolution, out_dir,
-         formatter, shaper):
+         formatter, shaper, debug):
     """
     Get wind or solar weather or power data for power system modeling.
     """
+
+    # set-up logging. For now just console logging
+    level = logging.DEBUG if debug else logging.WARNING
+    logging.basicConfig(level=level)
+
     repo = DRPower.connect(config=ds_config)
     total_size, wind_size, solar_size = repo._local_cache.cache_size
     max_size = repo._local_cache._size
@@ -173,8 +179,11 @@ def actual(ctx):
     Get real time wind or solar power data aggregated to the desired capacity
     at each node.
     """
+    logger.debug("Getting resource data")
     nodes, _ = ctx.obj['repo'].get_resource(ctx.obj['nodes'])
+    logger.debug("Creating power profiles")
     nodes.get_power(ctx.obj['out_ts_params'], shaper=ctx.obj['shaper'])
+    loger.debug("Saving to disk")
     nodes.save_power(ctx.obj['out_dir'], formatter=ctx.obj['formatter'])
 
 
@@ -223,5 +232,4 @@ def forecast(ctx, forecast_type, leadtimes, leadtime, frequency, lookahead,
 
 
 if __name__ == '__main__':
-    # logging.basicConfig(level=logging.DEBUG)
     main()
