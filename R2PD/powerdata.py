@@ -15,9 +15,12 @@ power system modelers. Functionalities needed include:
 """
 
 import inspect
+import logging
 import os
 import pandas as pds
 from R2PD.library import DefaultTimeseriesShaper, DefaultForecastShaper
+
+logger = logging.getLogger(__name__)
 
 
 class Node(object):
@@ -523,6 +526,7 @@ class GeneratorNodeCollection(NodeCollection):
             Method to convert Resource data into required output
         """
         for node in self.nodes:
+            # logger.debug("Node {}".format(node.id))
             node.get_power(temporal_params, shaper=shaper)
 
     def get_forecasts(self, forecast_params, shaper=None):
