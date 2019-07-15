@@ -183,7 +183,7 @@ def actual(ctx):
     nodes, _ = ctx.obj['repo'].get_resource(ctx.obj['nodes'])
     logger.debug("Creating power profiles")
     nodes.get_power(ctx.obj['out_ts_params'], shaper=ctx.obj['shaper'])
-    loger.debug("Saving to disk")
+    logger.debug("Saving to disk")
     nodes.save_power(ctx.obj['out_dir'], formatter=ctx.obj['formatter'])
 
 
