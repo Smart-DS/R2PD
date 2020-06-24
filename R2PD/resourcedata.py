@@ -1,9 +1,12 @@
 """
 This module provides an API to the raw resource data and meta-data.
 """
+import logging
 import os
 import h5py
 import pandas as pds
+
+logger = logging.getLogger(__name__)
 
 
 class Resource(object):
@@ -115,8 +118,12 @@ class Resource(object):
             Time series DataFrame of resource data
         """
         file_path = self._file_path.replace('*', data_type.split('_')[0])
-        with h5py.File(file_path, 'r') as h5_file:
-            data = h5_file[data_type][...]
+        try:
+            with h5py.File(file_path, 'r') as h5_file:
+                data = h5_file[data_type][...]
+        except:
+            logger.error(f"Unable to extract data from {file_path}")
+            raise
 
         data = pds.DataFrame(data)
         cols = list(data.columns)
