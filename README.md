@@ -28,7 +28,7 @@ Once `R2PD` is installed, the CLI can be accessed with `R2PD` and has a fully do
 menu. For a more detailed example, please see
 [demo_R2PD_applied_to_rts_gmlc.ipynb](https://github.com/Smart-DS/demos/blob/master/demo_R2PD_applied_to_rts_gmlc.ipynb).   
 `R2PD-lite` is a lite-weight cli that can be used to convert downloaded .hdf5 files from   
-[DRPOWER](egriddata.org) into .csv files.
+[DR POWER](https://egriddata.org/) into .csv files.
 
 ## Install
 
